@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PCR Moleküler Biyoloji Laboratuvar Portalı</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:#eef2f1;color:#1b1f24;-webkit-tap-highlight-color:transparent}
+
+/* Navigasyon Üst Çubuğu */
+.portal-nav{display:flex;align-items:center;justify-content:space-between;background:#17302c;color:#fff;padding:10px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.portal-nav h2{font-size:16px;margin:0;font-weight:700}
+.nav-btn{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+
+/* 1. GİRİŞ EKRANI */
+#view-home{max-width:960px;margin:0 auto;padding:40px 18px 60px;text-align:center}
+.home-header{margin-bottom:32px}
+.home-header h1{font-size:26px;color:#17302c;margin:0 0 8px}
+.home-header p{color:#5d7571;font-size:15px;margin:0}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;margin-top:20px}
+.home-card{background:#ffffff;border:1.5px solid #d3dedb;border-radius:14px;padding:26px 20px;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.home-card:hover{transform:translateY(-3px);border-color:#0f6b5c;box-shadow:0 8px 24px rgba(15,107,92,.12)}
+.card-icon{font-size:38px;margin-bottom:14px;display:inline-block}
+.card-title{font-size:19px;font-weight:800;color:#17302c;margin:0 0 8px}
+.card-desc{font-size:13.5px;color:#5d7571;line-height:1.5;margin:0 0 18px;flex-grow:1}
+.card-btn{background:#0f6b5c;color:#fff;border:none;padding:11px 16px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.card-btn.blue{background:#2563eb}
+
+/* 2. PLATE KURULUMU STILLERI */
+#view-plate{
+  --bg:#f6f7f9; --card:#fff; --tx:#1b1f24; --mu:#6b7280; --bd:#c9ced6; --ac:#2563eb;
+  background:var(--bg);color:var(--tx);min-height:100vh;padding:12px;
+}
+@media (prefers-color-scheme:dark){
+  #view-plate:not([data-theme="light"]){--bg:#14171c;--card:#1d2127;--tx:#e8eaed;--mu:#9aa3af;--bd:#3a414b;--ac:#6ea0ff}
+}
+#view-plate h1{font-size:18px;text-align:center;margin:4px 0 6px;letter-spacing:.5px}
+#view-plate .plate-tabs{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;justify-content:center}
+#view-plate .ptab{padding:8px 12px;border:1px solid var(--bd);border-radius:20px;background:var(--card);color:var(--tx);font:700 13px system-ui,sans-serif;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px}
+#view-plate .ptab.active{background:var(--ac);border-color:var(--ac);color:#fff}
+#view-plate .ptab .badge{font-size:10.5px;padding:1px 6px;border-radius:10px;background:rgba(0,0,0,.08)}
+#view-plate .ptab.active .badge{background:rgba(255,255,255,.25)}
+#view-plate .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:10px}
+#view-plate .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+#view-plate label{font-size:12px;color:var(--mu);display:block;font-weight:600}
+#view-plate .meta input,#view-plate textarea,#view-plate select{width:100%;padding:7px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+#view-plate .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#view-plate table{border-collapse:collapse;margin:0 auto}
+#view-plate th,#view-plate td{border:1px solid var(--bd);padding:0;text-align:center}
+#view-plate th{font-size:12px;color:var(--mu);background:var(--card);min-width:20px;padding:2px 4px}
+#view-plate td{position:relative}
+#view-plate td input{width:64px;height:27px;border:0;text-align:center;font:800 15px system-ui,sans-serif;color:#000;background:transparent;padding:0;border-radius:0;position:relative;z-index:2;text-shadow:0 0 3px #fff,0 0 6px #fff}
+#view-plate td input.nt{height:25px;font:800 14.5px system-ui,sans-serif;text-transform:uppercase;border-top:1px dashed rgba(0,0,0,.45);color:#000;position:relative;z-index:2}
+#view-plate td input.nt.off{pointer-events:none;border-top-color:transparent}
+#view-plate td input:focus{outline:3px solid var(--ac);outline-offset:-3px}
+#view-plate td[data-sym]::before{content:attr(data-sym);position:absolute;top:2px;right:3px;font-size:10px;font-weight:900;color:#000;opacity:.85;pointer-events:none;line-height:1;text-shadow:0 0 3px #fff;z-index:3}
+#view-plate td[data-sym]::after{content:attr(data-sym);position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:900;color:#000;opacity:.12;pointer-events:none;line-height:1;z-index:1}
+#view-plate td.dim{filter:grayscale(90%) opacity(0.25)}
+#view-plate td.sel{box-shadow:inset 0 0 0 3px #111}
+
+/* Satır ve Sütun Başlıkları / Not Kutuları */
+#view-plate .rh{font-size:14px;color:var(--tx);font-weight:700;padding:3px;min-width:76px}
+#view-plate .rl{display:block;width:72px;height:26px;margin:2px auto 0;border:1px solid var(--bd);border-radius:4px;background:var(--bg);color:var(--tx);text-align:center;font:800 14px system-ui,sans-serif;padding:0 2px;text-transform:uppercase}
+
+#view-plate th.ch{font-size:13px;color:var(--tx);font-weight:700;padding:3px 2px;min-width:64px;vertical-align:top}
+#view-plate .cl{display:block;width:60px;height:24px;margin:2px auto 0;border:1px solid var(--bd);border-radius:4px;background:var(--bg);color:var(--tx);text-align:center;font:800 12px system-ui,sans-serif;padding:0 2px;text-transform:uppercase}
+
+#view-plate .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+#view-plate button{padding:9px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+#view-plate button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+#view-plate .row2{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+#view-plate .foot{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-top:8px}
+#view-plate .notes-card textarea{resize:vertical;min-height:55px}
+
+/* Okuma Modu & Modallar */
+#rd{position:fixed;inset:0;z-index:999;background:#f6f7f9;overflow:hidden;touch-action:manipulation}
+#rd[hidden]{display:none}
+#rw{position:absolute;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
+#rin{position:absolute;display:grid;gap:2px;padding:2px;background:#c9ced6;grid-template-columns:minmax(0,1.1fr) repeat(12,minmax(0,1fr));grid-template-rows:minmax(0,.55fr) repeat(8,minmax(0,1fr))}
+#rin>div{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;color:#1b1f24;font-weight:700;overflow:hidden;line-height:1.1;text-align:center;position:relative}
+#rin>div.rc{color:#000;font-weight:800;text-shadow:0 0 3px #fff,0 0 6px #fff}
+#rin>div .r-sym{position:absolute;top:2px;right:4px;font-size:.65em;font-weight:900;opacity:.85}
+#rin>div.dim{filter:grayscale(90%) opacity(0.2)}
+#rin button{padding:0 6px;border-radius:6px;line-height:1.3}
+
+#rdDist{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:50%;transform:translateX(-50%);background:rgba(20,23,28,.95);color:#fff;padding:6px 12px;border-radius:24px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:100;white-space:nowrap;max-width:94vw;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid rgba(255,255,255,.2)}
+#rdDist[hidden]{display:none}
+.rd-pbtn{background:#2a313d;color:#e2e8f0;border:1px solid #3f4756;padding:4px 9px;border-radius:14px;font-size:11.5px;font-weight:700;cursor:pointer}
+.rd-pbtn.has{background:#166534;color:#dcfce7;border-color:#22c55e}
+
+/* Sesli komut (Okuma modu) */
+#rdMic{position:absolute;left:calc(env(safe-area-inset-left,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);width:48px;height:48px;padding:0;border:0;border-radius:50%;background:#2563eb;color:#fff;font-size:22px;line-height:1;cursor:pointer;z-index:7;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#rdMic.on{background:#dc2626;animation:micPulse 1.3s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.55)}50%{box-shadow:0 0 0 12px rgba(220,38,38,0)}}
+#rdVoice{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);background:rgba(20,23,28,.93);color:#fff;padding:6px 14px;border-radius:20px;font:700 14px system-ui,sans-serif;z-index:7;pointer-events:none;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rdVoice[hidden]{display:none}
+#rdVoice.err{background:#b91c1c}
+.rd-pbtn.cur{outline:2px solid #60a5fa;outline-offset:1px}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop[hidden]{display:none!important}
+.modal-box{background:#fff;color:#1b1f24;border:1px solid #c9ced6;border-radius:14px;padding:18px;max-width:420px;width:100%;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.modal-box h3{margin:0 0 6px 0;font-size:16px}
+.modal-sub{font-size:12px;color:#6b7280;margin:0 0 14px 0;line-height:1.4}
+.p-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:220px;overflow-y:auto}
+.p-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #c9ced6;border-radius:8px;background:#f6f7f9;font-size:13px;font-weight:700;cursor:pointer}
+.modal-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.progress-wrap{width:100%;background:#f6f7f9;border-radius:8px;height:14px;overflow:hidden;border:1px solid #c9ced6;margin:14px 0 8px}
+.progress-bar{height:100%;width:5%;background:linear-gradient(90deg,#2563eb,#059669);transition:width .2s ease;border-radius:8px}
+.progress-meta{display:flex;justify-content:space-between;font-size:12px;color:#1b1f24;font-weight:800}
+
+/* 3. PRIMER HESAPLAMA STILLERI */
+#view-primer{
+  --bg:#eef2f1; --panel:#ffffff; --ink:#17302c; --muted:#5d7571; --line:#d3dedb;
+  --accent:#0f6b5c; --accent-ink:#ffffff; --warn:#b3261e; --hl:#e3f3ef;
+  background:var(--bg);color:var(--ink);min-height:100vh;
+}
+#view-primer .wrap{max-width:1180px;margin:0 auto;padding:24px 18px 60px}
+#view-primer h1{font-size:24px;margin:0 0 2px}
+#view-primer .sub{color:var(--muted);margin:0 0 20px}
+#view-primer .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin-bottom:18px}
+#view-primer h2{font-size:16px;margin:0 0 12px}
+#view-primer label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+#view-primer input[type=text],#view-primer input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+#view-primer input:focus,#view-primer button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#view-primer .row{display:grid;gap:12px;align-items:end}
+#view-primer .calc-row{grid-template-columns:2fr 1fr 1fr auto}
+#view-primer .add-row{grid-template-columns:1.4fr repeat(5,1fr) 1.4fr auto}
+#view-primer button{font:inherit;font-weight:600;padding:9px 14px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+#view-primer button.ghost{background:#fff;color:var(--accent)}
+#view-primer button.danger{background:#fff;color:var(--warn);border-color:var(--warn)}
+#view-primer button.small{padding:4px 9px;font-size:13px}
+#view-primer .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+#view-primer .scroll{overflow:auto;max-height:410px;border:1px solid var(--line);border-radius:6px;scrollbar-width:auto;scrollbar-color:#8aa7a1 #e6eeec}
+#view-primer .scroll::-webkit-scrollbar{width:14px;height:14px}
+#view-primer .scroll::-webkit-scrollbar-track{background:#e6eeec}
+#view-primer .scroll::-webkit-scrollbar-thumb{background:#8aa7a1;border-radius:7px;border:3px solid #e6eeec}
+#view-primer .credit{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;color:var(--muted);letter-spacing:.16em}
+#view-primer .credit svg{width:24px;height:24px;flex:none;opacity:.85}
+#view-primer .credit-ver{opacity:.65;letter-spacing:.06em}
+#view-primer .credit-ver:not(:empty)::before{content:"·";margin-right:10px}
+#view-primer table{border-collapse:collapse;width:100%;min-width:860px}
+#view-primer th,#view-primer td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+#view-primer th:first-child,#view-primer td:first-child{text-align:left}
+#view-primer th{font-size:13px;color:var(--muted);font-weight:600;background:#f6f9f8;position:sticky;top:0;z-index:2;box-shadow:0 1px 0 var(--line)}
+#view-primer td.tot,#view-primer th.tot{background:#d3ecdf;font-weight:700;color:var(--ink)}
+#view-primer td.c-mm,#view-primer th.c-mm{background:#e0ecfa}
+#view-primer td.c-f,#view-primer th.c-f{background:#fff3c8}
+#view-primer td.c-r,#view-primer th.c-r{background:#fde2de}
+#view-primer td.c-p,#view-primer th.c-p{background:#ebe3fa}
+#view-primer td.c-w,#view-primer th.c-w{background:#daf2f3}
+#view-primer th.c-mm{box-shadow:inset 0 -3px 0 #5b8fd1,0 1px 0 var(--line)}
+#view-primer th.c-f{box-shadow:inset 0 -3px 0 #d9a800,0 1px 0 var(--line)}
+#view-primer th.c-r{box-shadow:inset 0 -3px 0 #d9604f,0 1px 0 var(--line)}
+#view-primer th.c-p{box-shadow:inset 0 -3px 0 #8a63cf,0 1px 0 var(--line)}
+#view-primer th.c-w{box-shadow:inset 0 -3px 0 #3aa3a8,0 1px 0 var(--line)}
+#view-primer th.tot{box-shadow:inset 0 -3px 0 #2f9e6b,0 1px 0 var(--line)}
+#view-primer td.c-mm,#view-primer td.c-f,#view-primer td.c-r,#view-primer td.c-p,#view-primer td.c-w{border-left:1px solid #fff;border-right:1px solid #fff}
+#view-primer .sub-cell{display:block;font-size:12px;color:var(--muted);font-weight:400}
+#view-primer .sub-cell.note{white-space:normal;max-width:260px;margin-left:0}
+#view-primer .mode{display:inline-block;vertical-align:middle;margin-left:8px;padding:2px 10px;border-radius:999px;background:#d3ecdf;border:1px solid #9fcdb8;color:#0f6b5c;font-size:13px;font-weight:700}
+#view-primer .tabs{display:flex;gap:6px;margin:0 0 12px;border-bottom:1px solid var(--line)}
+#view-primer .tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;color:var(--muted);padding:8px 14px;font-weight:600;margin-bottom:-1px}
+#view-primer .tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+#view-primer .tab .n{font-weight:400;opacity:.8}
+#view-primer .tagbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+#view-primer .chip{background:#fff;color:var(--ink);border:1px solid var(--line);padding:3px 11px;border-radius:999px;font-size:13px;font-weight:600}
+#view-primer .chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+#view-primer .star{background:none;border:none;padding:0 5px 0 0;font-size:19px;line-height:1;color:#b3c2bf;vertical-align:middle}
+#view-primer .star.on{color:#e0a100}
+#view-primer .gtags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;white-space:normal;max-width:240px}
+#view-primer .gtag{display:inline-flex;align-items:center;background:#e4eefb;border:1px solid #b7cdea;color:#2b4f7a;border-radius:999px;padding:0 3px 0 9px;font-size:11px;font-weight:700}
+#view-primer .gtag button{background:none;border:none;color:inherit;padding:0 4px;font-size:13px;line-height:1.5;font-weight:700}
+#view-primer .tagtools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+#view-primer .tagtools input{max-width:230px}
+#view-primer .tagtools .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+#view-primer .conc{font-weight:600;font-size:12px;color:#3b5550;white-space:nowrap}
+#view-primer .sub-cell.dil{color:#3b5550}
+#view-primer .conc-row{grid-template-columns:repeat(3,minmax(0,210px));margin-top:12px}
+#view-primer .chk{width:34px;text-align:center !important}
+#view-primer .chk input{width:17px;height:17px;cursor:pointer;accent-color:var(--accent)}
+#view-primer button:disabled{opacity:.45;cursor:not-allowed}
+#view-primer .empty{padding:22px;text-align:center;color:var(--muted)}
+#view-primer .badge{float:right;background:var(--hl);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600}
+#view-primer .info{font-size:13px;color:var(--muted);margin-top:8px}
+#view-primer .msg{font-size:13px;margin-top:8px;min-height:18px;color:var(--accent)}
+#view-primer .msg.err{color:var(--warn)}
+@media(max-width:900px){#view-primer .calc-row,#view-primer .add-row{grid-template-columns:1fr 1fr}}
+
+/* YAZDIRMA (PRINT) STILLERI */
+#printView{display:none}
+@media print{
+ #rd, .noprint, #printModal, #apiModal, #scanModal, #view-home, .portal-nav{display:none!important}
+ body.view-plate-active #view-primer{display:none!important}
+ body.view-primer-active #view-plate{display:none!important}
+ @page{size:A4 landscape;margin:6mm 8mm}
+ :root{--bg:#fff;--card:#fff;--tx:#000;--mu:#333;--bd:#222;padding:0}
+ body{padding:0;background:#fff;font-size:12px}
+ .card{border:0;padding:0;margin-bottom:6px;page-break-inside:avoid;break-inside:avoid}
+ *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ table{page-break-inside:avoid;break-inside:avoid;width:100%}
+ td input{height:7.5mm;width:19mm;font-size:12px;font-weight:800;text-shadow:none}
+ td input.nt{height:6.2mm;font-size:12px;font-weight:800;border-top:1px dashed #444;text-shadow:none!important;text-transform:uppercase}
+ td[data-sym]::before{font-size:8.5px;top:0.5mm;right:1mm;opacity:1}
+ td[data-sym]::after{font-size:16px;opacity:.09}
+ .rl{height:6.5mm;width:19mm;border:0;border-bottom:1px solid #000;border-radius:0;background:#fff;font-size:12.5px;font-weight:700;text-shadow:none!important;box-shadow:none!important;text-transform:uppercase}
+ .ch{font-size:11px}
+ .cl{height:5.5mm;width:19mm;border:0;border-bottom:1px solid #000;border-radius:0;background:#fff;font-size:10.5px;font-weight:700;text-shadow:none!important;box-shadow:none!important;text-transform:uppercase}
+ td.dim{filter:none!important;opacity:1!important}
+ .meta{gap:6px}
+ .meta input{border:0;border-bottom:1px solid #000;border-radius:0;background:#fff;padding:3px 4px}
+ .notes-card{border:1px solid #000;border-radius:4px;padding:6px;margin-top:4px}
+ .notes-card textarea{border:0;background:transparent;padding:0;min-height:40px;font-size:11px;resize:none;width:100%;font:inherit}
+ h1{font-size:15px;margin:2px 0 6px}
+ body.printing-custom #mainApp{display:none!important}
+ body.printing-custom #printView{display:block!important}
+ .print-plate-page{page-break-after:always;break-after:page;box-sizing:border-box}
+ .print-plate-page:last-child{page-break-after:avoid;break-after:avoid}
+}
+</style>
+</head>
+<body class="view-home-active">
+
+<!-- 1. GİRİŞ EKRANI -->
+<div id="view-home">
+  <div class="home-header">
+    <h1>PCR Moleküler Biyoloji Portalı</h1>
+    <p>Lütfen gerçekleştirmek istediğiniz çalışma modülünü seçin:</p>
+  </div>
+  
+  <div class="home-grid">
+    <div class="home-card" onclick="switchView('primer')">
+      <div>
+        <span class="card-icon">🧬</span>
+        <h2 class="card-title">Primer - Prob Hesaplayıcı</h2>
+        <p class="card-desc">
+          Total 20 µL karışım standardı (Master Mix 12.5 µL + Primer/Prob %25 artırılmış + Su ile 20'ye tamamlama), reaksiyon başına hacimler, numune sayısına göre otomatik hesaplama, favori genler ve etiketler.
+        </p>
+      </div>
+      <button class="card-btn">Hesaplayıcıyı Aç ➔</button>
+    </div>
+
+    <div class="home-card" onclick="switchView('plate')">
+      <div>
+        <span class="card-icon">🧫</span>
+        <h2 class="card-title">PCR Çalışma Plate Düzeni</h2>
+        <p class="card-desc">
+          96 kuyucuklu plate yerleşimi, satır ve sütun (1..12) notları, 5 plate yönetimi, kamera/galeri ile otomatik el yazısı okuma (OCR), akıllı renk/sembol kodlaması ve tam ekran okuma modu.
+        </p>
+      </div>
+      <button class="card-btn blue">Plate Düzenini Aç ➔</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. PCR ÇALIŞMA PLATE DÜZENİ MODÜLÜ -->
+<div id="view-plate" hidden>
+ <div class="portal-nav noprint" style="margin:-12px -12px 14px -12px">
+  <h2>🧫 PCR Çalışma Plate Düzeni</h2>
+  <button class="nav-btn" onclick="switchView('home')">🏠 Ana Menü</button>
+ </div>
+
+ <div id="mainApp">
+  <h1>PCR ÇALIŞMA PLATE DÜZENİ</h1>
+
+  <div class="plate-tabs noprint" id="pTabs">
+   <button class="ptab active" data-p="0">Plate 1 <span class="badge">0</span></button>
+   <button class="ptab" data-p="1">Plate 2 <span class="badge">0</span></button>
+   <button class="ptab" data-p="2">Plate 3 <span class="badge">0</span></button>
+   <button class="ptab" data-p="3">Plate 4 <span class="badge">0</span></button>
+   <button class="ptab" data-p="4">Plate 5 <span class="badge">0</span></button>
+  </div>
+
+  <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">
+   <button class="pri" id="rdBtn">Okuma modu (tam ekran)</button>
+   <button id="dgBtn">Sürükle modu: kapalı</button>
+   <select id="dgMode" title="Sürükle-doldur davranışı" style="width:auto;padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit">
+    <option value="0">Aynısını kopyala</option>
+    <option value="+">Artan (+1)</option>
+    <option value="-">Azalan (−1)</option>
+    <option value="s">Çoklu seç / işlem</option>
+   </select>
+
+   <button id="msN" hidden style="background:#e5e7eb;color:#111;font-weight:800">N Yap</button>
+   <button id="msP" hidden style="background:#fca5a5;color:#111;font-weight:800">P Yap</button>
+   <button id="msCK" hidden style="background:#fef08a;color:#111;font-weight:800">ÇK Yap</button>
+   <button id="msEC" hidden style="background:#c7d2fe;color:#111;font-weight:800">EC Yap</button>
+   <button id="msDel" hidden>Seçilenleri sil</button>
+   <button id="msClr" hidden>Seçimi kaldır</button>
+   <button id="undoBtn">Geri al</button>
+  </div>
+
+  <div class="card meta">
+   <div><label>Analist</label><input data-m="analist"></div>
+   <div><label>İmza</label><input data-m="imza"></div>
+   <div><label>Numune No</label><input data-m="numune"></div>
+   <div><label>Cihaz no</label><input data-m="cihaz" placeholder="Q-T-1"></div>
+   <div><label>Tarih</label><input data-m="tarih" type="date"></div>
+  </div>
+
+  <div class="card wrap">
+   <table id="t"></table>
+   <div class="card meta" style="padding:6px 0 0;margin:4px 0 0">
+    <div style="grid-column:1/-1"><label>ANALİZ ADI</label><input data-m="analiz"></div>
+   </div>
+  </div>
+
+  <div class="card notes-card">
+   <label>AÇIKLAMALAR / NOTLAR</label>
+   <textarea data-m="aciklama" rows="2" placeholder="Plate ile ilgili genel notlar, kontroller veya revizyon açıklamalarını buraya yazabilirsiniz..."></textarea>
+   <div class="foot"><span>KGKLM &nbsp; Rev:00/00</span><span>MBA-FR-008 &nbsp; 07.10.2019</span></div>
+  </div>
+
+  <div class="card noprint">
+   <label>Hızlı doldur: sadece numaraları alt alta veya boşlukla yapıştır (boş geçmek için _ yaz)</label>
+   <textarea id="bulk" rows="3" placeholder="7696 7697 7681 7682 ..."></textarea>
+   <div class="row2" style="margin-top:8px">
+    <div><label>Yön</label><select id="dir"><option value="r">Satır satır (A1, A2, A3…)</option><option value="c">Sütun sütun (A1, B1, C1…)</option></select></div>
+    <div><label>Başlangıç</label><input id="start" value="A1" style="width:100%;padding:7px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit;text-transform:uppercase"></div>
+   </div>
+   <div class="btns">
+    <button class="pri" id="fill">Doldur</button>
+    <button id="bX">Seçili hücreyi sil</button>
+   </div>
+   <div class="btns">
+    <button class="pri" id="printBtn">Yazdır / PDF</button>
+    <button id="btnCamera" style="background:#059669;color:#fff;border-color:#059669;font-weight:700">📷 Kameradan Çek</button>
+    <button id="btnGallery" style="background:#047857;color:#fff;border-color:#047857;font-weight:700">🖼️ Galeriden Seç</button>
+    <input type="file" id="inputCamera" accept="image/*" capture="environment" hidden>
+    <input type="file" id="inputGallery" accept="image/*" hidden>
+    <button id="clr">Bu Plate'i temizle</button>
+   </div>
+   <p class="small">Yazdırırken A4 Yatay (Landscape) olarak ayarlanmıştır.</p>
+  </div>
+ </div>
+
+ <div id="printView"></div>
+
+ <div id="apiModal" class="modal-backdrop" hidden>
+  <div class="modal-box">
+   <h3>Google Gemini API Anahtarı</h3>
+   <p class="modal-sub">Görselden kuyu okumak için API anahtarı tanımlayabilirsiniz.</p>
+   <input type="text" id="apiKeyInput" placeholder="AIzaSy..." style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:13px monospace;background:var(--bg);color:var(--tx);margin-bottom:12px">
+   <div class="modal-btns">
+    <button id="btnApiCancel">Kapat</button>
+    <button id="btnApiSave" class="pri">Kaydet</button>
+   </div>
+  </div>
+ </div>
+
+ <div id="scanModal" class="modal-backdrop" hidden>
+  <div class="modal-box" style="text-align:center">
+   <h3 id="scanStatusTitle">Bağlantı Kuruluyor...</h3>
+   <p class="modal-sub" id="scanStatusSub">Fotoğraf işleniyor...</p>
+   <div class="progress-wrap"><div id="scanProgressBar" class="progress-bar"></div></div>
+   <div class="progress-meta"><span id="scanPercent">%0 Tamamlandı</span><span id="scanTimer">⏱ 0 sn</span></div>
+  </div>
+ </div>
+
+ <div id="printModal" class="modal-backdrop" hidden>
+  <div class="modal-box">
+   <h3>Yazdırılacak Plate'leri Seçin</h3>
+   <p class="modal-sub">Seçtiğiniz plate'ler tek PDF'te alt alta sayfalarda yer alır.</p>
+   <div id="printPlateList" class="p-list"></div>
+   <div class="modal-btns">
+    <button id="btnPrintAll" style="background:var(--bg)">Tümünü Seç</button>
+    <button id="btnPrintCancel">İptal</button>
+    <button id="btnPrintConfirm" class="pri">Yazdır</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<!-- 3. PRIMER-PROB HESAPLAYICI MODÜLÜ -->
+<div id="view-primer" hidden>
+ <div class="portal-nav noprint">
+  <h2>🧬 Primer-Prob Hesaplayıcı (DNA 5 µL)</h2>
+  <button class="nav-btn" onclick="switchView('home')">🏠 Ana Menü</button>
+ </div>
+
+ <div class="wrap">
+  <span class="badge" id="count"></span>
+  <h1>Primer-Prob Hesaplayıcı <span class="mode">DNA 5 µL</span></h1>
+  <p class="sub">Bu sürümde DNA şablonu her reaksiyonda 5 µL kabul edilir. Standart karışım toplamı 20 µL (Master Mix 12.5 µL + Primer/Prob %25 artırılmış + Su ile 20'ye tamamlama) olup toplam reaksiyon hacmi 25 µL'dir.</p>
+
+  <div class="panel">
+    <h2>Hesapla</h2>
+    <div class="row calc-row">
+      <div><label for="q">Gen ara / filtrele (boşsa hepsi listelenir)</label><input type="text" id="q" placeholder="Gen adı yazın"></div>
+      <div><label for="n">Numune sayısı</label><input type="number" id="n" value="1" min="1" step="1"></div>
+      <div><label for="extra">Ek pay (%)</label><input type="number" id="extra" value="0" min="0" step="1"></div>
+      <div><button id="calcBtn">Hesapla</button></div>
+    </div>
+    <div class="tools">
+      <button class="danger" id="delSelBtn" disabled="">Seçilenleri sil (0)</button>
+      <button class="ghost" id="copyBtn">Listeyi kopyala</button>
+      <button class="ghost" id="csvBtn">CSV indir</button>
+      <button class="ghost" id="backupBtn">Genleri yedekle (.json)</button>
+      <button class="ghost" id="restoreBtn">Yedekten yükle</button>
+      <input type="file" id="restoreFile" accept=".json" hidden="">
+    </div>
+    <div class="tagtools">
+      <span class="lbl">Seçilenlere:</span>
+      <button class="ghost" id="favSelBtn" disabled="">★ Favori ekle / çıkar</button>
+      <input type="text" id="tagInput" placeholder="Etiket adı (örn. Soya)" list="tagList" autocomplete="off">
+      <datalist id="tagList"></datalist>
+      <button class="ghost" id="tagAddBtn" disabled="">Etiket ekle</button>
+      <button class="ghost" id="tagDelBtn" disabled="">Etiketi kaldır</button>
+    </div>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="msg err" id="fileMsg" role="status"></div>
+    <button class="ghost small" id="linkBtn" hidden="">Dosyaya bağla (bir kez)</button>
+    <button class="ghost small" id="repickBtn" hidden="">Farklı dosya seç</button>
+    <button class="ghost small" id="dlBtn" hidden="">Güncel HTML'i indir</button>
+    <div class="info" id="verInfo"></div>
+    <button class="ghost small" id="useFileBtn" hidden="">Dosyadaki listeyi kullan</button>
+  </div>
+
+  <div class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab on" id="tabAll" role="tab">Tüm genler <span class="n" id="nAll"></span></button>
+      <button class="tab" id="tabFav" role="tab">★ Favoriler <span class="n" id="nFav"></span></button>
+    </div>
+    <div class="tagbar" id="tagBar" hidden=""></div>
+    <h2 id="listTitle" hidden="">Sonuçlar</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="chk"><input type="checkbox" id="selAll" aria-label="Görünen genlerin hepsini seç"></th><th>Gen / hedef</th><th class="c-mm">Master Mix</th><th class="c-f">Forward (F)</th><th class="c-r">Reverse (R)</th>
+            <th class="c-p">Probe</th><th class="c-w">Su (ddH₂O)</th><th class="tot">Toplam</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="info" id="info"></div>
+  </div>
+
+  <div class="panel">
+    <h2 id="formTitle">Yeni gen ekle</h2>
+    <div class="row add-row">
+      <div><label for="gName">Gen / hedef adı</label><input type="text" id="gName"></div>
+      <div><label for="gMM">Master Mix (µL)</label><input type="text" inputmode="decimal" id="gMM" value="12,50"></div>
+      <div><label for="gF">F (µL)</label><input type="text" inputmode="decimal" id="gF" value="1,00"></div>
+      <div><label for="gR">R (µL)</label><input type="text" inputmode="decimal" id="gR" value="1,00"></div>
+      <div><label for="gP">Probe (µL)</label><input type="text" inputmode="decimal" id="gP" value="0,30"></div>
+      <div><label for="gW">Su (µL)</label><input type="text" inputmode="decimal" id="gW" value="5,20"></div>
+      <div><label for="gNote">Not (isteğe bağlı)</label><input type="text" id="gNote" placeholder="örn. DAS 81419 ile"></div>
+      <div><button id="saveBtn">Listeye ekle</button></div>
+    </div>
+    <div class="row conc-row">
+      <div><label for="gFu">F stok konsantrasyonu (µM)</label><input type="text" inputmode="decimal" id="gFu" placeholder="örn. 10"></div>
+      <div><label for="gRu">R stok konsantrasyonu (µM)</label><input type="text" inputmode="decimal" id="gRu" placeholder="örn. 10"></div>
+      <div><label for="gPu">Probe stok konsantrasyonu (µM)</label><input type="text" inputmode="decimal" id="gPu" placeholder="örn. 5"></div>
+    </div>
+    <div class="info">Standart reaksiyon hacmi 20 µL karışım (Master Mix 12.5 µL + Primer/Prob %25 artırılmış + Su ile 20'ye tamamlama) olarak ayarlanmıştır.</div>
+  </div>
+  <footer class="credit">
+    <svg viewBox="0 0 28 28" fill="none" stroke="#0f6b5c" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+      <circle cx="14" cy="14" r="12.5" stroke-width="1.2"></circle>
+      <path d="M10 5.5C10 10 18 10 18 14C18 18 10 10 10 22.5"></path>
+      <path d="M18 5.5C18 10 10 10 10 14C10 18 18 18 18 22.5"></path>
+      <path d="M11.4 8.3h5.2M11.4 19.7h5.2" stroke-width="1.2"></path>
+    </svg>
+    <span>made by bilqinm</span>
+    <span class="credit-ver" id="credVer"></span>
+  </footer>
+ </div>
+</div>
+
+<!-- ========================================== -->
+<!-- NAVİGASYON JS                              -->
+<!-- ========================================== -->
+<script>
+function switchView(viewId, pushHistory = true) {
+  if (pushHistory) {
+    history.pushState({ appView: viewId }, "");
+  }
+  document.getElementById('view-home').hidden = (viewId !== 'home');
+  document.getElementById('view-plate').hidden = (viewId !== 'plate');
+  document.getElementById('view-primer').hidden = (viewId !== 'primer');
+  document.body.className = `view-${viewId}-active`;
+  window.scrollTo(0, 0);
+
+  if (viewId === 'plate' && typeof refresh === 'function') {
+    refreshMetaInputs();
+    refresh();
+  }
+}
+
+window.addEventListener('popstate', (e) => {
+  if (typeof rdOn !== 'undefined' && rdOn) { rdClose(false); return; }
+  if (typeof printModalOpen !== 'undefined' && printModalOpen) { closePrintModal(false); return; }
+  if (typeof apiModalOpen !== 'undefined' && apiModalOpen) { closeApiModal(false); return; }
+  
+  if (e.state && e.state.appView) {
+    switchView(e.state.appView, false);
+  } else {
+    switchView('home', false);
+  }
+});
+</script>
+
+<!-- ========================================== -->
+<!-- PLATE KURULUMU JS                          -->
+<!-- ========================================== -->
+<script>
+const DEFAULT_API_KEY = "AQ.Ab8RN6KN8DbdnvTiUtQ0VxYAdGCg8a5SksPtID8yS5CmdoRIIQ";
+const R="ABCDEFGH".split(""), C=12;
+const MAX_PLATES = 5;
+
+function createBlankPlate(){
+  return {
+    meta: { analist:"", imza:"", numune:"", cihaz:"Q-T-1", tarih: new Date().toISOString().slice(0,10), analiz:"", aciklama:"" },
+    rows: Array(8).fill(""),
+    cols: Array(12).fill(""),
+    cells: Array(96).fill(""),
+    notes: Array(96).fill("")
+  };
+}
+
+let S = {
+  curP: 0,
+  plates: Array.from({length: MAX_PLATES}, createBlankPlate),
+  cmap: {},
+  n: 0,
+  tmap: {},
+  tn: 0,
+  apiKey: DEFAULT_API_KEY,
+  cachedModel: "models/gemini-3.8-flash"
+};
+
+try{
+  const s = localStorage.getItem("pcr_plate_v2") || localStorage.getItem("pcr_plate");
+  if(s){
+    const parsed = JSON.parse(s);
+    if(parsed.plates && Array.isArray(parsed.plates)){
+      S = Object.assign(S, parsed);
+    } else if(parsed.cells){
+      S.plates[0] = {
+        meta: parsed.meta || S.plates[0].meta,
+        rows: parsed.rows || S.plates[0].rows,
+        cols: parsed.cols || Array(12).fill(""),
+        cells: parsed.cells || S.plates[0].cells,
+        notes: parsed.notes || S.plates[0].notes
+      };
+    }
+  }
+}catch(e){}
+
+if(!S.apiKey || S.apiKey.trim() === ""){
+  S.apiKey = DEFAULT_API_KEY;
+}
+
+while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
+
+S.plates.forEach(p => {
+  if(!p.cols || !Array.isArray(p.cols) || p.cols.length !== 12){
+    p.cols = Array(12).fill("");
+  }
+});
+
+const FIX = { N: "#e5e7eb", P: "#fca5a5", "ÇK": "#fef08a", "CK": "#fef08a", EC: "#c7d2fe", QC: "#fef08a", NTC: "#cbd5e1" };
+const BASE_COLORS = ["#60a5fa","#34d399","#f87171","#facc15","#a855f7","#fb923c","#f472b6","#22d3ee","#d97706","#94a3b8"];
+const PAIRS = [[0,3],[2,0],[1,4],[5,0],[6,1],[3,4],[2,7],[1,5],[6,3],[7,2],[4,5],[0,1],[3,8],[2,9],[5,7]];
+const SYMBOLS = ["▲","■","●","★","◆","✦","✖","⬢","✚","▼"];
+const GLOW_COLORS = ["#00f0ff","#ff0077","#00ff66","#ff9900","#b026ff","#ffe600","#0088ff","#ff0033","#00ffcc","#ff00e1","#76ff03","#ff6d00"];
+
+const curP = () => S.plates[S.curP];
+
+function isMultiPlateActive(){
+  let count = 0;
+  S.plates.forEach(p => { if(p.cells.some(Boolean)) count++; });
+  return count > 1;
+}
+
+function recalcActiveMaps(){
+  const activeCmap = {};
+  let count = 0;
+  const allCurrent = new Set();
+  S.plates.forEach(p => { p.cells.forEach(v => { if(v && !FIX[v]) allCurrent.add(v); }); });
+  const preservedKeys = Object.keys(S.cmap).filter(k => allCurrent.has(k)).sort((a,b) => S.cmap[a] - S.cmap[b]);
+  preservedKeys.forEach(k => { activeCmap[k] = count++; });
+  allCurrent.forEach(v => { if(!(v in activeCmap)) activeCmap[v] = count++; });
+  S.cmap = activeCmap;
+  S.n = count;
+
+  const activeTmap = {};
+  let tCount = 0;
+  const currentTexts = [];
+  S.plates.forEach(p => {
+    p.notes.forEach(v => { if(v && v.trim()) currentTexts.push(v.trim().toLocaleUpperCase('tr-TR')); });
+    p.rows.forEach(v => { if(v && v.trim()) currentTexts.push(v.trim().toLocaleUpperCase('tr-TR')); });
+    if(p.cols) p.cols.forEach(v => { if(v && v.trim()) currentTexts.push(v.trim().toLocaleUpperCase('tr-TR')); });
+  });
+  const textSet = new Set(currentTexts);
+  const preservedTKeys = Object.keys(S.tmap).filter(k => textSet.has(k)).sort((a,b) => S.tmap[a] - S.tmap[b]);
+  preservedTKeys.forEach(k => { activeTmap[k] = tCount++; });
+  currentTexts.forEach(k => { if(!(k in activeTmap)) activeTmap[k] = tCount++; });
+  S.tmap = activeTmap;
+  S.tn = tCount;
+}
+
+function getGlow(val){
+  if(!val) return null;
+  const clean = val.trim().toLocaleUpperCase('tr-TR');
+  if(!clean || !(clean in S.tmap)) return null;
+  return GLOW_COLORS[S.tmap[clean] % GLOW_COLORS.length];
+}
+
+function applyGlow(el, val, isHeader){
+  const color = getGlow(val);
+  if(color){
+    el.style.textShadow = `0 0 2px #fff, 0 0 5px ${color}, 0 0 10px ${color}, 0 0 16px ${color}`;
+    el.style.color = "#000";
+    if(isHeader){
+      el.style.borderColor = color;
+      el.style.boxShadow = `0 0 7px ${color}99, inset 0 0 4px ${color}33`;
+    }else{
+      el.style.borderTopColor = color;
+      el.style.borderTopWidth = "1.5px";
+    }
+  }else{
+    el.style.textShadow = isHeader ? "none" : "0 0 3px #fff, 0 0 6px #fff";
+    el.style.color = isHeader ? "var(--tx)" : "#000";
+    if(isHeader){
+      el.style.borderColor = "var(--bd)";
+      el.style.boxShadow = "none";
+    }else{
+      el.style.borderTopColor = "rgba(0,0,0,.45)";
+      el.style.borderTopWidth = "1px";
+    }
+  }
+}
+
+function getStyle(v){
+  if(!v) return { bg: "transparent", sym: "" };
+  if(FIX[v]) return { bg: FIX[v], sym: "" };
+  const idx = (v in S.cmap) ? S.cmap[v] : 0;
+  const L = BASE_COLORS.length;
+  if(idx < 10) return { bg: BASE_COLORS[idx], sym: "" };
+  if(idx < 25){
+    const pair = PAIRS[idx - 10];
+    return { bg: `linear-gradient(135deg, ${BASE_COLORS[pair[0]]} 50%, ${BASE_COLORS[pair[1]]} 50%)`, sym: "" };
+  }
+  if(idx < 35){
+    return { bg: BASE_COLORS[(idx - 25) % L], sym: SYMBOLS[(idx - 25) % SYMBOLS.length] };
+  }
+  const pair = PAIRS[(idx - 35) % PAIRS.length];
+  return { bg: `linear-gradient(135deg, ${BASE_COLORS[pair[0]]} 50%, ${BASE_COLORS[pair[1]]} 50%)`, sym: SYMBOLS[(idx - 35) % SYMBOLS.length] };
+}
+
+let sel=-1, hl=null, hlNote=null, msA=-1, msAct=false, msel=new Set();
+let hist=[];
+const save=()=>{try{localStorage.setItem("pcr_plate_v2",JSON.stringify(S))}catch(e){}};
+const push=()=>{
+  hist.push({
+    p: S.curP,
+    c: curP().cells.slice(),
+    n: curP().notes.slice(),
+    r: curP().rows.slice(),
+    cl: curP().cols ? curP().cols.slice() : Array(12).fill("")
+  });
+  if(hist.length>30) hist.shift();
+};
+
+const t=document.getElementById("t");
+let h="<tr><th></th>";
+for(let c=1;c<=C;c++){
+  h += "<th class='ch'>" + c + "<input class='cl' data-c='" + (c-1) + "' placeholder='NOT' autocomplete='off' enterkeyhint='done' autocapitalize='characters'></th>";
+}
+h+="</tr>";
+for(let r=0;r<8;r++){
+ h+="<tr><th class='rh'>"+R[r]+"<input class='rl' data-r='"+r+"' placeholder='HEDEF' autocomplete='off' enterkeyhint='done' autocapitalize='characters'></th>";
+ for(let c=0;c<C;c++){
+  const idx = r*C+c;
+  h+="<td id='td"+idx+"'><input data-i='"+idx+"' maxlength='12' inputmode='numeric' autocomplete='off' enterkeyhint='next'><input class='nt' data-n='"+idx+"' maxlength='24' autocomplete='off' enterkeyhint='next' autocapitalize='characters'></td>";
+ }
+ h+="</tr>";
+}
+t.innerHTML=h;
+const ins=[...t.querySelectorAll("input[data-i]")];
+const nts=[...t.querySelectorAll("input[data-n]")];
+const rls=[...t.querySelectorAll(".rl")];
+const cls=[...t.querySelectorAll(".cl")];
+const ptabs=[...document.querySelectorAll("#view-plate .ptab")];
+
+function refreshTabs(){
+ ptabs.forEach((b,idx)=>{
+   b.classList.toggle("active", idx === S.curP);
+   const cnt = S.plates[idx].cells.filter(Boolean).length;
+   b.querySelector(".badge").textContent = cnt;
+ });
+}
+
+function refreshMetaInputs(){
+ const p = curP();
+ document.querySelectorAll("#view-plate [data-m]").forEach(el=>{
+   el.value = p.meta[el.dataset.m] || "";
+ });
+}
+
+function refresh(){
+ recalcActiveMaps();
+ refreshTabs();
+ const p = curP();
+
+ ins.forEach((el,i)=>{
+  const v = p.cells[i];
+  el.value = v;
+  if(nts[i].value !== (p.notes[i]||"")) nts[i].value = p.notes[i]||"";
+  nts[i].classList.toggle("off",!v); nts[i].readOnly=!v; nts[i].tabIndex=v?0:-1;
+  applyGlow(nts[i], p.notes[i], false);
+
+  const td=el.parentNode;
+  const st=getStyle(v);
+  td.style.background=st.bg;
+  if(st.sym) td.setAttribute("data-sym", st.sym);
+  else td.removeAttribute("data-sym");
+  
+  let isDim = false;
+  if(hl){
+    const isCtrl = !!FIX[hl];
+    if(isCtrl && hlNote){
+      const thisNote = (p.notes[i]||"").trim().toLocaleUpperCase('tr-TR');
+      isDim = (v !== hl || thisNote !== hlNote);
+    }else{
+      isDim = (v !== hl);
+    }
+  }
+  td.classList.toggle("dim", isDim);
+  td.classList.toggle("sel", i===sel);
+  td.classList.toggle("msel", msel.has(i));
+ });
+
+ rls.forEach(el=>{
+  const val = p.rows[el.dataset.r]||"";
+  el.value = val;
+  applyGlow(el, val, true);
+ });
+
+ cls.forEach(el=>{
+  const val = p.cols ? (p.cols[el.dataset.c] || "") : "";
+  el.value = val;
+  applyGlow(el, val, true);
+ });
+
+ save();
+}
+
+ptabs.forEach(b=>{
+ b.addEventListener("click",()=>{
+   const targetP = +b.dataset.p;
+   if(targetP === S.curP) return;
+   S.curP = targetP;
+   refreshMetaInputs();
+   refresh();
+ });
+});
+
+ins.forEach((el,i)=>{
+ el.addEventListener("focus",()=>{sel=i;t.querySelectorAll("td.sel").forEach(x=>x.classList.remove("sel"));el.parentNode.classList.add("sel")});
+ el.addEventListener("input",()=>{
+  el.value = el.value.replace(/[^0-9]/g, "");
+  curP().cells[i]=el.value.trim();
+  nts[i].classList.toggle("off",!curP().cells[i]);
+  nts[i].readOnly=!curP().cells[i];
+  nts[i].tabIndex=curP().cells[i]?0:-1;
+  clearTimeout(window._t);
+  window._t=setTimeout(refresh,250);
+ });
+ el.addEventListener("blur",()=>{el.value=curP().cells[i];refresh()});
+ el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const n=ins[i+1];if(n)n.focus()}});
+});
+
+nts.forEach((el,i)=>{
+ el.addEventListener("input",()=>{
+  el.value = el.value.toLocaleUpperCase('tr-TR');
+  curP().notes[i]=el.value;
+  applyGlow(el, el.value, false);
+  clearTimeout(window._t2);
+  window._t2=setTimeout(refresh,300);
+ });
+ el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const n=ins[i+1];if(n)n.focus()}});
+});
+
+rls.forEach(el=>{
+ el.addEventListener("input",()=>{
+  el.value = el.value.toLocaleUpperCase('tr-TR');
+  curP().rows[el.dataset.r]=el.value;
+  applyGlow(el, el.value, true);
+  clearTimeout(window._t3);
+  window._t3=setTimeout(refresh,300);
+ });
+});
+
+cls.forEach(el=>{
+ el.addEventListener("input",()=>{
+  el.value = el.value.toLocaleUpperCase('tr-TR');
+  if(!curP().cols) curP().cols = Array(12).fill("");
+  curP().cols[el.dataset.c]=el.value;
+  applyGlow(el, el.value, true);
+  clearTimeout(window._t4);
+  window._t4=setTimeout(refresh,300);
+ });
+});
+
+document.querySelectorAll("#view-plate [data-m]").forEach(el=>{
+ el.addEventListener("input",()=>{
+  curP().meta[el.dataset.m] = el.value;
+  save();
+ });
+});
+
+function setSel(v){
+ const p = curP();
+ if(msel.size > 0){
+  push();
+  msel.forEach(i => { p.cells[i] = v; if(!v) p.notes[i] = ""; });
+  refresh();
+  return;
+ }
+ if(sel < 0){ alert("Önce bir hücreye dokunun veya çoklu seçim yapın."); return; }
+ push();
+ p.cells[sel] = v;
+ if(!v) p.notes[sel] = "";
+ refresh();
+}
+
+bX.onclick=()=>setSel("");
+msN.onclick=()=>setSel("N");
+msP.onclick=()=>setSel("P");
+msCK.onclick=()=>setSel("ÇK");
+msEC.onclick=()=>setSel("EC");
+msDel.onclick=()=>setSel("");
+msClr.onclick=()=>{msel=new Set();msDraw()};
+
+fill.onclick=()=>{
+ const toks=bulk.value.split(/[\s,;]+/).filter(Boolean);
+ if(!toks.length)return;
+ const m=start.value.trim().toUpperCase().match(/^([A-H])(\d{1,2})$/);
+ if(!m||+m[2]<1||+m[2]>C){alert("Başlangıç örn. A1 olmalı.");return}
+ push();
+ let r=R.indexOf(m[1]),c=+m[2]-1;
+ const byRow=dir.value==="r";
+ const p = curP();
+ for(const k of toks){
+  if(r>7||c>=C)break;
+  if(k!=="_"){
+   let cleanVal = k;
+   if(/^(çk|ck)$/i.test(k)) cleanVal = "ÇK";
+   else if(/^(N|P|EC|QC|NTC)$/i.test(k)) cleanVal = k.toUpperCase();
+   else cleanVal = k.replace(/[^0-9]/g, "");
+   p.cells[r*C+c]=cleanVal;
+  }
+  if(byRow){c++;if(c>=C){c=0;r++}}else{r++;if(r>7){r=0;c++}}
+ }
+ bulk.value="";refresh();
+};
+
+clr.onclick=()=>{
+ if(confirm(`Plate ${S.curP + 1} tamamen temizlensin mi?`)){
+  push();
+  S.plates[S.curP] = createBlankPlate();
+  refreshMetaInputs();
+  refresh();
+ }
+};
+
+undoBtn.onclick=()=>{
+ if(hist.length){
+  const x=hist.pop();
+  S.curP = x.p;
+  curP().cells = x.c;
+  curP().notes = x.n;
+  curP().rows = x.r;
+  if(x.cl) curP().cols = x.cl;
+  refreshMetaInputs();
+  refresh();
+ }
+};
+
+/* Okuma Modu */
+let rot=null,rdOn=false;
+const rd=document.createElement("div");rd.id="rd";rd.hidden=true;
+rd.innerHTML="<div id='rw'><div id='rin'></div></div><div id='rdDist' hidden></div>";
+document.body.appendChild(rd);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderDistBanner(){
+  const distEl = document.getElementById("rdDist");
+  if(!isMultiPlateActive() || !hl){ distEl.hidden = true; return; }
+  const isCtrl = !!FIX[hl];
+  
+  if(isCtrl){
+    if(!hlNote){ distEl.hidden = true; return; }
+    let foundInOtherPlate = false;
+    S.plates.forEach((p, idx)=>{
+      if(idx !== S.curP){
+        const match = p.cells.some((v, cIdx) => (v === hl && (p.notes[cIdx]||"").trim().toLocaleUpperCase('tr-TR') === hlNote));
+        if(match) foundInOtherPlate = true;
+      }
+    });
+    if(!foundInOtherPlate){ distEl.hidden = true; return; }
+
+    let h = `<span style="color:#60a5fa;margin-right:4px">${esc(hl)} [${esc(hlNote)}] ➔</span>`;
+    S.plates.forEach((p, idx)=>{
+      const wells = [];
+      p.cells.forEach((v, cIdx)=>{
+        if(v === hl && (p.notes[cIdx]||"").trim().toLocaleUpperCase('tr-TR') === hlNote){
+          wells.push(R[Math.floor(cIdx/C)] + ((cIdx%C)+1));
+        }
+      });
+      const has = wells.length > 0;
+      h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
+    });
+    distEl.innerHTML = h; distEl.hidden = false;
+  } else {
+    let foundInOtherPlate = false;
+    S.plates.forEach((p, idx)=>{ if(idx !== S.curP && p.cells.some(v => v === hl)) foundInOtherPlate = true; });
+    if(!foundInOtherPlate){ distEl.hidden = true; return; }
+
+    let h = `<span style="color:#60a5fa;margin-right:4px">#${esc(hl)} ➔</span>`;
+    S.plates.forEach((p, idx)=>{
+      const wells = [];
+      p.cells.forEach((v, cIdx)=>{ if(v === hl) wells.push(R[Math.floor(cIdx/C)] + ((cIdx%C)+1)); });
+      const has = wells.length > 0;
+      h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
+    });
+    distEl.innerHTML = h; distEl.hidden = false;
+  }
+}
+
+function rdDraw(){
+ const rw=document.getElementById("rw"),ri=document.getElementById("rin");
+ const W=rw.clientWidth,H=rw.clientHeight;
+ const rt=rot===null?H>W:rot;
+ ri.style.cssText=rt?"width:"+H+"px;height:"+W+"px;left:"+W+"px;top:0;transform-origin:0 0;transform:rotate(90deg)":"width:"+W+"px;height:"+H+"px;left:0;top:0";
+ const p = curP();
+ const isCtrl = !!FIX[hl];
+
+ let h="<div><button data-a='x'>✕</button><button data-a='r'>↻</button></div>";
+ for(let c=1;c<=C;c++){
+  const cVal = p.cols ? (p.cols[c-1] || "") : "";
+  const cGlow = getGlow(cVal);
+  const cStyle = cGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${cGlow},0 0 12px ${cGlow};color:#000;font-weight:800'` : '';
+  h += "<div class='hd'>" + c + (cVal ? "<small " + cStyle + ">" + esc(cVal) + "</small>" : "") + "</div>";
+ }
+ for(let r=0;r<8;r++){
+  const rVal = p.rows[r]||"";
+  const rGlow = getGlow(rVal);
+  const rStyle = rGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${rGlow},0 0 12px ${rGlow};color:#000;font-weight:800'` : '';
+  h+="<div class='hd'>"+R[r]+(rVal?"<small "+rStyle+">"+esc(rVal)+"</small>":"")+"</div>";
+  for(let c=0;c<C;c++){
+   const i=r*C+c,v=p.cells[i];
+   const st=getStyle(v);
+   const nVal = p.notes[i]||"";
+   const nClean = nVal.trim().toLocaleUpperCase('tr-TR');
+   const nGlow = getGlow(nVal);
+   const nStyle = nGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${nGlow},0 0 12px ${nGlow};color:#000;font-weight:800'` : '';
+
+   let isDim = false;
+   if(hl){ isDim = (isCtrl && hlNote) ? (v !== hl || nClean !== hlNote) : (v !== hl); }
+
+   h+="<div class='rc"+(isDim?" dim":"")+"' data-i='"+i+"' style='background:"+(v?st.bg:"var(--card)")+"'>";
+   h+=esc(v);
+   if(st.sym) h+="<span class='r-sym'>"+st.sym+"</span>";
+   if(nVal) h+="<small "+nStyle+">"+esc(nVal)+"</small>";
+   h+="</div>";
+  }
+ }
+ ri.innerHTML=h;
+ const cell=ri.querySelector(".rc");
+ const w=cell.offsetWidth,hh=cell.offsetHeight;
+ const ml=Math.max(2,...p.cells.map(v=>v.length));
+ const fs=Math.max(8,Math.min(hh*(p.notes.some(Boolean)?.36:.5),w/(ml*.62)));
+ ri.style.fontSize=fs+"px";
+ ri.querySelectorAll(".hd").forEach(e=>e.style.fontSize=Math.min(fs*.8,hh*.5)+"px");
+ ri.querySelectorAll("small").forEach(e=>{e.style.fontSize=Math.max(9,fs*.58)+"px";e.style.textTransform="uppercase"});
+ ri.querySelectorAll("button").forEach(b=>{b.style.fontSize="20px";b.style.padding="6px 10px";b.style.margin="2px"});
+ renderDistBanner();
+}
+
+function rdClose(triggerBack = true){
+ if(!rdOn) return;
+ rdOn=false; rd.hidden=true; document.body.style.overflow="";
+ if(typeof voiceStop==="function") voiceStop();
+ if(triggerBack && history.state && history.state.pcr_modal === "rd"){ history.back(); }
+ refreshMetaInputs(); refresh(); window.scrollTo(0,0);
+}
+
+addEventListener("keydown",e=>{if(e.key==="Escape"&&rdOn)rdClose(true)});
+
+rdBtn.onclick=()=>{
+ rdOn=true; rd.hidden=false; document.body.style.overflow="hidden";
+ history.pushState({ pcr_modal: "rd" }, ""); rdDraw();
+};
+
+rd.addEventListener("click",e=>{
+ const a=e.target.closest("[data-a]");
+ if(a){
+   if(a.dataset.a==="x") rdClose(true);
+   else{ const rw=document.getElementById("rw"); rot=!(rot===null?rw.clientHeight>rw.clientWidth:rot); rdDraw(); }
+   return;
+ }
+ const goP = e.target.closest("[data-gop]");
+ if(goP){ S.curP = +goP.dataset.gop; rdDraw(); return; }
+
+ const c=e.target.closest(".rc");
+ if(c){
+   const idx = +c.dataset.i;
+   const v = curP().cells[idx];
+   const note = (curP().notes[idx] || "").trim().toLocaleUpperCase('tr-TR');
+   if(v){
+     if(hl === v && hlNote === note){ hl = null; hlNote = null; }
+     else { hl = v; hlNote = note; }
+     rdDraw();
+   }
+ }
+});
+
+let rt0;
+const rdRe=()=>{if(rdOn){clearTimeout(rt0);rt0=setTimeout(rdDraw,120)}};
+addEventListener("resize",rdRe);addEventListener("orientationchange",rdRe);
+
+
+/* SESLİ KOMUT (Okuma Modu): numarayı söyle, dokunmuş gibi yansın */
+const rdMic=document.createElement("button");
+rdMic.id="rdMic";rdMic.type="button";rdMic.textContent="🎤";rdMic.title="Sesli komut: numarayı söyle";
+const rdVoice=document.createElement("div");rdVoice.id="rdVoice";rdVoice.hidden=true;
+rd.appendChild(rdMic);rd.appendChild(rdVoice);
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let vRec=null,vOn=false,vToastT=null;
+
+const V_UNITS={"sıfır":0,"sifir":0,"bir":1,"iki":2,"üç":3,"uc":3,"dört":4,"dort":4,"beş":5,"bes":5,"altı":6,"alti":6,"yedi":7,"sekiz":8,"dokuz":9};
+const V_TENS={"on":10,"yirmi":20,"otuz":30,"kırk":40,"kirk":40,"elli":50,"altmış":60,"altmis":60,"yetmiş":70,"yetmis":70,"seksen":80,"doksan":90};
+const V_CTRL=[
+  [/\b(pozitif)\b/,["P"]],
+  [/\b(negatif)\b/,["N"]],
+  [/\b(ç\s?k|çk|çalışma kontrol|calisma kontrol)\b/,["ÇK","CK"]],
+  [/\b(e\s?c|ec)\b/,["EC"]],
+  [/\b(n\s?t\s?c|ntc)\b/,["NTC"]],
+  [/\b(q\s?c|qc)\b/,["QC"]]
+];
+const vNorm=s=>String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g,"");
+
+function vWordNumbers(text){
+  const toks=text.toLocaleLowerCase("tr-TR").replace(/[^a-zçğıöşü0-9\s]/g," ").split(/\s+/).filter(Boolean);
+  const out=[];
+  // (a) bileşik okuma: "yedi bin altı yüz doksan altı" -> 7696
+  let total=0,cur=0,any=false;
+  toks.forEach(t=>{
+    if(t in V_UNITS){cur+=V_UNITS[t];any=true}
+    else if(t in V_TENS){cur+=V_TENS[t];any=true}
+    else if(t==="yüz"||t==="yuz"){cur=(cur||1)*100;any=true}
+    else if(t==="bin"){total+=(cur||1)*1000;cur=0;any=true}
+  });
+  const compVal=any?String(total+cur):null;
+  const hasBigW=toks.some(t=>t==="yüz"||t==="yuz"||t==="bin");
+  if(compVal&&hasBigW) out.push(compVal);
+  // (b) grup grup okuma: "yetmiş altı doksan yedi" -> 7697, "yedi altı dokuz altı" -> 7696
+  let g="",ok=true,i=0,hasNum=false;
+  const hasBig=toks.some(t=>t==="yüz"||t==="yuz"||t==="bin");
+  if(!hasBig){
+    while(i<toks.length){
+      const t=toks[i];
+      if(t in V_TENS){
+        const n=toks[i+1];
+        if(n in V_UNITS && V_UNITS[n]>0){g+=String(V_TENS[t]+V_UNITS[n]);i+=2}
+        else{g+=String(V_TENS[t]);i++}
+        hasNum=true;
+      }else if(t in V_UNITS){g+=String(V_UNITS[t]);i++;hasNum=true}
+      else i++;
+    }
+    if(ok&&hasNum) out.push(g);
+  }
+  // (c) hane hane okuma (rakam rakam): "yedi altı dokuz altı" ve "on beş" -> 105 gibi durumlar
+  const digits=toks.filter(t=>t in V_UNITS).map(t=>V_UNITS[t]).join("");
+  if(digits) out.push(digits);
+  if(compVal&&!hasBigW) out.push(compVal);
+  return out;
+}
+
+function vCandidates(raw){
+  const c=[];
+  const digitsAll=raw.replace(/\D/g,"");
+  if(digitsAll) c.push(digitsAll);                       // "7.696" / "76 96" -> 7696
+  (raw.match(/\d+/g)||[]).forEach(d=>c.push(d));        // ayrı sayı kümeleri
+  vWordNumbers(raw).forEach(x=>c.push(x));              // yazıyla söylenenler
+  c.push(raw);                                           // alfanümerik hücreler
+  return c;
+}
+
+function vToast(msg,err){
+  rdVoice.textContent=msg;rdVoice.className=err?"err":"";rdVoice.hidden=false;
+  clearTimeout(vToastT);vToastT=setTimeout(()=>{rdVoice.hidden=true},2600);
+}
+
+function vFindCell(normVal){
+  const order=[S.curP].concat(S.plates.map((_,i)=>i).filter(i=>i!==S.curP));
+  for(const pi of order){
+    const v=S.plates[pi].cells.find(x=>x&&vNorm(x)===normVal);
+    if(v) return {pi,v};
+  }
+  return null;
+}
+
+function voiceHandle(alts){
+  const texts=alts.map(a=>a.toLocaleLowerCase("tr-TR").trim()).filter(Boolean);
+  if(!texts.length) return;
+  // temizleme komutu
+  if(texts.some(t=>/\b(temizle|sıfırla|sifirla|kapat|iptal|hepsini göster|tümünü göster)\b/.test(t))){
+    hl=null;hlNote=null;rdDraw();vToast("Seçim temizlendi");return;
+  }
+  // kontrol kuyuları (pozitif, negatif, ÇK, EC...)
+  for(const t of texts){
+    for(const [re,names] of V_CTRL){
+      if(re.test(t)){
+        for(const n of names){
+          const f=vFindCell(vNorm(n));
+          if(f){hl=f.v;hlNote="";S.curP=f.pi;rdDraw();vToast("✔ "+f.v);return}
+        }
+      }
+    }
+  }
+  // numaralar
+  for(const t of texts){
+    for(const cand of vCandidates(t)){
+      const f=vFindCell(vNorm(cand));
+      if(f){hl=f.v;hlNote="";S.curP=f.pi;rdDraw();vToast("✔ "+f.v);return}
+    }
+  }
+  vToast("Bulunamadı: "+texts[0],true);
+}
+
+function voiceStop(){
+  vOn=false;rdMic.classList.remove("on");
+  if(vRec){try{vRec.onend=null;vRec.stop()}catch(e){} vRec=null}
+}
+
+function voiceStart(){
+  if(!SR){vToast("Bu tarayıcı sesli komutu desteklemiyor (Chrome/Safari deneyin)",true);return}
+  vRec=new SR();
+  vRec.lang="tr-TR";vRec.continuous=true;vRec.interimResults=false;vRec.maxAlternatives=3;
+  vRec.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(!e.results[i].isFinal) continue;
+      const alts=[];
+      for(let k=0;k<e.results[i].length;k++) alts.push(e.results[i][k].transcript);
+      voiceHandle(alts);
+    }
+  };
+  vRec.onerror=e=>{
+    if(e.error==="not-allowed"||e.error==="service-not-allowed"){
+      vToast("Mikrofon izni verilmedi",true);voiceStop();
+    }else if(e.error==="audio-capture"){
+      vToast("Mikrofon bulunamadı",true);voiceStop();
+    }
+  };
+  vRec.onend=()=>{ if(vOn&&rdOn){setTimeout(()=>{try{vRec&&vRec.start()}catch(e){}},250)} else if(vOn){voiceStop()} };
+  try{vRec.start();vOn=true;rdMic.classList.add("on");vToast("🎤 Dinliyorum… numarayı söyleyin")}
+  catch(e){vToast("Mikrofon başlatılamadı",true);voiceStop()}
+}
+
+rdMic.addEventListener("click",e=>{e.stopPropagation();vOn?voiceStop():voiceStart()});
+
+/* KAMERA VE GALERİ AI OCR */
+const btnCamera = document.getElementById("btnCamera");
+const btnGallery = document.getElementById("btnGallery");
+const inputCamera = document.getElementById("inputCamera");
+const inputGallery = document.getElementById("inputGallery");
+const apiModal = document.getElementById("apiModal");
+const apiKeyInput = document.getElementById("apiKeyInput");
+const btnApiSave = document.getElementById("btnApiSave");
+const btnApiCancel = document.getElementById("btnApiCancel");
+const scanModal = document.getElementById("scanModal");
+const scanProgressBar = document.getElementById("scanProgressBar");
+const scanPercent = document.getElementById("scanPercent");
+const scanTimer = document.getElementById("scanTimer");
+const scanStatusTitle = document.getElementById("scanStatusTitle");
+const scanStatusSub = document.getElementById("scanStatusSub");
+
+let apiModalOpen = false, pendingTrigger = null, timerInterval = null;
+
+function setProgress(pct, title, sub){
+  scanProgressBar.style.width = pct + "%";
+  scanPercent.textContent = "%" + pct + " Tamamlandı";
+  if(title) scanStatusTitle.textContent = title;
+  if(sub) scanStatusSub.textContent = sub;
+}
+
+function startTimer(){
+  let sec = 0; scanTimer.textContent = "⏱ 0 sn";
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{ sec++; scanTimer.textContent = "⏱ " + sec + " sn"; }, 1000);
+}
+function stopTimer(){ clearInterval(timerInterval); }
+
+function openApiModal(triggerInput){
+  pendingTrigger = triggerInput; apiModalOpen = true; apiModal.hidden = false;
+  apiKeyInput.value = S.apiKey || DEFAULT_API_KEY;
+  history.pushState({ pcr_modal: "api" }, "");
+}
+function closeApiModal(triggerBack = true){
+  if(!apiModalOpen) return;
+  apiModalOpen = false; apiModal.hidden = true;
+  if(triggerBack && history.state && history.state.pcr_modal === "api") history.back();
+}
+
+btnApiCancel.onclick = () => closeApiModal(true);
+btnApiSave.onclick = () => {
+  S.apiKey = apiKeyInput.value.trim() || DEFAULT_API_KEY;
+  save(); closeApiModal(true);
+  if(pendingTrigger) pendingTrigger.click();
+};
+
+btnCamera.onclick = () => { if(!S.apiKey) S.apiKey = DEFAULT_API_KEY; inputCamera.click(); };
+btnGallery.onclick = () => { if(!S.apiKey) S.apiKey = DEFAULT_API_KEY; inputGallery.click(); };
+
+const handleFileInput = async (file) => {
+  if(!file) return;
+  scanModal.hidden = false; startTimer();
+  setProgress(5, "Fotoğraf Hazırlanıyor...", "Netlik korunarak yüksek çözünürlükte işleniyor");
+  try {
+    const base64Data = await resizeImageToBase64(file, 2048);
+    await processImageWithGeminiStream(base64Data);
+  } catch(err) {
+    alert("Tarama sırasında hata oluştu: " + err.message);
+  } finally {
+    stopTimer(); scanModal.hidden = true; inputCamera.value = ""; inputGallery.value = "";
+  }
+};
+
+inputCamera.onchange = (e) => handleFileInput(e.target.files && e.target.files[0]);
+inputGallery.onchange = (e) => handleFileInput(e.target.files && e.target.files[0]);
+
+function resizeImageToBase64(file, maxDim) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const image = new Image();
+      image.onload = () => {
+        let w = image.width, h = image.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+          else { w = Math.round((w * maxDim) / h); h = maxDim; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.90).split(",")[1]);
+      };
+      image.onerror = reject; image.src = readerEvent.target.result;
+    };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+
+async function processImageWithGeminiStream(base64Image) {
+  if (!S.apiKey) S.apiKey = DEFAULT_API_KEY;
+  setProgress(10, "Yapay Zeka Bağlanıyor...", "Görsel aktarılıyor, okuma başlıyor");
+
+  const systemPrompt = `You are a specialized PCR Laboratory Assistant.
+Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12).
+Identify:
+1. Target names on the left for rows A to H and column notes at top for cols 1 to 12 if any.
+2. For each well A1 through H12:
+   - "v": sample number (digits like 7683) or control symbol ("N", "P", "ÇK" or "CK", "EC"). Duplicate pipetting: numbers written in pairs across adjacent columns.
+   - "n": optional note or subtext (e.g. "94100").
+3. Analysis name if visible.
+
+Output ONLY pure, raw JSON without markdown formatting:
+{
+  "analiz": "ANALYSIS_NAME",
+  "rows": ["ROW_A", "ROW_B", "ROW_C", "ROW_D", "ROW_E", "ROW_F", "ROW_G", "ROW_H"],
+  "cols": ["COL_1", "COL_2", "COL_3", "COL_4", "COL_5", "COL_6", "COL_7", "COL_8", "COL_9", "COL_10", "COL_11", "COL_12"],
+  "wells": { "A1": {"v": "7683"}, "A2": {"v": "7683"} }
+}`;
+
+  const payload = {
+    contents: [{
+      parts: [
+        { text: systemPrompt },
+        { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+      ]
+    }],
+    generationConfig: {
+      temperature: 0.1,
+      thinkingConfig: { thinkingLevel: "low" },
+      responseMimeType: "application/json"
+    }
+  };
+
+  const modelsToTry = [S.cachedModel || "models/gemini-3.8-flash", "models/gemini-3.8-flash", "models/gemini-2.0-flash", "models/gemini-1.5-flash"];
+  let lastError = null;
+
+  for (const mName of [...new Set(modelsToTry)]) {
+    try {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/${mName}:streamGenerateContent?alt=sse&key=${S.apiKey}`;
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => null);
+        const errMsg = (errJson && errJson.error && errJson.error.message) ? errJson.error.message : await response.text();
+        if (response.status === 400 && errMsg.includes("API_KEY_INVALID")) {
+          openApiModal(null);
+          throw new Error("Geçersiz API Anahtarı! Lütfen kontrol edin.");
+        }
+        lastError = new Error(`API Hatası (${response.status}): ${errMsg}`);
+        continue;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let fullText = "", buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ")) {
+            const jsonStr = trimmed.slice(6).trim();
+            if (jsonStr === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const textPart = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (textPart) {
+                fullText += textPart;
+                const matchedWells = fullText.match(/"[A-H](?:1[0-2]|[1-9])"/g) || [];
+                const wellsCount = Math.min(96, matchedWells.length);
+                const currentPct = Math.min(98, Math.max(12, Math.round((wellsCount / 96) * 100)));
+                const lastWellName = wellsCount > 0 ? matchedWells[matchedWells.length - 1].replace(/"/g, "") : "";
+                setProgress(currentPct, `Canlı Okunuyor: ${wellsCount} / 96 Kuyu`, wellsCount > 0 ? `Son Kuyu: ${lastWellName}` : "Tablo yapısı çözümleniyor...");
+              }
+            } catch(e) {}
+          }
+        }
+      }
+
+      if (!fullText) throw new Error("Görselden veri okunamadı.");
+      setProgress(99, "Plate Tablosuna Yerleştiriliyor...", "Renklendirme uygulanıyor");
+
+      const cleanJson = fullText.replace(/```json/g, "").replace(/```/g, "").trim();
+      const data = JSON.parse(cleanJson);
+      push();
+      const p = curP();
+
+      if (data.rows && Array.isArray(data.rows)) {
+        for (let r = 0; r < 8; r++) p.rows[r] = (data.rows[r] || "").toLocaleUpperCase("tr-TR");
+      }
+      if (data.cols && Array.isArray(data.cols)) {
+        if(!p.cols) p.cols = Array(12).fill("");
+        for (let c = 0; c < 12; c++) p.cols[c] = (data.cols[c] || "").toLocaleUpperCase("tr-TR");
+      }
+      if (data.analiz) p.meta.analiz = data.analiz;
+
+      if (data.wells && typeof data.wells === "object") {
+        Object.keys(data.wells).forEach((key) => {
+          const m = key.trim().toUpperCase().match(/^([A-H])(\d{1,2})$/);
+          if (m) {
+            const r = R.indexOf(m[1]), c = +m[2] - 1;
+            if (r >= 0 && r < 8 && c >= 0 && c < C) {
+              const cellData = data.wells[key];
+              const idx = r * C + c;
+              if (typeof cellData === "object") {
+                let v = cellData.v || "";
+                if (/^(çk|ck)$/i.test(v)) v = "ÇK";
+                else if (/^(N|P|EC|QC|NTC)$/i.test(v)) v = v.toUpperCase();
+                else v = v.replace(/[^0-9]/g, "");
+                p.cells[idx] = v;
+                if (cellData.n) p.notes[idx] = String(cellData.n).toLocaleUpperCase("tr-TR");
+              } else {
+                let v = String(cellData);
+                if (/^(çk|ck)$/i.test(v)) v = "ÇK";
+                else if (/^(N|P|EC|QC|NTC)$/i.test(v)) v = v.toUpperCase();
+                else v = v.replace(/[^0-9]/g, "");
+                p.cells[idx] = v;
+              }
+            }
+          }
+        });
+      }
+
+      S.cachedModel = mName; save();
+      setProgress(100, "Tamamlandı!", "Tüm kuyucuklar başarıyla aktarıldı");
+      refreshMetaInputs(); refresh();
+      return;
+    } catch (err) {
+      if (err.message && err.message.includes("Geçersiz API Anahtarı")) throw err;
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Kullanılabilir yapay zeka modeli bulunamadı.");
+}
+
+/* ÇOKLU PLATE PDF / YAZDIRMA */
+let printModalOpen = false;
+const printModal = document.getElementById("printModal");
+const printPlateList = document.getElementById("printPlateList");
+const btnPrintAll = document.getElementById("btnPrintAll");
+const btnPrintCancel = document.getElementById("btnPrintCancel");
+const btnPrintConfirm = document.getElementById("btnPrintConfirm");
+const printBtn = document.getElementById("printBtn");
+
+function openPrintModal(usedPlateIndices){
+  printModalOpen = true; printModal.hidden = false;
+  history.pushState({ pcr_modal: "print" }, "");
+  let html = "";
+  usedPlateIndices.forEach(idx => {
+    const p = S.plates[idx];
+    html += `<label class="p-item"><input type="checkbox" name="printP" value="${idx}" checked><span>Plate ${idx + 1}${p.meta.analiz ? ` — ${esc(p.meta.analiz)}` : ""} (${p.cells.filter(Boolean).length} Kuyu)</span></label>`;
+  });
+  printPlateList.innerHTML = html;
+}
+
+function closePrintModal(triggerBack = true){
+  if(!printModalOpen) return;
+  printModalOpen = false; printModal.hidden = true;
+  if(triggerBack && history.state && history.state.pcr_modal === "print") history.back();
+}
+
+btnPrintCancel.onclick = () => closePrintModal(true);
+btnPrintAll.onclick = () => {
+  const cbs = printPlateList.querySelectorAll("input[type='checkbox']");
+  const allChecked = [...cbs].every(cb => cb.checked);
+  cbs.forEach(cb => cb.checked = !allChecked);
+  btnPrintAll.textContent = allChecked ? "Tümünü Seç" : "Seçimi Kaldır";
+};
+btnPrintConfirm.onclick = () => {
+  const checked = [...printPlateList.querySelectorAll("input[name='printP']:checked")].map(cb => +cb.value);
+  if(!checked.length){ alert("Lütfen en az bir plate seçin."); return; }
+  closePrintModal(true); doPrint(checked);
+};
+
+printBtn.onclick = () => {
+  const used = [];
+  S.plates.forEach((p, idx) => { if(p.cells.some(Boolean) || p.rows.some(Boolean)) used.push(idx); });
+  if(used.length <= 1){ doPrint([used.length === 1 ? used[0] : S.curP]); return; }
+  openPrintModal(used);
+};
+
+function doPrint(indices){
+  const pv = document.getElementById("printView");
+  let html = "";
+  indices.forEach((pIdx) => {
+    const p = S.plates[pIdx];
+    let tableHtml = "<tr><th></th>";
+    for(let c = 1; c <= C; c++){
+      const cVal = p.cols ? (p.cols[c-1] || "") : "";
+      tableHtml += "<th class='ch'>" + c + (cVal ? "<input class='cl' readonly value='" + esc(cVal) + "'>" : "") + "</th>";
+    }
+    tableHtml += "</tr>";
+    
+    for(let r = 0; r < 8; r++){
+      tableHtml += "<tr><th class='rh'>" + R[r] + "<input class='rl' readonly value='" + esc(p.rows[r] || "") + "'></th>";
+      for(let c = 0; c < C; c++){
+        const idx = r * C + c, v = p.cells[idx] || "";
+        const st = getStyle(v), nVal = p.notes[idx] || "";
+        tableHtml += `<td style="background:${st.bg}"${st.sym ? ` data-sym="${st.sym}"` : ""}><input readonly value="${esc(v)}"><input class="nt${v ? '' : ' off'}" readonly value="${esc(nVal)}"></td>`;
+      }
+      tableHtml += "</tr>";
+    }
+    
+    html += `
+      <div class="print-plate-page">
+        <h1 style="display:flex;justify-content:space-between;align-items:center;margin:0 0 4px 0;">
+          <span>PCR ÇALIŞMA PLATE DÜZENİ</span>
+          <span style="font-size:13px;border:1.5px solid #000;padding:2px 10px;border-radius:4px;font-weight:800;">PLATE ${pIdx + 1}</span>
+        </h1>
+        <div class="card meta">
+          <div><label>Analist</label><input readonly value="${esc(p.meta.analist || "")}"></div>
+          <div><label>İmza</label><input readonly value="${esc(p.meta.imza || "")}"></div>
+          <div><label>Numune No</label><input readonly value="${esc(p.meta.numune || "")}"></div>
+          <div><label>Cihaz no</label><input readonly value="${esc(p.meta.cihaz || "Q-T-1")}"></div>
+          <div><label>Tarih</label><input readonly value="${esc(p.meta.tarih || "")}"></div>
+        </div>
+        <div class="card wrap" style="border:none;padding:0;margin:0;">
+          <table>${tableHtml}</table>
+          <div class="card meta" style="padding:4px 0 0;margin:2px 0 0">
+            <div style="grid-column:1/-1"><label>ANALİZ ADI</label><input readonly value="${esc(p.meta.analiz || "")}"></div>
+          </div>
+        </div>
+        <div class="card notes-card">
+          <label>AÇIKLAMALAR / NOTLAR</label>
+          <textarea readonly rows="2">${esc(p.meta.aciklama || "")}</textarea>
+          <div class="foot"><span>KGKLM &nbsp; Rev:00/00</span><span>MBA-FR-008 &nbsp; 07.10.2019</span></div>
+        </div>
+      </div>
+    `;
+  });
+  
+  pv.innerHTML = html;
+  document.body.classList.add("printing-custom");
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => { document.body.classList.remove("printing-custom"); pv.innerHTML = ""; }, 600);
+  }, 150);
+}
+
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("printing-custom");
+  document.getElementById("printView").innerHTML = "";
+});
+
+/* Sürükle-doldur */
+let dg=false,drag=null;
+function nextVal(v,k,m){
+  if(m==="0"||m==="s")return v;
+  const x=v.match(/^(.*?)(\d+)$/);
+  if(!x)return v;
+  const n=+x[2]+(m==="+"?k:-k);
+  if(n<0)return v;
+  let s=String(n);
+  if(x[2].length>1&&x[2][0]==="0")s=s.padStart(x[2].length,"0");
+  return x[1]+s;
+}
+
+dgBtn.onclick=()=>{
+  dg=!dg; document.body.classList.toggle("drag",dg);
+  ins.forEach(e=>e.readOnly=dg);
+  dgBtn.textContent="Sürükle modu: "+(dg?"açık":"kapalı");
+  dgBtn.classList.toggle("pri",dg);
+  if(!dg){msel=new Set();msDraw()}
+  if(dg&&document.activeElement)document.activeElement.blur();
+};
+
+const cellOf=el=>el&&el.closest?el.closest("td[id^=td]"):null;
+t.addEventListener("pointerdown",e=>{
+  if(!dg)return;
+  const td=cellOf(e.target);if(!td)return;
+  const i=+td.id.slice(2);sel=i;
+  if(dgMode.value==="s"){msA=i;msAct=true;msRect(i,i);e.preventDefault();return}
+  const v=curP().cells[i];
+  if(!v){refresh();return}
+  e.preventDefault();push();
+  drag={src:v,note:curP().notes[i]||"",seen:new Set([i]),k:0};
+  refresh();
+});
+
+t.addEventListener("pointermove",e=>{
+  if(msAct){const td=cellOf(document.elementFromPoint(e.clientX,e.clientY));if(td)msRect(msA,+td.id.slice(2));return}
+  if(!drag)return;
+  const td=cellOf(document.elementFromPoint(e.clientX,e.clientY));
+  if(!td)return;
+  const i=+td.id.slice(2);
+  if(drag.seen.has(i))return;
+  drag.seen.add(i);drag.k++;
+  const v=nextVal(drag.src,drag.k,dgMode.value);
+  const p = curP();
+  p.cells[i]=v;ins[i].value=v;p.notes[i]=drag.note;nts[i].value=drag.note;
+  applyGlow(nts[i], drag.note, false);
+  refresh();
+});
+
+const dgEnd=()=>{msAct=false;if(drag){drag=null;refresh()}};
+addEventListener("pointerup",dgEnd);addEventListener("pointercancel",dgEnd);
+
+let lt={t:0,i:-1};
+t.addEventListener("pointerdown",e=>{
+  if(dg||drag)return;
+  const td=cellOf(e.target);if(!td)return;
+  const i=+td.id.slice(2),now=Date.now();
+  if(i===lt.i&&now-lt.t<400&&curP().cells[i]){
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    e.preventDefault();push();
+    drag={src:curP().cells[i],note:curP().notes[i]||"",seen:new Set([i]),k:0};
+    lt={t:0,i:-1};sel=i;
+  }else lt={t:now,i};
+});
+
+function msRect(a,b){
+  const r1=Math.min(a/C|0,b/C|0),r2=Math.max(a/C|0,b/C|0),c1=Math.min(a%C,b%C),c2=Math.max(a%C,b%C);
+  msel=new Set();
+  for(let r=r1;r<=r2;r++)for(let c=c1;c<=c2;c++)msel.add(r*C+c);
+  msDraw();
+}
+function msDraw(){
+  ins.forEach((el,i)=>el.parentNode.classList.toggle("msel",msel.has(i)));
+  const n=msel.size, has=n>0;
+  msDel.hidden=!has; msClr.hidden=!has; msN.hidden=!has; msP.hidden=!has; msCK.hidden=!has; msEC.hidden=!has;
+  if(has){
+    msDel.textContent = "Seçilenleri sil (" + n + ")";
+    msN.textContent = "N Yap (" + n + ")";
+    msP.textContent = "P Yap (" + n + ")";
+    msCK.textContent = "ÇK Yap (" + n + ")";
+    msEC.textContent = "EC Yap (" + n + ")";
+  }
+}
+dgMode.onchange=()=>{if(dgMode.value!=="s"){msel=new Set();msDraw()}};
+</script>
+
+<!-- ========================================== -->
+<!-- PRIMER HESAPLAMA JS                        -->
+<!-- ========================================== -->
+<script>
+(function(){
+  var KEY = "primerProbGenlerDna5_v4";
+  var genes = [];
+  var editIdx = -1;
+  var selected = [];
+  var $ = function(id){ return document.getElementById(id); };
+  var FIELDS = ["mm","f","r","p","w"];
+  var EMBED_STAMP = 1793100000000;
+
+  /* YENİ FORMÜL: MM: 12.5, F/R/P: Orijinalinden %25 artış, Kalan Su ile Toplam: 20.00 µL */
+  var DEFAULT_GENES = [
+    {"name":"TC-1507","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"HMG","note":"TC-1507 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DAS 59122","note":"","mm":12.5,"f":0.625,"r":0.625,"p":0.5,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MHMG","note":"DAS 59122 ile","mm":12.5,"f":1.0,"r":1.0,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"GA21","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"Adh1","note":"GA21, MON863, NK603 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"Bt 11","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"ZmAdh","note":"Bt 11, 3272, MIR604 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 810","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"HMG","note":"MON 810, MON 87460, MON 87427 ile Mısır","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},
+    {"name":"MON863","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON88017","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"HMG","note":"MON88017, MON89034 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"MIR 162","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"ZmAdh1","note":"MIR 162, MZHGOJG ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"3272","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"NK603","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MIR604","note":"","mm":12.5,"f":1.5,"r":0.75,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"T25","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Adh1","note":"T25 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON89034","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"MON 87460","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 87427","note":"","mm":12.5,"f":1.125,"r":1.125,"p":1.0,"w":4.25,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"DAS 40278","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.375,"w":5.375,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Mısır"],"dna0":5},
+    {"name":"MHMG","note":"DAS 40278 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 87403","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"HMG","note":"MON 87403, MON 87411 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"DP4114","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.35,"w":4.15,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"HMG","note":"DP4114, DP915635 ile","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 87411","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"MZHGOJG","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"5307","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.313,"w":5.437,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"ZmAdh","note":"5307 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MZIR098","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Adh1","note":"MZIR098 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON87429","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"HMG","note":"MON87429 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON95379","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MHMG","note":"MON95379 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DP23211","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
+    {"name":"MHMG","note":"DP23211 ile","mm":10,"f":0.75,"r":0.75,"p":0.45,"w":8.05,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DP915635","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.24,"w":4.86,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
+    {"name":"MON87419","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
+    {"name":"HMG","note":"MON87419 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DP202216","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
+    {"name":"HMG","note":"DP202216, DP051291 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.3,"w":5.7,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DP051291","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DAS1131","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MHMG","note":"DAS1131 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 95275","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"HMG","note":"MON 95275, MON 94804 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"MON 94804","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"DP910521","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"HMG","note":"DP910521 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"40-3-2","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"Lec","note":"40-3-2, MON89788, MON 87708 ile Soya","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},
+    {"name":"A 2704-12","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Le1","note":"A 2704-12 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON89788","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"DP356043","note":"","mm":12.5,"f":1.875,"r":1.875,"p":0.5,"w":3.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Le1-2","note":"DP356043 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.75,"w":3.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON87701","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
+    {"name":"Le1","note":"MON87701, MON 87705, MON 87769 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"A5547-127","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Le1 VIC","note":"A5547-127 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"BPS-CV-127","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
+    {"name":"Lec","note":"BPS-CV-127 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"DP 305423","note":"","mm":12.5,"f":2.0,"r":1.25,"p":0.55,"w":3.7,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
+    {"name":"Le1-2","note":"DP 305423 ile","mm":12.5,"f":1.375,"r":1.375,"p":0.25,"w":4.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 87705","note":"","mm":12.5,"f":0.563,"r":0.563,"p":1.25,"w":5.124,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"MON 87708","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.75,"w":5.25,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
+    {"name":"MON 87769","note":"","mm":12.5,"f":1.5,"r":1.5,"p":1.0,"w":3.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
+    {"name":"DAS 68416","note":"","mm":12.5,"f":1.375,"r":1.375,"p":0.375,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
+    {"name":"Le1","note":"DAS 68416, DAS 81419, SYTTOH2 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DAS 81419","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.3,"w":5.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
+    {"name":"FG 72","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"Le1","note":"FG 72 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"DAS 44406","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":5},
+    {"name":"Le1","note":"DAS 44406 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON87751","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.75,"w":4.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":4},
+    {"name":"Lec","note":"MON87751 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"SYTTOH2","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"GMB151","note":"","mm":10,"f":1,"r":1,"p":0.5,"w":7.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Le1","note":"GMB151 ile","mm":10,"f":0.5,"r":0.5,"p":0.5,"w":8.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Rt73","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"Ms1","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"CruA","note":"Ms1, T45, Topas 19/2 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Ms8","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"OSR CruA","note":"Ms8, Rf3 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Rf3","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"T45","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Topas 19/2","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 88302","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"CCF","note":"MON 88302 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.625,"w":5.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"073496","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.5,"w":4.6,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Kanola"],"dna0":5},
+    {"name":"FatA(A)","note":"073496, MON94100 ile Kanola","mm":12.5,"f":0.6,"r":1.8,"p":0.3,"w":4.8,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},
+    {"name":"MON94100","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Kanola"],"dna0":5},
+    {"name":"15985","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"Acp1","note":"15985, MON 1445 ile Pamuk","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},
+    {"name":"MON 1445","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
+    {"name":"MON 531","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"Acp","note":"MON 531, MON 88913 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"281-24-236","note":"","mm":12.5,"f":0.875,"r":1.125,"p":0.438,"w":5.062,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
+    {"name":"Sah7","note":"281-24-236, 3006-210-23 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"3006-210-23","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
+    {"name":"LLCotton25","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"AdhC","note":"LLCotton25, GHB 614 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"T304-40","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Adh C (HEX)","note":"T304-40 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"MON 88913","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.5,"w":4.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
+    {"name":"GHB 614","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
+    {"name":"GHB119","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"AdhC","note":"GHB119 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"GHB811","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
+    {"name":"AdhC","note":"GHB811 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"COT102","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"Sah7","note":"COT102 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"RUR H 7-1","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},
+    {"name":"Glu","note":"RUR H 7-1 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},
+    {"name":"LLRice62","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"PLD","note":"LLRice62 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"BEZELYE","note":"","mm":10,"f":0.34,"r":0.34,"p":0.3,"w":9.02,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":5},
+    {"name":"PATATES","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
+    {"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5}
+  ];
+
+  var curStamp = EMBED_STAMP;
+  var dirty = false;
+  var fileHandle = null;
+
+  function localSave(){
+    try { localStorage.setItem(KEY, JSON.stringify({dirty:dirty, genes:genes})); return true; }
+    catch(e){ return false; }
+  }
+
+  function load(){
+    var obj = null;
+    try { 
+      var raw = localStorage.getItem(KEY); 
+      if(raw !== null) obj = JSON.parse(raw); 
+    } catch(e){ obj = null; }
+    
+    if(obj && Array.isArray(obj.genes) && obj.genes.length > 0){
+      genes = obj.genes;
+      dirty = !!obj.dirty;
+      localSave();
+    } else {
+      // Eski versiyonlardaki favori ve etiketleri devral
+      var oldRaw = localStorage.getItem("primerProbGenlerDna5_v1") || localStorage.getItem("primerProbGenlerDna5_v2") || localStorage.getItem("primerProbGenlerDna5_v3");
+      var oldMap = {};
+      if(oldRaw){
+        try{
+          var oldObj = JSON.parse(oldRaw);
+          var oList = oldObj.genes || oldObj;
+          if(Array.isArray(oList)){
+            oList.forEach(function(og){ if(og && og.name) oldMap[norm(og.name)] = og; });
+          }
+        }catch(e){}
+      }
+
+      genes = JSON.parse(JSON.stringify(DEFAULT_GENES));
+      genes.forEach(function(g){
+        var k = norm(g.name);
+        if(oldMap[k]){
+          if(oldMap[k].fav !== undefined) g.fav = !!oldMap[k].fav;
+          if(Array.isArray(oldMap[k].tags)) g.tags = oldMap[k].tags;
+        }
+      });
+      dirty = false;
+      localSave();
+    }
+  }
+
+  function updateVer(){
+    var v = $("verInfo"), b = $("useFileBtn"); if(!v) return;
+    var d = new Date(EMBED_STAMP);
+    var ds = isNaN(d) ? "" : d.toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    var cv = $("credVer"); if(cv) cv.textContent = isNaN(d) ? "" : "sürüm " + d.toLocaleDateString("tr-TR");
+    if(dirty){
+      v.textContent = "Dosya sürümü: " + ds + ". Bu tarayıcıdaki liste dosyadakinden farklı.";
+      b.hidden = false;
+    } else {
+      v.textContent = "Liste hazır. Standart Karışım: 20 µL (MM: 12.5, F/R/P: +%25, Kalan: Su).";
+      b.hidden = true;
+    }
+  }
+
+  function idb(){
+    return new Promise(function(res,rej){
+      var q = indexedDB.open("primerAppDna5",1);
+      q.onupgradeneeded = function(){ q.result.createObjectStore("h"); };
+      q.onsuccess = function(){ res(q.result); };
+      q.onerror = function(){ rej(q.error); };
+    });
+  }
+  function idbGet(){
+    return idb().then(function(db){ return new Promise(function(res){
+      var r = db.transaction("h").objectStore("h").get("file");
+      r.onsuccess = function(){ res(r.result||null); }; r.onerror = function(){ res(null); };
+    });}).catch(function(){ return null; });
+  }
+  function idbSet(h){
+    return idb().then(function(db){ return new Promise(function(res){
+      var t = db.transaction("h","readwrite"); t.objectStore("h").put(h,"file");
+      t.oncomplete = function(){ res(); }; t.onerror = function(){ res(); };
+    });}).catch(function(){});
+  }
+  function fsay(t, err){ var m=$("fileMsg"); if(m){ m.textContent=t; m.className="msg"+(err?" err":""); } }
+
+  var PICK_OPTS = {id:"primerAppDna5", mode:"readwrite", multiple:false, types:[{description:"HTML dosyası", accept:{"text/html":[".html",".htm"]}}]};
+  var confirmedStamp = null;
+  function linkUI(show, label){
+    var b=$("linkBtn"); if(!b) return;
+    b.hidden = !show; if(label) b.textContent = label;
+    $("repickBtn").hidden = !(show && fileHandle);
+  }
+  function dlUI(show){ var b=$("dlBtn"); if(b) b.hidden = !show; }
+  function activeGesture(){ return !!(navigator.userActivation && navigator.userActivation.isActive); }
+  function fname(){ return (fileHandle && fileHandle.name) ? fileHandle.name : "dosya"; }
+  function forgetHandle(){ fileHandle = null; return idbSet(null); }
+
+  async function syncFile(){
+    if(!window.showOpenFilePicker){ linkUI(false); dlUI(true); return; }
+    try{
+      if(!fileHandle) fileHandle = await idbGet();
+      if(!fileHandle){ linkUI(true, "Dosyaya bağla (bir kez)"); dlUI(true); return; }
+      var opts = {mode:"readwrite"};
+      if((await fileHandle.queryPermission(opts)) !== "granted"){
+        var ok = false;
+        if(activeGesture()){ try{ ok = ((await fileHandle.requestPermission(opts)) === "granted"); }catch(e){ ok = false; } }
+        if(!ok){ linkUI(true, "İzin ver ve kaydet"); dlUI(true); return; }
+      }
+      var text = await (await fileHandle.getFile()).text();
+      var re = /\/\*GENES_START\*\/[\s\S]*?\/\*GENES_END\*\//;
+      if(!re.test(text)){ await forgetHandle(); linkUI(true, "Dosyaya bağla (bir kez)"); dlUI(true); return; }
+      var sm = text.match(/\/\*GENES_START\*\/var EMBED_STAMP = (\d+);/);
+      var fst = sm ? +sm[1] : null;
+      if(fst !== null && fst !== EMBED_STAMP && confirmedStamp !== fst){
+        var nm = fname();
+        if(!confirm("Seçilen dosya (“"+nm+"”) farklı bir sürüm gibi görünüyor. Yine de yazılsın mı?")){
+          await forgetHandle(); linkUI(true, "Dosyaya bağla (bir kez)"); dlUI(true); return;
+        }
+        confirmedStamp = fst;
+      }
+      var slim = genes.map(function(g){
+        return {name:g.name, note:g.note||"", mm:g.mm, f:g.f, r:g.r, p:g.p, w:g.w, fu:g.fu||null, ru:g.ru||null, pu:g.pu||null, fav:g.fav?true:false, tags:g.tags||[], dna0:g.dna0||null};
+      });
+      var js = JSON.stringify(slim).replace(/<\//g,"<\\/");
+      var block = "/*GENES_START*/var EMBED_STAMP = "+curStamp+"; var DEFAULT_GENES = "+js+";/*GENES_END*/";
+      text = text.replace(re, function(){ return block; });
+      var w = await fileHandle.createWritable();
+      await w.write(text); await w.close();
+      linkUI(false); dlUI(false);
+      EMBED_STAMP = curStamp; DEFAULT_GENES = slim; dirty = false; localSave(); updateVer();
+      fsay("Liste “"+fname()+"” dosyasının içine kaydedildi ✓");
+    }catch(err){
+      var nf = err && err.name === "NotFoundError";
+      if(nf || (err && err.name === "InvalidStateError")){ await forgetHandle(); }
+      linkUI(true, "Dosyaya bağla (bir kez)"); dlUI(true);
+    }
+  }
+
+  function onLinkClick(forcePick){
+    if(!window.showOpenFilePicker) return;
+    var pick = (fileHandle && !forcePick) ? Promise.resolve([fileHandle]) : window.showOpenFilePicker(PICK_OPTS);
+    pick.then(function(hs){
+      fileHandle = hs[0];
+      return idbSet(fileHandle).then(function(){ return syncFile(); });
+    }).catch(function(err){});
+  }
+
+  function downloadHtml(){
+    var clone = document.documentElement.cloneNode(true);
+    var slim = genes.map(function(g){
+      return {name:g.name, note:g.note||"", mm:g.mm, f:g.f, r:g.r, p:g.p, w:g.w, fu:g.fu||null, ru:g.ru||null, pu:g.pu||null, fav:g.fav?true:false, tags:g.tags||[], dna0:g.dna0||null};
+    });
+    var js = JSON.stringify(slim).replace(/<\//g,"<\\/");
+    var block = "/*GENES_START*/var EMBED_STAMP = "+curStamp+"; var DEFAULT_GENES = "+js+";/*GENES_END*/";
+    var re = /\/\*GENES_START\*\/[\s\S]*?\/\*GENES_END\*\//;
+    var out = "<!DOCTYPE html>\n" + clone.outerHTML.replace(re, function(){ return block; });
+    var name = "PCR_Portali.html";
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([out],{type:"text/html;charset=utf-8"}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    fsay("Güncel liste “"+name+"” adıyla indirildi.");
+  }
+
+  function save(){
+    curStamp = Date.now(); dirty = true;
+    if(!localSave()) say("Tarayıcı kaydetmeye izin vermedi.", true);
+    updateVer();
+    syncFile();
+  }
+
+  function num(v){
+    var x = parseFloat(String(v).replace(",", "."));
+    return isNaN(x) ? 0 : x;
+  }
+  function fmt(x){
+    return (Math.round(x*1000)/1000).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:3});
+  }
+  var CONC = {f:"fu", r:"ru", p:"pu"};
+  var DNA_FIX = 5;
+  var STOCK_UM = 100, DIL_UL = 100;
+  function numOrNull(v){
+    if(v === null || v === undefined || String(v).trim() === "") return null;
+    var x = num(v); return x > 0 ? x : null;
+  }
+  function fmtN(x){ return (+x).toLocaleString("tr-TR",{maximumFractionDigits:3}); }
+  function dilText(c){
+    if(!c || c >= STOCK_UM) return "";
+    var st = c * DIL_UL / STOCK_UM;
+    return fmtN(st) + " µL stok + " + fmtN(DIL_UL - st) + " µL su";
+  }
+  function say(t, err){ var m=$("msg"); m.textContent=t; m.className="msg"+(err?" err":""); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function norm(s){ return String(s).toLocaleLowerCase("tr-TR").trim(); }
+
+  function factor(){
+    var n = Math.max(0, num($("n").value));
+    var e = Math.max(0, num($("extra").value));
+    return { n:n, e:e, k:n*(1+e/100) };
+  }
+  var view = "all", tagFilter = null;
+  function gtags(g){ return Array.isArray(g.tags) ? g.tags : []; }
+  function hasTag(g,t){ return gtags(g).some(function(x){ return norm(x) === norm(t); }); }
+  function isFavView(g){ return !!g.fav || gtags(g).length > 0; }
+  function tagCounts(){
+    var m = {}, order = [];
+    genes.forEach(function(g){ gtags(g).forEach(function(t){
+      var k = norm(t); if(!m[k]){ m[k] = {name:t, n:0}; order.push(k); } m[k].n++;
+    }); });
+    return order.map(function(k){ return m[k]; }).sort(function(a,b){ return a.name.localeCompare(b.name,"tr"); });
+  }
+  function visible(){
+    var q = norm($("q").value);
+    var list = genes.filter(function(g){
+      if(q && norm(g.name).indexOf(q) === -1 && norm(g.note||"").indexOf(q) === -1 && norm(gtags(g).join(" ")).indexOf(q) === -1) return false;
+      if(view === "fav"){
+        if(!isFavView(g)) return false;
+        if(tagFilter === "__star") return !!g.fav;
+        if(tagFilter) return hasTag(g, tagFilter);
+      }
+      return true;
+    });
+    if(q){
+      list = list.map(function(g,i){ return {g:g,i:i}; })
+        .sort(function(a,b){ return (b.g.fav?1:0) - (a.g.fav?1:0) || a.i - b.i; })
+        .map(function(x){ return x.g; });
+    }
+    return list;
+  }
+  function renderTabs(){
+    var favN = genes.filter(isFavView).length;
+    $("nAll").textContent = "(" + genes.length + ")";
+    $("nFav").textContent = "(" + favN + ")";
+    $("tabAll").className = "tab" + (view === "all" ? " on" : "");
+    $("tabFav").className = "tab" + (view === "fav" ? " on" : "");
+    var tc = tagCounts();
+    if(tagFilter && tagFilter !== "__star" && !tc.some(function(t){ return norm(t.name) === norm(tagFilter); })) tagFilter = null;
+    var bar = $("tagBar");
+    if(view !== "fav"){ bar.hidden = true; }
+    else {
+      var starN = genes.filter(function(g){ return g.fav; }).length;
+      var h = "<button class='chip"+(!tagFilter?" on":"")+"' data-tag=''>Hepsi ("+favN+")</button>"
+            + "<button class='chip"+(tagFilter==="__star"?" on":"")+"' data-tag='__star'>★ Yıldızlı ("+starN+")</button>";
+      tc.forEach(function(t){
+        h += "<button class='chip"+(tagFilter && norm(tagFilter)===norm(t.name)?" on":"")+"' data-tag='"+esc(t.name)+"'>"+esc(t.name)+" ("+t.n+")</button>";
+      });
+      bar.innerHTML = h; bar.hidden = false;
+    }
+    $("tagList").innerHTML = tc.map(function(t){ return "<option value='"+esc(t.name)+"'>"; }).join("");
+  }
+  function sum(g){ return FIELDS.reduce(function(a,k){ return a+g[k]; },0); }
+
+  function updateSel(list){
+    selected = selected.filter(function(g){ return genes.indexOf(g) !== -1; });
+    var vis = list || visible();
+    var n = vis.filter(function(g){ return selected.indexOf(g) !== -1; }).length;
+    var all = $("selAll");
+    all.checked = vis.length > 0 && n === vis.length;
+    all.indeterminate = n > 0 && n < vis.length;
+    all.disabled = vis.length === 0;
+    $("delSelBtn").textContent = "Seçilenleri sil (" + selected.length + ")";
+    $("delSelBtn").disabled = selected.length === 0;
+    ["favSelBtn","tagAddBtn","tagDelBtn"].forEach(function(id){ $(id).disabled = selected.length === 0; });
+  }
+
+  function render(){
+    var f = factor(), list = visible();
+    $("count").textContent = "Kayıtlı gen: " + genes.length;
+    renderTabs();
+    $("listTitle").hidden = !$("q").value.trim();
+    $("listTitle").textContent = "Sonuçlar: “" + $("q").value.trim() + "”";
+    var html = "";
+    list.forEach(function(g){
+      var i = genes.indexOf(g);
+      html += "<tr><td class='chk'><input type='checkbox' data-sel='"+i+"' aria-label='Seç: "+esc(g.name)+"'"+(selected.indexOf(g)!==-1?" checked":"")+"></td><td><button class='star"+(g.fav?" on":"")+"' data-star='"+i+"' aria-label='Favori' title='Favori'>"+(g.fav?"★":"☆")+"</button><strong>"+esc(g.name)+"</strong>"+(g.note?"<span class='sub-cell note'>"+esc(g.note)+"</span>":"")
+        + (gtags(g).length ? "<div class='gtags'>"+gtags(g).map(function(t){ return "<span class='gtag'>"+esc(t)+"<button data-untag='"+i+"' data-tag='"+esc(t)+"' aria-label='Etiketi kaldır'>×</button></span>"; }).join("")+"</div>" : "") + "</td>";
+      FIELDS.forEach(function(k){
+        var cv = CONC[k] ? g[CONC[k]] : null, dl = cv ? dilText(cv) : "";
+        html += "<td class='c-"+k+"'>"+fmt(g[k]*f.k)+(cv ? " <span class='conc'>("+fmtN(cv)+" µM)</span>" : "")
+              + "<span class='sub-cell'>1x: "+fmt(g[k])+"</span>"
+              + (dl ? "<span class='sub-cell dil'>"+dl+"</span>" : "")
+              + "</td>";
+      });
+      html += "<td class='tot'>"+fmt(sum(g)*f.k)+"<span class='sub-cell'>1x: "+fmt(sum(g))+"</span></td>";
+      html += "<td><button class='ghost small' data-edit='"+i+"'>Düzenle</button> <button class='danger small' data-del='"+i+"'>Sil</button></td></tr>";
+    });
+    if(!list.length){
+      html = "<tr><td colspan='9' class='empty'>" + (!genes.length ? "Henüz gen yok. Aşağıdan ilk geni ekleyin." : (view === "fav" && !$("q").value.trim() ? "Burada henüz gen yok. Genleri seçip ★ veya etiket ekleyin." : "Eşleşen gen yok.")) + "</td></tr>";
+    }
+    $("rows").innerHTML = html;
+    updateSel(list);
+    $("info").textContent = "Her değer: reaksiyon başına miktar × " + f.n + " numune" + (f.e ? " × " + (1+f.e/100).toLocaleString("tr-TR") + " (ek pay %"+f.e+")" : "") + " = ×" + (Math.round(f.k*100)/100).toLocaleString("tr-TR") + ". Birimler µL.";
+  }
+
+  function readForm(){
+    var name = $("gName").value.trim();
+    if(!name){ say("Gen adı boş olamaz.", true); $("gName").focus(); return null; }
+    return { name:name, note:$("gNote").value.trim(), mm:num($("gMM").value), f:num($("gF").value), r:num($("gR").value),
+             p:num($("gP").value), w:num($("gW").value),
+             fu:numOrNull($("gFu").value), ru:numOrNull($("gRu").value), pu:numOrNull($("gPu").value) };
+  }
+  function same(a,b){
+    return norm(a.name)===norm(b.name) && FIELDS.every(function(k){ return Math.abs(a[k]-b[k])<1e-9; })
+      && ["fu","ru","pu"].every(function(k){ return a[k]==null || b[k]==null || a[k]===b[k]; });
+  }
+  function addGene(){
+    var g = readForm(); if(!g) return;
+    if(editIdx >= 0 && genes[editIdx]){
+      ["fav","tags","dna0"].forEach(function(k){ if(genes[editIdx][k] !== undefined) g[k] = genes[editIdx][k]; });
+      genes[editIdx] = g; say("“"+g.name+"” güncellendi.");
+    } else if(genes.some(function(x){ return same(x,g); })){
+      say("“"+g.name+"” aynı değerlerle zaten kayıtlı.", true); return;
+    } else { genes.push(g); say("“"+g.name+"” eklendi."); }
+    editIdx = -1;
+    save();
+    $("gName").value = ""; $("gNote").value = ""; $("gFu").value = ""; $("gRu").value = ""; $("gPu").value = ""; $("formTitle").textContent = "Yeni gen ekle";
+    render();
+  }
+
+  function rowsAsArray(){
+    var f = factor();
+    var head = ["Gen","Not","Etiket","Master Mix","Forward (F)","Reverse (R)","Probe","Su","Toplam"];
+    var out = [head];
+    visible().forEach(function(g){
+      out.push([g.name, g.note||"", gtags(g).join("; ")].concat(FIELDS.map(function(k){
+        var cv = CONC[k] ? g[CONC[k]] : null;
+        return fmt(g[k]*f.k) + (cv ? " (" + fmtN(cv) + " µM)" : "");
+      }), [fmt(sum(g)*f.k)]));
+    });
+    return out;
+  }
+  function download(name, text, type){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text],{type:type}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  }
+
+  $("calcBtn").onclick = render;
+  ["q","n","extra"].forEach(function(id){ $(id).addEventListener("input", render); });
+  $("saveBtn").onclick = addGene;
+
+  $("rows").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.star !== undefined){
+      var sg = genes[+b.dataset.star]; sg.fav = !sg.fav; save(); render(); return;
+    }
+    if(b.dataset.untag !== undefined){
+      var ug = genes[+b.dataset.untag], tn = b.dataset.tag;
+      ug.tags = gtags(ug).filter(function(x){ return norm(x) !== norm(tn); }); save(); render(); return;
+    }
+    if(b.dataset.del !== undefined){
+      var g = genes[+b.dataset.del];
+      if(confirm("“"+g.name+"” silinsin mi?")){ genes.splice(+b.dataset.del,1); editIdx=-1; $("formTitle").textContent="Yeni gen ekle"; save(); render(); say("Silindi."); }
+    } else if(b.dataset.edit !== undefined){
+      var s = genes[+b.dataset.edit];
+      $("gName").value=s.name; $("gNote").value=s.note||""; editIdx=+b.dataset.edit;
+      ["mm","f","r","p","w"].forEach(function(k,i){
+        $(["gMM","gF","gR","gP","gW"][i]).value = String(s[k]).replace(".",",");
+      });
+      [["gFu","fu"],["gRu","ru"],["gPu","pu"]].forEach(function(x){ $(x[0]).value = s[x[1]] ? String(s[x[1]]).replace(".",",") : ""; });
+      $("formTitle").textContent = "Geni düzenle: " + s.name;
+      $("gName").scrollIntoView({behavior:"smooth",block:"center"}); $("gName").focus();
+    }
+  });
+
+  $("rows").addEventListener("change", function(e){
+    var c = e.target;
+    if(!c.matches || !c.matches("input[data-sel]")) return;
+    var g = genes[+c.dataset.sel], k = selected.indexOf(g);
+    if(c.checked && k === -1) selected.push(g);
+    if(!c.checked && k !== -1) selected.splice(k,1);
+    updateSel();
+  });
+  $("selAll").addEventListener("change", function(e){
+    var vis = visible();
+    if(e.target.checked){ vis.forEach(function(g){ if(selected.indexOf(g)===-1) selected.push(g); }); }
+    else { selected = selected.filter(function(g){ return vis.indexOf(g)===-1; }); }
+    render();
+  });
+  $("tabAll").onclick = function(){ view = "all"; tagFilter = null; render(); };
+  $("tabFav").onclick = function(){ view = "fav"; tagFilter = null; render(); };
+  $("tagBar").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    tagFilter = b.dataset.tag ? b.dataset.tag : null; render();
+  });
+  function cleanTag(v){ return String(v).replace(/\s+/g," ").trim(); }
+  $("favSelBtn").onclick = function(){
+    if(!selected.length) return;
+    var allFav = selected.every(function(g){ return g.fav; });
+    selected.forEach(function(g){ g.fav = !allFav; });
+    save(); render();
+    say(selected.length + " gen " + (allFav ? "favorilerden çıkarıldı." : "favorilere eklendi."));
+  };
+  $("tagAddBtn").onclick = function(){
+    var t = cleanTag($("tagInput").value);
+    if(!t){ say("Önce bir etiket adı yazın.", true); $("tagInput").focus(); return; }
+    var ex = tagCounts().filter(function(x){ return norm(x.name) === norm(t); })[0]; if(ex) t = ex.name;
+    var n = 0;
+    selected.forEach(function(g){ if(!hasTag(g,t)){ g.tags = gtags(g).concat([t]); n++; } });
+    save(); render(); say("“"+t+"” etiketi " + n + " gene eklendi.");
+  };
+  $("tagDelBtn").onclick = function(){
+    var t = cleanTag($("tagInput").value);
+    if(!t){ say("Kaldırılacak etiketin adını yazın.", true); $("tagInput").focus(); return; }
+    var n = 0;
+    selected.forEach(function(g){ if(hasTag(g,t)){ g.tags = gtags(g).filter(function(x){ return norm(x) !== norm(t); }); n++; } });
+    save(); render(); say("“"+t+"” etiketi " + n + " genden kaldırıldı.");
+  };
+  $("delSelBtn").onclick = function(){
+    var n = selected.length; if(!n) return;
+    if(!confirm(n + " gen kalıcı olarak silinsin mi?")) return;
+    genes = genes.filter(function(g){ return selected.indexOf(g) === -1; });
+    selected = []; editIdx = -1; $("formTitle").textContent = "Yeni gen ekle";
+    save(); render(); say(n + " gen silindi.");
+  };
+
+  $("copyBtn").onclick = function(){
+    var text = rowsAsArray().map(function(r){ return r.join("\t"); }).join("\n");
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ say("Liste kopyalandı."); }, function(){ fallbackCopy(text); });
+    } else fallbackCopy(text);
+  };
+  function fallbackCopy(text){
+    var t = document.createElement("textarea"); t.value=text; document.body.appendChild(t); t.select();
+    try{ document.execCommand("copy"); say("Liste kopyalandı."); }catch(e){ say("Kopyalanamadı.", true); }
+    t.remove();
+  }
+  $("csvBtn").onclick = function(){
+    var csv = "\ufeff" + rowsAsArray().map(function(r){
+      return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(";");
+    }).join("\r\n") + "\r\n\r\nmade by bilqinm";
+    download("primer_hesap.csv", csv, "text/csv;charset=utf-8");
+  };
+  $("backupBtn").onclick = function(){
+    download("genler_yedek.json", JSON.stringify(genes,null,2), "application/json");
+    say("Yedek indirildi.");
+  };
+  $("restoreBtn").onclick = function(){ $("restoreFile").click(); };
+  $("restoreFile").onchange = function(e){
+    var file = e.target.files[0]; if(!file) return;
+    var rd = new FileReader();
+    rd.onload = function(){
+      try{
+        var data = JSON.parse(rd.result);
+        if(!Array.isArray(data)) throw 0;
+        data.forEach(function(g){
+          if(!g || !g.name) return;
+          var clean = {name:String(g.name), note:String(g.note||"")};
+          FIELDS.forEach(function(k){ clean[k] = num(g[k]); });
+          clean.fu = numOrNull(g.fu != null ? g.fu : g.f_uM);
+          clean.ru = numOrNull(g.ru != null ? g.ru : g.r_uM);
+          clean.pu = numOrNull(g.pu != null ? g.pu : g.p_uM);
+          clean.fav = !!g.fav;
+          clean.tags = Array.isArray(g.tags) ? g.tags.map(cleanTag).filter(Boolean) : [];
+          var ex2 = genes.filter(function(x){ return same(x,clean); })[0];
+          if(!ex2) genes.push(clean);
+          else {
+            if(clean.fav) ex2.fav = true;
+            clean.tags.forEach(function(t){ if(!hasTag(ex2,t)) ex2.tags = gtags(ex2).concat([t]); });
+          }
+        });
+        save(); render(); say("Yedek yüklendi.");
+      }catch(err){ say("Dosya okunamadı.", true); }
+    };
+    rd.readAsText(file); e.target.value="";
+  };
+
+  $("linkBtn").onclick = function(){ onLinkClick(false); };
+  $("repickBtn").onclick = function(){ onLinkClick(true); };
+  $("dlBtn").onclick = downloadHtml;
+  if(window.indexedDB){ idbGet().then(function(h){ if(h) fileHandle = h; }); }
+  $("useFileBtn").onclick = function(){
+    if(!confirm("Dosyadaki orijinal liste yüklensin mi?")) return;
+    genes = JSON.parse(JSON.stringify(DEFAULT_GENES)); dirty = false; selected = []; editIdx = -1;
+    localSave(); render(); updateVer(); say("Orijinal liste yüklendi.");
+  };
+
+  load(); render(); updateVer();
+})();
+</script>
+</body>
+</html>
