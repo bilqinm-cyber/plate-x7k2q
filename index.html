@@ -459,6 +459,12 @@ body.drag #t input, #view-plate.drag #t input{
       <button class="ghost" id="restoreBtn">Yedekten yükle</button>
       <input type="file" id="restoreFile" accept=".json" hidden="">
     </div>
+    <div class="tools" id="ghTools">
+<button class="ghost" id="ghPush">☁ GitHub'a paylaş</button>
+<button class="ghost" id="ghPull">⬇ Paylaşılanı al</button>
+<button class="ghost small" id="ghCfg">⚙ GitHub ayarı</button>
+</div>
+<div class="info" id="ghInfo"></div>
     <div class="tagtools">
       <span class="lbl">Seçilenlere:</span>
       <button class="ghost" id="favSelBtn" disabled="">★ Favori ekle / çıkar</button>
@@ -1898,6 +1904,7 @@ let isListening = false;
 let speechRestartTimer = null;
 
 // Okuma modu elemanları
+["rdMic","rdVoice"].forEach(id => { const o = document.getElementById(id); if(o) o.remove(); });
 const rdMic = document.createElement("button");
 rdMic.id = "rdMic"; rdMic.type = "button"; rdMic.textContent = "🎤"; rdMic.title = "Sesli komut: numarayı söyle";
 const rdVoice = document.createElement("div");
@@ -2435,6 +2442,7 @@ function rdVoiceHandle(alts){
 
   function save(){
     curStamp = Date.now(); dirty = true;
+    ghUnpushed(true);
     if(!localSave()) say("Tarayıcı kaydetmeye izin vermedi.", true);
     updateVer();
     syncFile();
@@ -2746,7 +2754,182 @@ function rdVoiceHandle(alts){
     localSave(); render(); updateVer(); say("Orijinal liste yüklendi.");
   };
 
-  load(); render(); updateVer();
+
+/* ===== GITHUB PAYLAŞIMI: genler.json (sadece token'ı olan yazar, herkes okur) ===== */
+var GH_FILE = "genler.json";
+var ghLast = 0;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+var ghStamp = +(lsGet("pcr_gh_stamp")||0);
+var ghUnp = lsGet("pcr_gh_unpushed") === "1";
+
+function ghStatus(text, isErr){
+  var el = $("ghInfo"); if(!el) return;
+  el.textContent = text;
+  el.style.color = isErr ? "#b91c1c" : "";
+}
+function ghHasUnpushed(){ return ghUnp || (ghStamp === 0 && dirty); }
+function ghUnpushed(v){
+  ghUnp = !!v;
+  if(v){ lsSet("pcr_gh_unpushed","1"); ghStatus("● Bu cihazda paylaşılmamış değişiklik var. 'GitHub'a paylaş' ile gönderin."); }
+  else lsDel("pcr_gh_unpushed");
+}
+
+function ghRepo(){
+  var c = null;
+  try{ c = JSON.parse(lsGet("pcr_gh_cfg") || "null"); }catch(e){}
+  if(c && c.owner && c.repo) return c;
+  var h = location.hostname || "";
+  if(/\.github\.io$/i.test(h)){
+    var owner = h.split(".")[0];
+    var seg = location.pathname.split("/")[1] || "";
+    var repo = (seg && !/\.html?$/i.test(seg)) ? seg : owner + ".github.io";
+    return { owner: owner, repo: repo };
+  }
+  return null;
+}
+function ghRemoteUrl(){
+  var r = ghRepo(); if(!r) return null;
+  var h = (location.hostname || "").toLowerCase();
+  var onPages = /\.github\.io$/.test(h) && h.split(".")[0] === r.owner.toLowerCase();
+  var base = onPages ? new URL(GH_FILE, location.href).href
+                     : "https://raw.githubusercontent.com/" + r.owner + "/" + r.repo + "/HEAD/" + GH_FILE;
+  return base + "?t=" + Date.now();
+}
+function ghFetchRemote(){
+  var u = ghRemoteUrl();
+  if(!u) return Promise.resolve({ nocfg: true });
+  return fetch(u, { cache: "no-store" }).then(function(res){
+    if(res.status === 404) return { none: true };
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }).then(function(j){
+    if(j && j.none) return j;
+    if(!j || !Array.isArray(j.genes)) throw new Error("bad");
+    return { stamp: +j.stamp || 0, genes: j.genes };
+  });
+}
+function ghApply(rem){
+  genes = rem.genes.filter(function(g){ return g && g.name; }).map(function(g){
+    var c = Object.assign({}, g);
+    c.tags = Array.isArray(g.tags) ? g.tags : [];
+    c.fav = !!g.fav;
+    return c;
+  });
+  selected = []; editIdx = -1;
+  curStamp = rem.stamp || Date.now(); dirty = false;
+  localSave();
+  ghStamp = rem.stamp; lsSet("pcr_gh_stamp", String(ghStamp));
+  ghUnpushed(false);
+  render(); updateVer();
+}
+function ghSync(){
+  ghLast = Date.now();
+  ghStatus("Paylaşılan liste kontrol ediliyor…");
+  return ghFetchRemote().then(function(rem){
+    if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
+    if(rem.none){ ghStatus(ghHasUnpushed() ? "Henüz paylaşılan liste yok. 'GitHub'a paylaş' ile ilk listeyi gönderin." : "Henüz paylaşılan liste yok."); return; }
+    if(rem.stamp > ghStamp){
+      if(ghHasUnpushed()){
+        ghStatus("⚠ Paylaşılan listede yenilik var ama bu cihazda gönderilmemiş değişiklik var. 'Paylaşılanı al' ile alın ya da 'GitHub'a paylaş' ile üzerine yazın.", true);
+        return;
+      }
+      ghApply(rem);
+      ghStatus("✔ Paylaşılan liste yüklendi (" + genes.length + " gen).");
+    } else {
+      ghStatus(ghHasUnpushed() ? "● Bu cihazdaki değişiklikler henüz paylaşılmadı." : "✔ Liste güncel (" + genes.length + " gen).");
+    }
+  }).catch(function(){
+    ghStatus("Paylaşılan liste okunamadı (internet yok?). Kayıtlı liste kullanılıyor.", true);
+  });
+}
+
+function b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function unb64(b){ return decodeURIComponent(escape(atob(String(b).replace(/\s/g,"")))); }
+function ghApi(path, opt){
+  opt = opt || {};
+  opt.headers = Object.assign({ "Accept": "application/vnd.github+json", "Authorization": "Bearer " + lsGet("pcr_gh_token") }, opt.headers || {});
+  return fetch("https://api.github.com" + path, opt);
+}
+function slimGenes(){
+  return genes.map(function(g){
+    return { name:g.name, note:g.note||"", mm:g.mm, f:g.f, r:g.r, p:g.p, w:g.w, fu:g.fu||null, ru:g.ru||null, pu:g.pu||null, fav:g.fav?true:false, tags:g.tags||[], dna0:g.dna0||null };
+  });
+}
+
+function ghSetup(){
+  var r = ghRepo();
+  var rp = prompt("GitHub deposu (kullaniciadi/depoadi):", r ? r.owner + "/" + r.repo : "");
+  if(rp === null) return Promise.resolve(false);
+  rp = rp.trim();
+  if(rp){
+    var m = rp.match(/^([\w.-]+)\/([\w.-]+)$/);
+    if(!m){ alert("Biçim: kullaniciadi/depoadi"); return Promise.resolve(false); }
+    lsSet("pcr_gh_cfg", JSON.stringify({ owner: m[1], repo: m[2] }));
+  }
+  var tk = prompt("GitHub token (sadece bu cihazda saklanır).\nBoş bırakırsanız değişmez, 'sil' yazarsanız kaldırılır:", "");
+  if(tk === null) return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
+  tk = tk.trim();
+  if(tk.toLowerCase() === "sil"){ lsDel("pcr_gh_token"); ghStatus("Token silindi."); return Promise.resolve(false); }
+  if(tk) lsSet("pcr_gh_token", tk);
+  return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
+}
+
+function ghPush(){
+  var r = ghRepo(), tok = lsGet("pcr_gh_token");
+  if(!r || !tok){ return ghSetup().then(function(ok){ if(ok) return ghPush(); }); }
+  ghStatus("GitHub'a gönderiliyor…");
+  var path = "/repos/" + r.owner + "/" + r.repo + "/contents/" + GH_FILE;
+  return ghApi(path).then(function(res){
+    if(res.status === 404) return { sha: null, stamp: 0 };
+    if(!res.ok) throw { code: res.status };
+    return res.json().then(function(j){
+      var st = 0; try{ st = +JSON.parse(unb64(j.content)).stamp || 0; }catch(e){}
+      return { sha: j.sha, stamp: st };
+    });
+  }).then(function(cur){
+    if(cur.stamp > ghStamp && !confirm("Paylaşılan listede bu cihazda olmayan daha yeni bir sürüm var. Üzerine yazılsın mı?")){
+      ghStatus("İptal edildi."); return;
+    }
+    var stamp = Date.now();
+    var body = { message: "Gen listesi güncellendi", content: b64(JSON.stringify({ version: 1, stamp: stamp, genes: slimGenes() }, null, 1)) };
+    if(cur.sha) body.sha = cur.sha;
+    return ghApi(path, { method: "PUT", body: JSON.stringify(body) }).then(function(res){
+      if(!res.ok) throw { code: res.status };
+      curStamp = stamp; dirty = false; localSave();
+      ghStamp = stamp; lsSet("pcr_gh_stamp", String(stamp));
+      ghUnpushed(false); updateVer();
+      ghStatus("✔ GitHub'a paylaşıldı (" + genes.length + " gen). Diğer cihazlar yaklaşık 1–2 dakikada görür.");
+      say("Liste GitHub'a paylaşıldı.");
+    });
+  }).catch(function(e){
+    var c = e && e.code;
+    ghStatus(c === 401 ? "Token geçersiz ya da süresi dolmuş. ⚙ GitHub ayarı'ndan yenisini girin."
+           : (c === 403 || c === 404) ? "Yetki yok ya da depo bulunamadı. Token bu depoya 'Contents: Read and write' izniyle verilmeli."
+           : (c === 409 || c === 422) ? "Çakışma oldu, tekrar deneyin."
+           : "Gönderilemedi (internet?).", true);
+  });
+}
+
+$("ghPush").onclick = ghPush;
+$("ghPull").onclick = function(){
+  ghFetchRemote().then(function(rem){
+    if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
+    if(rem.none){ ghStatus("Henüz paylaşılan liste yok."); return; }
+    if(ghHasUnpushed() && !confirm("Bu cihazdaki gönderilmemiş değişiklikler silinip paylaşılan liste yüklensin mi?")) return;
+    ghApply(rem);
+    ghStatus("✔ Paylaşılan liste yüklendi (" + genes.length + " gen).");
+  }).catch(function(){ ghStatus("Paylaşılan liste okunamadı (internet yok?).", true); });
+};
+$("ghCfg").onclick = function(){ ghSetup().then(function(){ ghSync(); }); };
+document.addEventListener("visibilitychange", function(){
+  if(!document.hidden && ghLast && Date.now() - ghLast > 60000) ghSync();
+});
+function ghInit(){ ghSync(); }
+
+
+  load(); render(); updateVer(); ghInit();
 })();
 </script>
 </body>
