@@ -1370,16 +1370,25 @@ Output ONLY pure, raw JSON without markdown formatting:
     }
   };
 
-  const modelsToTry = [S.cachedModel || "models/gemini-3.8-flash", "models/gemini-3.8-flash", "models/gemini-2.0-flash", "models/gemini-1.5-flash"];
+  const modelsToTry = [S.cachedModel, "models/gemini-flash-latest", "models/gemini-3.8-flash", "models/gemini-2.5-flash", "models/gemini-2.0-flash"].filter(Boolean);
+  const errors = [];
+  let listed = false;
+  const payloadFor = (m) => {          // thinkingLevel yalnızca Gemini 3 ailesinde geçerli
+    const pl = JSON.parse(JSON.stringify(payload));
+    if (!/gemini-3/.test(m)) delete pl.generationConfig.thinkingConfig;
+    return pl;
+  };
   let lastError = null;
 
-  for (const mName of [...new Set(modelsToTry)]) {
+  const queue = [...new Set(modelsToTry)];
+  for (let qi = 0; qi < queue.length; qi++) {
+    const mName = queue[qi];
     try {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/${mName}:streamGenerateContent?alt=sse&key=${S.apiKey}`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payloadFor(mName))
       });
 
       if (!response.ok) {
@@ -1390,6 +1399,13 @@ Output ONLY pure, raw JSON without markdown formatting:
           throw new Error("Geçersiz API Anahtarı! Lütfen kontrol edin.");
         }
         lastError = new Error(`API Hatası (${response.status}): ${errMsg}`);
+        errors.push(mName.replace("models/", "") + " → " + response.status);
+        if ((response.status === 404 || response.status === 400) && !listed) {
+          // Bilinen model adları bu anahtarda yoksa: anahtarın gerçekten kullanabildiği modelleri listele
+          listed = true;
+          const extra = await listFlashModels();
+          extra.forEach(n => { if (!queue.includes(n)) queue.push(n); });
+        }
         continue;
       }
 
@@ -1478,7 +1494,32 @@ Output ONLY pure, raw JSON without markdown formatting:
       lastError = err;
     }
   }
+  if (errors.length) {
+    const all404 = errors.every(e => /→ 404$/.test(e));
+    throw new Error("Hiçbir yapay zeka modeli çalışmadı (" + errors.join(", ") + ")." +
+      (all404 ? " Anahtarın bu modellere erişimi yok; aistudio.google.com/apikey adresinden yeni bir anahtar oluşturup girin." : " Son hata: " + (lastError && lastError.message)));
+  }
   throw lastError || new Error("Kullanılabilir yapay zeka modeli bulunamadı.");
+}
+
+// Anahtarın erişebildiği, görsel okuyabilen Gemini modellerini listeler (flash öncelikli, en yeni sürüm önce)
+async function listFlashModels() {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${S.apiKey}`);
+    if (!res.ok) return [];
+    const j = await res.json();
+    const names = (j.models || [])
+      .filter(m => (m.supportedGenerationMethods || []).includes("generateContent")
+                && /^models\/gemini-/.test(m.name)
+                && /flash|pro/.test(m.name)
+                && !/(tts|image|embed|live|audio|robotics|computer-use|exp)/.test(m.name))
+      .map(m => m.name);
+    const kind = n => /flash/.test(n) ? (/lite/.test(n) ? 1 : 2) : 0;
+    const ver = n => { const v = n.match(/gemini-(\d+(?:\.\d+)?)/); return v ? parseFloat(v[1]) : 0; };
+    const stable = n => /preview/.test(n) ? 0 : 1;
+    names.sort((a, b) => (kind(b) - kind(a)) || (ver(b) - ver(a)) || (stable(b) - stable(a)));
+    return names.slice(0, 6);
+  } catch (e) { return []; }
 }
 
 /* ÇOKLU PLATE PDF / YAZDIRMA */
