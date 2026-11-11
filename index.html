@@ -594,7 +594,7 @@ if(!S.apiKey || S.apiKey.trim() === ""){
 // Eski, iptal edilmiş anahtar tarayıcıda kayıtlı kaldıysa sil: ilk kamera/galeri kullanımında yenisi sorulur
 if(/^AQ\.Ab8RN6KN/.test(S.apiKey || "")){ S.apiKey = ""; }
 // Kayıtlı model seçimini bir kez sıfırla: en iyi model yeniden belirlensin
-if(S.modelRev !== 3){ S.cachedModel = ""; S.modelRev = 3; }
+if(S.modelRev !== 4){ S.cachedModel = ""; S.modelRev = 4; }
 
 while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
 
@@ -1356,7 +1356,18 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
     }
   };
 
-  const modelsToTry = [S.cachedModel, "models/gemini-3.8-flash", "models/gemini-3.5-flash", "models/gemini-2.5-flash", "models/gemini-2.0-flash"].filter(Boolean);
+  // Önce API anahtarının gerçekten erişebildiği modelleri öğren.
+  // Flash kotası dolarsa Flash-Lite modelleri de otomatik denenir.
+  const availableModels = await listFlashModels();
+  const preferredModels = [
+    "models/gemini-3.8-flash", "models/gemini-3.7-flash",
+    "models/gemini-3.6-flash", "models/gemini-3.5-flash",
+    "models/gemini-3.5-flash-lite", "models/gemini-3.1-flash-lite",
+    "models/gemini-2.5-flash-lite"
+  ];
+  const modelsToTry = availableModels.length
+    ? [...new Set([S.cachedModel, ...preferredModels, ...availableModels].filter(m => m && availableModels.includes(m)))]
+    : [...new Set([S.cachedModel, ...preferredModels].filter(Boolean))];
   const errors = [];
   let listed = false;
   const noThink = new Set();           // "thinking" ayarını reddeden modeller
@@ -1611,7 +1622,7 @@ async function listFlashModels() {
     const ver = n => { const v = n.match(/gemini-(\d+(?:\.\d+)?)/); return v ? parseFloat(v[1]) : 0; };
     const stable = n => /preview/.test(n) ? 0 : 1;
     names.sort((a, b) => (kind(b) - kind(a)) || (stable(b) - stable(a)) || (ver(b) - ver(a)));
-    return names.slice(0, 6);
+    return names;
   } catch (e) { return []; }
 }
 
