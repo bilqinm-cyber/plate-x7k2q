@@ -24,7 +24,7 @@ body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;backgrou
 .card-icon{font-size:38px;margin-bottom:14px;display:inline-block}
 .card-title{font-size:19px;font-weight:800;color:#17302c;margin:0 0 8px}
 .card-desc{font-size:13.5px;color:#5d7571;line-height:1.5;margin:0 0 18px;flex-grow:1}
-.card-btn{background:#0f6b5c;color:#fff;border:none;padding:11px 16px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.card-btn{background:#0f6b5c;color:#fff;border:none;padding:11px 16px;border-radius:8px;font-weight:700;font-size:14px;text-align:center;cursor:display:flex;align-items:center;justify-content:center;gap:6px}
 .card-btn.blue{background:#2563eb}
 
 /* 2. PLATE KURULUMU STILLERI */
@@ -123,6 +123,28 @@ body.drag #t input, #view-plate.drag #t input{
 .progress-bar{height:100%;width:5%;background:linear-gradient(90deg,#2563eb,#059669);transition:width .2s ease;border-radius:8px}
 .progress-meta{display:flex;justify-content:space-between;font-size:12px;color:#1b1f24;font-weight:800}
 
+/* ==================================================== */
+/* 💡 AKILLI IŞIK MASASI (tam ekran, butonsuz)         */
+/* ==================================================== */
+#lightBoxModal{position:fixed;inset:0;background:#000;z-index:9999;touch-action:none;color:#fff;overflow:hidden;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#lightBoxModal[hidden]{display:none!important}
+#lbMainArea{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#lbRotWrap{display:flex;align-items:center;justify-content:center;transform-origin:center center;flex:none}
+#lbPlateWrap{background:#000;flex:none}
+#lbGrid{display:grid;grid-template-columns:repeat(12,var(--lbc,9mm));grid-template-rows:repeat(8,var(--lbc,9mm));width:calc(12 * var(--lbc,9mm));height:calc(8 * var(--lbc,9mm))}
+.lb-well{width:var(--lbc,9mm);height:var(--lbc,9mm);display:flex;align-items:center;justify-content:center;box-sizing:border-box;position:relative;cursor:pointer}
+.lb-circle{width:78%;height:78%;border-radius:50%;background:#070b14;border:1px solid #1e293b;display:flex;align-items:center;justify-content:center;font-size:calc(var(--lbc,9mm) * .2);font-weight:900;color:#334155;transition:all .12s cubic-bezier(0,0,.2,1)}
+.lb-well.active .lb-circle{background:#fff!important;color:#000!important;border-color:#fff!important;box-shadow:0 0 calc(var(--lbc,9mm)*.3) calc(var(--lbc,9mm)*.08) #fff,0 0 calc(var(--lbc,9mm)*.6) calc(var(--lbc,9mm)*.14) rgba(56,189,248,.7)!important;transform:scale(1.1);z-index:10}
+.lb-well.match .lb-circle{background:#22c55e!important;color:#000!important;border-color:#86efac!important;box-shadow:0 0 calc(var(--lbc,9mm)*.3) calc(var(--lbc,9mm)*.08) #4ade80,0 0 calc(var(--lbc,9mm)*.55) calc(var(--lbc,9mm)*.12) rgba(34,197,94,.6)!important;transform:scale(1.08);z-index:5}
+#lbInfo{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);background:rgba(15,23,42,.9);color:#e2e8f0;padding:6px 16px;border-radius:20px;font:700 15px system-ui,sans-serif;z-index:20;pointer-events:none;max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .25s}
+#lbInfo.show{opacity:1}
+#lbInfo.err{background:rgba(185,28,28,.94)}
+#lbDot{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px);width:12px;height:12px;border-radius:50%;background:#475569;z-index:21;pointer-events:none}
+#lbDot.on{background:#ef4444;animation:pulseMic 1.4s infinite}
+@keyframes pulseMic{0%,100%{opacity:1}50%{opacity:.35}}
+#lbTools{position:absolute;right:calc(env(safe-area-inset-right,0px) + 4px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:25}
+#lbTools button{width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(30,41,59,.55);color:#fff;font:800 18px/1 system-ui,sans-serif;opacity:.5;touch-action:manipulation;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#lbTools button:active{opacity:1;background:rgba(56,189,248,.5)}
 
 /* 3. PRIMER HESAPLAMA STILLERI */
 #view-primer{
@@ -154,11 +176,6 @@ body.drag #t input, #view-plate.drag #t input{
 #view-primer .credit svg{width:24px;height:24px;flex:none;opacity:.85}
 #view-primer .credit-ver{opacity:.65;letter-spacing:.06em}
 #view-primer .credit-ver:not(:empty)::before{content:"·";margin-right:10px}
-/* Plate sayfası alt imza */
-#plateCredit{margin:26px auto 10px;padding-top:12px;border-top:1px solid rgba(148,163,184,.3);display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;color:#94a3b8;letter-spacing:.14em}
-#plateCredit svg{width:22px;height:22px;flex:none;opacity:.85}
-#plateCredit .credit-ver{opacity:.7;letter-spacing:.05em}
-#plateCredit .credit-ver:not(:empty)::before{content:"·";margin-right:10px}
 #view-primer table{border-collapse:collapse;width:100%;min-width:860px}
 #view-primer th,#view-primer td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
 #view-primer th:first-child,#view-primer td:first-child{text-align:left}
@@ -210,7 +227,7 @@ body.drag #t input, #view-plate.drag #t input{
 /* YAZDIRMA (PRINT) STILLERI */
 #printView{display:none}
 @media print{
- #rd, .noprint, #printModal, #apiModal, #scanModal, #view-home, .portal-nav{display:none!important}
+ #rd, .noprint, #printModal, #apiModal, #scanModal, #lightBoxModal, #view-home, .portal-nav{display:none!important}
  body.view-plate-active #view-primer{display:none!important}
  body.view-primer-active #view-plate{display:none!important}
  @page{size:A4 landscape;margin:6mm 8mm}
@@ -292,6 +309,8 @@ body.drag #t input, #view-plate.drag #t input{
   </div>
 
   <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">
+   <!-- 💡 AKILLI IŞIK MASASI BUTONU -->
+   <button class="pri" id="btnOpenLightBox" style="background:#7c3aed;border-color:#6d28d9;font-weight:800">💡 Akıllı Işık Masası</button>
    <button class="pri" id="rdBtn">Okuma modu (tam ekran)</button>
    <button id="dgBtn">Sürükle modu: kapalı</button>
    <select id="dgMode" title="Sürükle-doldur davranışı" style="width:auto;padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit">
@@ -347,7 +366,6 @@ body.drag #t input, #view-plate.drag #t input{
     <button class="pri" id="printBtn">Yazdır / PDF</button>
     <button id="btnCamera" style="background:#059669;color:#fff;border-color:#059669;font-weight:700">📷 Kameradan Çek</button>
     <button id="btnGallery" style="background:#047857;color:#fff;border-color:#047857;font-weight:700">🖼️ Galeriden Seç</button>
-    <button id="btnApiKey" type="button" style="background:#334155;color:#fff;border-color:#334155;font-weight:700">🔑 API Anahtarı</button>
     <input type="file" id="inputCamera" accept="image/*" capture="environment" hidden>
     <input type="file" id="inputGallery" accept="image/*" hidden>
     <button id="clr">Bu Plate'i temizle</button>
@@ -361,7 +379,7 @@ body.drag #t input, #view-plate.drag #t input{
  <div id="apiModal" class="modal-backdrop" hidden>
   <div class="modal-box">
    <h3>Google Gemini API Anahtarı</h3>
-   <p class="modal-sub">Görselden kuyu okumak için API anahtarı tanımlayabilirsiniz.</p>
+   <p class="modal-sub">Görselden kuyu okumak için geçerli bir Google AI Gemini API anahtarı girin.</p>
    <input type="text" id="apiKeyInput" placeholder="AIzaSy..." style="width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;font:13px monospace;background:var(--bg);color:var(--tx);margin-bottom:12px">
    <div class="modal-btns">
     <button id="btnApiCancel">Kapat</button>
@@ -392,16 +410,25 @@ body.drag #t input, #view-plate.drag #t input{
   </div>
  </div>
 
-  <footer class="credit noprint" id="plateCredit">
-    <svg viewBox="0 0 28 28" fill="none" stroke="#2dd4bf" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-      <circle cx="14" cy="14" r="12.5" stroke-width="1.2"></circle>
-      <path d="M10 5.5C10 10 18 10 18 14C18 18 10 10 10 22.5"></path>
-      <path d="M18 5.5C18 10 10 10 10 14C10 18 18 18 18 22.5"></path>
-      <path d="M11.4 8.3h5.2M11.4 19.7h5.2" stroke-width="1.2"></path>
-    </svg>
-    <span>made by bilqinm</span>
-    <span class="credit-ver" id="credVer2"></span>
-  </footer>
+ <!-- ==================================================== -->
+ <!-- 💡 AKILLI IŞIK MASASI (tam ekran, butonsuz, sesli)  -->
+ <!-- ==================================================== -->
+ <div id="lightBoxModal" hidden>
+   <div id="lbMainArea">
+     <div id="lbRotWrap">
+       <div id="lbPlateWrap">
+         <div id="lbGrid"></div>
+       </div>
+     </div>
+   </div>
+   <div id="lbInfo"></div>
+   <span id="lbDot"></span>
+   <div id="lbTools">
+     <button type="button" id="lbZoomIn" title="Büyüt">+</button>
+     <button type="button" id="lbZoomOut" title="Küçült">−</button>
+     <button type="button" id="lbRotBtn" title="Çevir">⟲</button>
+   </div>
+ </div>
 </div>
 
 <!-- 3. PRIMER-PROB HESAPLAYICI MODÜLÜ -->
@@ -433,11 +460,11 @@ body.drag #t input, #view-plate.drag #t input{
       <input type="file" id="restoreFile" accept=".json" hidden="">
     </div>
     <div class="tools" id="ghTools">
-<button class="ghost" id="ghPush">☁ GitHub'a paylaş</button>
-<button class="ghost" id="ghPull">⬇ Paylaşılanı al</button>
-<button class="ghost small" id="ghCfg">⚙ GitHub ayarı</button>
-</div>
-<div class="info" id="ghInfo"></div>
+      <button class="ghost" id="ghPush">☁ GitHub'a paylaş</button>
+      <button class="ghost" id="ghPull">⬇ Paylaşılanı al</button>
+      <button class="ghost small" id="ghCfg">⚙ GitHub ayarı</button>
+    </div>
+    <div class="info" id="ghInfo"></div>
     <div class="tagtools">
       <span class="lbl">Seçilenlere:</span>
       <button class="ghost" id="favSelBtn" disabled="">★ Favori ekle / çıkar</button>
@@ -499,7 +526,7 @@ body.drag #t input, #view-plate.drag #t input{
     <svg viewBox="0 0 28 28" fill="none" stroke="#0f6b5c" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
       <circle cx="14" cy="14" r="12.5" stroke-width="1.2"></circle>
       <path d="M10 5.5C10 10 18 10 18 14C18 18 10 10 10 22.5"></path>
-      <path d="M18 5.5C18 10 10 10 10 14C10 18 18 18 18 22.5"></path>
+      <path d="M18 5.5C18 10 10 10 10 22.5"></path>
       <path d="M11.4 8.3h5.2M11.4 19.7h5.2" stroke-width="1.2"></path>
     </svg>
     <span>made by bilqinm</span>
@@ -529,6 +556,7 @@ function switchView(viewId, pushHistory = true) {
 }
 
 window.addEventListener('popstate', (e) => {
+  if (typeof lightBoxActive !== 'undefined' && lightBoxActive) { closeLightBox(false); return; }
   if (typeof rdOn !== 'undefined' && rdOn) { rdClose(false); return; }
   if (typeof printModalOpen !== 'undefined' && printModalOpen) { closePrintModal(false); return; }
   if (typeof apiModalOpen !== 'undefined' && apiModalOpen) { closeApiModal(false); return; }
@@ -567,7 +595,7 @@ let S = {
   tmap: {},
   tn: 0,
   apiKey: DEFAULT_API_KEY,
-  cachedModel: "models/gemini-3.8-flash"
+  cachedModel: "models/gemini-1.5-flash"
 };
 
 try{
@@ -591,10 +619,7 @@ try{
 if(!S.apiKey || S.apiKey.trim() === ""){
   S.apiKey = DEFAULT_API_KEY;
 }
-// Eski, iptal edilmiş anahtar tarayıcıda kayıtlı kaldıysa sil: ilk kamera/galeri kullanımında yenisi sorulur
 if(/^AQ\.Ab8RN6KN/.test(S.apiKey || "")){ S.apiKey = ""; }
-// Kayıtlı model seçimini bir kez sıfırla: en iyi model yeniden belirlensin
-if(S.modelRev !== 3){ S.cachedModel = ""; S.modelRev = 3; }
 
 while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
 
@@ -1067,7 +1092,7 @@ let rt0;
 const rdRe=()=>{if(rdOn){clearTimeout(rt0);rt0=setTimeout(rdDraw,120)}};
 addEventListener("resize",rdRe);addEventListener("orientationchange",rdRe);
 
-/* ==================== SÜRÜKLE - DOLDUR MODU (TAMİR EDİLDİ) ==================== */
+/* ==================== SÜRÜKLE - DOLDUR MODU ==================== */
 let dg=false, drag=null;
 
 function nextVal(v, k, m) {
@@ -1148,7 +1173,6 @@ t.addEventListener("pointermove", e => {
   nts[i].classList.toggle("off", !v);
   nts[i].readOnly = !v;
   
-  // Hızlı yerel görsel güncelleme (donmayı ve gecikmeyi önler)
   const st = getStyle(v);
   td.style.background = st.bg;
   if (st.sym) td.setAttribute("data-sym", st.sym);
@@ -1160,13 +1184,12 @@ const dgEnd = () => {
   msAct = false;
   if (drag) {
     drag = null;
-    refresh(); // Sürükleme bitince tek seferde kaydet ve yenile
+    refresh();
   }
 };
 window.addEventListener("pointerup", dgEnd);
 window.addEventListener("pointercancel", dgEnd);
 
-// Dokunmatik ekranda sürüklerken sayfanın aşağı/yukarı kaymasını engeller
 t.addEventListener("touchstart", e => {
   if ((dg || drag || msAct) && e.cancelable) e.preventDefault();
 }, { passive: false });
@@ -1174,7 +1197,6 @@ t.addEventListener("touchmove", e => {
   if ((dg || drag || msAct) && e.cancelable) e.preventDefault();
 }, { passive: false });
 
-/* Normal modda çift tıkla hızlı sürükle */
 let lt = { t: 0, i: -1 };
 t.addEventListener("pointerdown", e => {
   if (dg || drag) return;
@@ -1214,7 +1236,9 @@ function msDraw() {
 }
 dgMode.onchange = () => { if (dgMode.value !== "s") { msel = new Set(); msDraw(); } };
 
-/* KAMERA VE GALERİ AI OCR */
+/* ==================================================== */
+/* 📷 KAMERA VE GALERİ AI OCR (DÜZELTİLDİ VE GÜNCELLENDİ) */
+/* ==================================================== */
 const btnCamera = document.getElementById("btnCamera");
 const btnGallery = document.getElementById("btnGallery");
 const inputCamera = document.getElementById("inputCamera");
@@ -1230,7 +1254,7 @@ const scanTimer = document.getElementById("scanTimer");
 const scanStatusTitle = document.getElementById("scanStatusTitle");
 const scanStatusSub = document.getElementById("scanStatusSub");
 
-let apiModalOpen = false, pendingTrigger = null, timerInterval = null;
+let apiModalOpen = false, timerInterval = null;
 
 function setProgress(pct, title, sub){
   scanProgressBar.style.width = pct + "%";
@@ -1246,8 +1270,8 @@ function startTimer(){
 }
 function stopTimer(){ clearInterval(timerInterval); }
 
-function openApiModal(triggerInput){
-  pendingTrigger = triggerInput; apiModalOpen = true; apiModal.hidden = false;
+function openApiModal(){
+  apiModalOpen = true; apiModal.hidden = false;
   apiKeyInput.value = S.apiKey || DEFAULT_API_KEY;
   history.pushState({ pcr_modal: "api" }, "");
 }
@@ -1261,24 +1285,33 @@ btnApiCancel.onclick = () => closeApiModal(true);
 btnApiSave.onclick = () => {
   const k = apiKeyInput.value.trim();
   if(!k){ apiKeyInput.focus(); return; }
-  if (k !== S.apiKey) S.cachedModel = "";   // yeni anahtar farklı modellere erişebilir
   S.apiKey = k;
   save(); closeApiModal(true);
-  if(pendingTrigger) pendingTrigger.click();
+  alert("API Anahtarı kaydedildi. Şimdi kameradan veya galeriden görsel seçebilirsiniz.");
 };
 
-btnCamera.onclick = () => { if(!S.apiKey){ openApiModal(btnCamera); return; } inputCamera.click(); };
-btnGallery.onclick = () => { if(!S.apiKey){ openApiModal(btnGallery); return; } inputGallery.click(); };
-document.getElementById("btnApiKey").onclick = () => openApiModal(null);
+btnCamera.onclick = () => { 
+  if(!S.apiKey || S.apiKey.trim() === ""){ 
+    openApiModal(); 
+    return; 
+  } 
+  inputCamera.click(); 
+};
+
+btnGallery.onclick = () => { 
+  if(!S.apiKey || S.apiKey.trim() === ""){ 
+    openApiModal(); 
+    return; 
+  } 
+  inputGallery.click(); 
+};
 
 const handleFileInput = async (file) => {
   if(!file) return;
   scanModal.hidden = false; startTimer();
-  setProgress(5, "Fotoğraf Hazırlanıyor...", "Netlik korunarak yüksek çözünürlükte işleniyor");
+  setProgress(5, "Fotoğraf Hazırlanıyor...", "Netlik ve çözünürlük optimize ediliyor");
   try {
-    const tR = Date.now();
-    const base64Data = await resizeImageToBase64(file, 2048);
-    window._pcrResizeMs = Date.now() - tR;
+    const base64Data = await resizeImageToBase64(file, 1600);
     await processImageWithGeminiStream(base64Data);
   } catch(err) {
     alert("Tarama sırasında hata oluştu: " + err.message);
@@ -1305,7 +1338,7 @@ function resizeImageToBase64(file, maxDim) {
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(image, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.90).split(",")[1]);
+        resolve(canvas.toDataURL("image/jpeg", 0.88).split(",")[1]);
       };
       image.onerror = reject; image.src = readerEvent.target.result;
     };
@@ -1314,11 +1347,12 @@ function resizeImageToBase64(file, maxDim) {
 }
 
 async function processImageWithGeminiStream(base64Image) {
-  if (!S.apiKey) S.apiKey = DEFAULT_API_KEY;
+  if (!S.apiKey || S.apiKey.trim() === "") {
+    openApiModal();
+    throw new Error("Geçerli bir API Anahtarı girilmedi.");
+  }
   setProgress(10, "Yapay Zeka Bağlanıyor...", "Görsel aktarılıyor, okuma başlıyor");
 
-  const t0 = Date.now();
-  let tFirst = 0, tEnd = 0;
   const systemPrompt = `You are a specialized PCR Laboratory Assistant.
 Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12).
 Identify:
@@ -1328,8 +1362,13 @@ Identify:
    - "n": optional note or subtext (e.g. "94100").
 3. Analysis name if visible.
 
-Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single line (no spaces, no indentation, no newlines). List ONLY non-empty wells. If a well has no note, its value is a plain string; use an object only when there is a note:
-{"analiz":"ANALYSIS_NAME","rows":["ROW_A","ROW_B","ROW_C","ROW_D","ROW_E","ROW_F","ROW_G","ROW_H"],"cols":["COL_1","COL_2","COL_3","COL_4","COL_5","COL_6","COL_7","COL_8","COL_9","COL_10","COL_11","COL_12"],"wells":{"A1":"7683","A2":"7683","B1":{"v":"7690","n":"94100"}}}`;
+Output ONLY pure, raw JSON without markdown formatting:
+{
+  "analiz": "ANALYSIS_NAME",
+  "rows": ["ROW_A", "ROW_B", "ROW_C", "ROW_D", "ROW_E", "ROW_F", "ROW_G", "ROW_H"],
+  "cols": ["COL_1", "COL_2", "COL_3", "COL_4", "COL_5", "COL_6", "COL_7", "COL_8", "COL_9", "COL_10", "COL_11", "COL_12"],
+  "wells": { "A1": {"v": "7683"}, "A2": {"v": "7683"} }
+}`;
 
   const payload = {
     contents: [{
@@ -1340,57 +1379,38 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
     }],
     generationConfig: {
       temperature: 0.1,
-      thinkingConfig: { thinkingLevel: "low" },
       responseMimeType: "application/json"
     }
   };
 
-  const modelsToTry = [S.cachedModel, "models/gemini-3.8-flash", "models/gemini-3.5-flash", "models/gemini-2.5-flash", "models/gemini-2.0-flash"].filter(Boolean);
-  const errors = [];
-  let listed = false;
-  const noThink = new Set();           // "thinking" ayarını reddeden modeller
-  const payloadFor = (m) => {          // düşünme ayarı model ailesine göre (hız için minimum)
-    const pl = JSON.parse(JSON.stringify(payload));
-    const g = pl.generationConfig;
-    if (noThink.has(m)) delete g.thinkingConfig;
-    else if (/gemini-3/.test(m)) g.thinkingConfig = { thinkingLevel: "low" };
-    else if (/gemini-2\.5-flash/.test(m)) g.thinkingConfig = { thinkingBudget: 0 };
-    else if (/gemini-2\.5-pro/.test(m)) g.thinkingConfig = { thinkingBudget: 128 };
-    else delete g.thinkingConfig;
-    return pl;
-  };
-  let lastError = null;
+  const modelsToTry = [
+    S.cachedModel,
+    "models/gemini-1.5-flash",
+    "models/gemini-2.0-flash",
+    "models/gemini-2.5-flash"
+  ].filter(Boolean);
 
   const queue = [...new Set(modelsToTry)];
+  let lastError = null;
+
   for (let qi = 0; qi < queue.length; qi++) {
     const mName = queue[qi];
-    const tTry = Date.now(); tFirst = 0; tEnd = 0;
     try {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/${mName}:streamGenerateContent?alt=sse&key=${S.apiKey}`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payloadFor(mName))
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
         const errJson = await response.json().catch(() => null);
         const errMsg = (errJson && errJson.error && errJson.error.message) ? errJson.error.message : await response.text();
         if (response.status === 400 && errMsg.includes("API_KEY_INVALID")) {
-          openApiModal(null);
+          openApiModal();
           throw new Error("Geçersiz API Anahtarı! Lütfen kontrol edin.");
         }
         lastError = new Error(`API Hatası (${response.status}): ${errMsg}`);
-        if (response.status === 400 && /think/i.test(errMsg) && !noThink.has(mName)) {
-          noThink.add(mName); qi--; continue;   // aynı modeli düşünme ayarı olmadan tekrar dene
-        }
-        errors.push(mName.replace("models/", "") + " → " + response.status);
-        if ((response.status === 404 || response.status === 400) && !listed && qi === queue.length - 1) {
-          // Bilinen model adları bu anahtarda yoksa: anahtarın gerçekten kullanabildiği modelleri listele
-          listed = true;
-          const extra = await listFlashModels();
-          extra.forEach(n => { if (!queue.includes(n)) queue.push(n); });
-        }
         continue;
       }
 
@@ -1412,31 +1432,30 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
             if (jsonStr === "[DONE]") continue;
             try {
               const parsed = JSON.parse(jsonStr);
-              const textPart = (parsed.candidates?.[0]?.content?.parts || [])
-                .filter(pt => pt && !pt.thought && typeof pt.text === "string").map(pt => pt.text).join("");
-              if (textPart) {
-                if (!tFirst) tFirst = Date.now();
-                fullText += textPart;
-                const matchedWells = fullText.match(/"[A-H](?:1[0-2]|[1-9])"/g) || [];
-                const wellsCount = Math.min(96, matchedWells.length);
-                const currentPct = Math.min(98, Math.max(12, Math.round((wellsCount / 96) * 100)));
-                const lastWellName = wellsCount > 0 ? matchedWells[matchedWells.length - 1].replace(/"/g, "") : "";
-                setProgress(currentPct, `Canlı Okunuyor: ${wellsCount} / 96 Kuyu`, wellsCount > 0 ? `Son Kuyu: ${lastWellName}` : "Tablo yapısı çözümleniyor...");
+              const parts = parsed.candidates?.[0]?.content?.parts || [];
+              for (const part of parts) {
+                // Düşünme parçalarını atla, yalnızca gerçek JSON çıktısını birleştir
+                if (!part.thought && part.text) {
+                  fullText += part.text;
+                }
               }
+              const matchedWells = fullText.match(/"[A-H](?:1[0-2]|[1-9])"/g) || [];
+              const wellsCount = Math.min(96, matchedWells.length);
+              const currentPct = Math.min(98, Math.max(12, Math.round((wellsCount / 96) * 100)));
+              const lastWellName = wellsCount > 0 ? matchedWells[matchedWells.length - 1].replace(/"/g, "") : "";
+              setProgress(currentPct, `Canlı Okunuyor: ${wellsCount} / 96 Kuyu`, wellsCount > 0 ? `Son Kuyu: ${lastWellName}` : "Tablo yapısı çözümleniyor...");
             } catch(e) {}
           }
         }
       }
 
       if (!fullText) throw new Error("Görselden veri okunamadı.");
-      tEnd = Date.now();
       setProgress(99, "Plate Tablosuna Yerleştiriliyor...", "Renklendirme uygulanıyor");
 
-      const data = parseLooseJson(fullText);
-      if (!data) {
-        const pe = new Error("Yapay zeka yanıtı okunamadı. Tekrar deneyin (görsel daha net/yakın olabilir).");
-        pe.noRetry = true; throw pe;     // aynı görseli başka modelle baştan göndermek süreyi katlar
-      }
+      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Model geçerli bir JSON yanıtı üretmedi.");
+      const data = JSON.parse(jsonMatch[0]);
+
       push();
       const p = curP();
 
@@ -1456,17 +1475,16 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
             const r = R.indexOf(m[1]), c = +m[2] - 1;
             if (r >= 0 && r < 8 && c >= 0 && c < C) {
               const cellData = data.wells[key];
-              if (cellData === null || cellData === undefined || cellData === "") return;
               const idx = r * C + c;
-              if (typeof cellData === "object") {
-                let v = String(cellData.v == null ? "" : cellData.v);
+              if (typeof cellData === "object" && cellData !== null) {
+                let v = cellData.v || "";
                 if (/^(çk|ck)$/i.test(v)) v = "ÇK";
                 else if (/^(N|P|EC|QC|NTC)$/i.test(v)) v = v.toUpperCase();
                 else v = v.replace(/[^0-9]/g, "");
                 p.cells[idx] = v;
                 if (cellData.n) p.notes[idx] = String(cellData.n).toLocaleUpperCase("tr-TR");
               } else {
-                let v = String(cellData);
+                let v = String(cellData || "");
                 if (/^(çk|ck)$/i.test(v)) v = "ÇK";
                 else if (/^(N|P|EC|QC|NTC)$/i.test(v)) v = v.toUpperCase();
                 else v = v.replace(/[^0-9]/g, "");
@@ -1478,82 +1496,15 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
       }
 
       S.cachedModel = mName; save();
-      const tDone = Date.now();
-      const sec = (a, b) => ((b - a) / 1000).toFixed(1);
-      scanToast(mName, tDone - t0,
-        "foto " + (((window._pcrResizeMs || 0) / 1000).toFixed(1)) + " · ilk yanıt " + sec(tTry, tFirst || tEnd) +
-        " · okuma " + sec(tFirst || tEnd, tEnd) + " · yerleştirme " + sec(tEnd, tDone) + " sn" +
-        (qi > 0 || errors.length ? " · " + (qi + 1) + ". modelde" : ""));
       setProgress(100, "Tamamlandı!", "Tüm kuyucuklar başarıyla aktarıldı");
       refreshMetaInputs(); refresh();
       return;
     } catch (err) {
       if (err.message && err.message.includes("Geçersiz API Anahtarı")) throw err;
-      if (err.noRetry) throw err;
       lastError = err;
     }
   }
-  if (errors.length) {
-    const all404 = errors.every(e => /→ 404$/.test(e));
-    throw new Error("Hiçbir yapay zeka modeli çalışmadı (" + errors.join(", ") + ")." +
-      (all404 ? " Anahtarın bu modellere erişimi yok; aistudio.google.com/apikey adresinden yeni bir anahtar oluşturup girin." : " Son hata: " + (lastError && lastError.message)));
-  }
   throw lastError || new Error("Kullanılabilir yapay zeka modeli bulunamadı.");
-}
-
-// Tarama bitince kullanılan model ve süre kısa süre görünür
-function scanToast(model, ms, detail) {
-  try {
-    const old = document.getElementById("scanToast"); if (old) old.remove();
-    const t = document.createElement("div");
-    t.id = "scanToast";
-    t.textContent = "✔ " + model.replace("models/", "") + " · toplam " + (ms / 1000).toFixed(1) + " sn" + (detail ? "\n" + detail : "");
-    t.style.cssText = "position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:rgba(15,23,42,.94);color:#fff;padding:8px 16px;border-radius:16px;font:700 13px system-ui,sans-serif;z-index:10000;pointer-events:none;white-space:pre-line;text-align:center;max-width:94%";
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 12000);
-  } catch (e) {}
-}
-
-// Bozuk / kesilmiş JSON'dan bile kuyuları kurtarır
-function parseLooseJson(text) {
-  let t = String(text || "").replace(/```json/gi, "").replace(/```/g, "").trim();
-  const a = t.indexOf("{"), b = t.lastIndexOf("}");
-  if (a >= 0) t = b > a ? t.slice(a, b + 1) : t.slice(a);
-  const fixes = [t, t.replace(/,\s*([}\]])/g, "$1"), t.replace(/[\u201C\u201D]/g, '"').replace(/,\s*([}\]])/g, "$1")];
-  for (const x of fixes) { try { return JSON.parse(x); } catch (e) {} }
-  const wells = {};
-  const re = /"([A-H](?:1[0-2]|[1-9]))"\s*:\s*(\{[^{}]*\}|"[^"]*"|null)/g;
-  let m, n = 0;
-  while ((m = re.exec(t))) {
-    n++;
-    let v = null; try { v = JSON.parse(m[2]); } catch (e) {}
-    wells[m[1]] = v;
-  }
-  if (!n) return null;
-  let rows; const rm = t.match(/"rows"\s*:\s*\[([^\]]*)\]/);
-  if (rm) { try { rows = JSON.parse("[" + rm[1] + "]"); } catch (e) {} }
-  const an = t.match(/"analiz"\s*:\s*"([^"]*)"/);
-  return { analiz: an ? an[1] : "", rows: rows, wells: wells };
-}
-
-// Anahtarın erişebildiği, görsel okuyabilen Gemini modellerini listeler (flash öncelikli, en yeni sürüm önce)
-async function listFlashModels() {
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${S.apiKey}`);
-    if (!res.ok) return [];
-    const j = await res.json();
-    const names = (j.models || [])
-      .filter(m => (m.supportedGenerationMethods || []).includes("generateContent")
-                && /^models\/gemini-/.test(m.name)
-                && /flash|pro/.test(m.name)
-                && !/(tts|image|embed|live|audio|robotics|computer-use|exp)/.test(m.name))
-      .map(m => m.name);
-    const kind = n => /flash/.test(n) ? (/lite/.test(n) ? 1 : 2) : 0;
-    const ver = n => { const v = n.match(/gemini-(\d+(?:\.\d+)?)/); return v ? parseFloat(v[1]) : 0; };
-    const stable = n => /preview/.test(n) ? 0 : 1;
-    names.sort((a, b) => (kind(b) - kind(a)) || (stable(b) - stable(a)) || (ver(b) - ver(a)));
-    return names.slice(0, 6);
-  } catch (e) { return []; }
 }
 
 /* ÇOKLU PLATE PDF / YAZDIRMA */
@@ -1666,10 +1617,23 @@ window.addEventListener("afterprint", () => {
 });
 
 /* ==================================================== */
-/* SESLİ KOMUT (Okuma Modu)                              */
+/* 💡 AKILLI IŞIK MASASI + SESLİ KOMUT                  */
 /* ==================================================== */
+const lightBoxModal = document.getElementById("lightBoxModal");
+const lbGrid = document.getElementById("lbGrid");
+const lbRotWrap = document.getElementById("lbRotWrap");
+const lbInfo = document.getElementById("lbInfo");
+const lbDot = document.getElementById("lbDot");
+const btnOpenLightBox = document.getElementById("btnOpenLightBox");
 
-/* ---------- Türkçe sayı çözümleme ---------- */
+let lightBoxActive = false;
+let lbActiveIdx = -1;
+let lbRotManual = null;
+let lbZoom = 1;
+try { const z = parseFloat(localStorage.getItem("pcr_lb_zoom")); if(z >= 0.5 && z <= 1.6) lbZoom = z; } catch(_){}
+let wakeLock = null;
+let lbInfoT = null;
+
 const V_UNITS={"sıfır":0,"sifir":0,"bir":1,"iki":2,"üç":3,"uc":3,"dört":4,"dort":4,"beş":5,"bes":5,"altı":6,"alti":6,"yedi":7,"sekiz":8,"dokuz":9};
 const V_TENS={"on":10,"yirmi":20,"otuz":30,"kırk":40,"kirk":40,"elli":50,"altmış":60,"altmis":60,"yetmiş":70,"yetmis":70,"seksen":80,"doksan":90};
 const vNorm = s => String(s||"").toLocaleUpperCase("tr-TR").replace(/\s+/g,"");
@@ -1678,7 +1642,6 @@ function vWordNumbers(text){
   const toks = text.toLocaleLowerCase("tr-TR").replace(/[^a-zçğıöşü0-9\s]/g," ").split(/\s+/).filter(Boolean);
   const out = [];
   const hasBig = toks.some(t => t==="yüz"||t==="yuz"||t==="bin");
-  // (a) bileşik okuma: "yedi bin altı yüz doksan altı" -> 7696
   let total=0, cur=0, any=false;
   toks.forEach(t=>{
     if(t in V_UNITS){cur+=V_UNITS[t];any=true}
@@ -1688,7 +1651,6 @@ function vWordNumbers(text){
   });
   const comp = any ? String(total+cur) : null;
   if(comp && hasBig) out.push(comp);
-  // (b) grup grup: "yetmiş altı doksan altı" -> 7696
   if(!hasBig){
     let g="", i=0, hasNum=false;
     while(i<toks.length){
@@ -1703,7 +1665,6 @@ function vWordNumbers(text){
     }
     if(hasNum) out.push(g);
   }
-  // (c) rakam rakam
   const digits = toks.filter(t=>t in V_UNITS).map(t=>V_UNITS[t]).join("");
   if(digits) out.push(digits);
   if(comp && !hasBig) out.push(comp);
@@ -1713,22 +1674,249 @@ function vWordNumbers(text){
 function vCandidates(raw){
   const c = [];
   const all = raw.replace(/\D/g,"");
-  if(all) c.push(all);                          // "7.696" / "76 96" -> 7696
+  if(all) c.push(all);
   (raw.match(/\d+/g)||[]).forEach(d=>c.push(d));
-  vWordNumbers(raw).forEach(x=>c.push(x));      // yazıyla söylenenler
-  c.push(raw);                                  // alfanümerik değerler (N, P, ÇK...)
+  vWordNumbers(raw).forEach(x=>c.push(x));
+  c.push(raw);
   return c;
 }
 
+function buildLightGrid(){
+  let html = "";
+  for(let r=0; r<8; r++){
+    for(let c=0; c<C; c++){
+      const idx = r*C + c;
+      html += `<div class="lb-well" id="lbw${idx}" data-idx="${idx}"><div class="lb-circle">${R[r] + (c+1)}</div></div>`;
+    }
+  }
+  lbGrid.innerHTML = html;
+}
+buildLightGrid();
+
+function lbIsRot(){ return lbRotManual === null ? window.innerHeight > window.innerWidth : lbRotManual; }
+
+function fitLightGrid(){
+  const W = window.innerWidth, H = window.innerHeight;
+  const rot = lbIsRot();
+  const cell = (rot ? Math.min(W/8, H/12) : Math.min(W/12, H/8)) * lbZoom;
+  lightBoxModal.style.setProperty("--lbc", cell + "px");
+  lbRotWrap.style.transform = rot ? "rotate(90deg)" : "none";
+}
+window.addEventListener("resize", () => { if(lightBoxActive) fitLightGrid(); });
+window.addEventListener("orientationchange", () => { lbRotManual = null; if(lightBoxActive) setTimeout(fitLightGrid, 200); });
+document.addEventListener("fullscreenchange", () => { if(lightBoxActive) setTimeout(fitLightGrid, 150); });
+document.addEventListener("webkitfullscreenchange", () => { if(lightBoxActive) setTimeout(fitLightGrid, 150); });
+
+function lbSay(text, err){
+  lbInfo.textContent = text;
+  lbInfo.classList.toggle("err", !!err);
+  lbInfo.classList.add("show");
+  clearTimeout(lbInfoT);
+  lbInfoT = setTimeout(() => lbInfo.classList.remove("show"), 3500);
+}
+
+function lbClear(){
+  lbGrid.querySelectorAll(".lb-well").forEach(w => w.classList.remove("active","match"));
+  lbActiveIdx = -1;
+}
+
+function setLightWell(idx, isMatch = false){
+  if(!isMatch) lbClear();
+  if(idx < 0 || idx >= 96) return;
+  const el = document.getElementById("lbw" + idx);
+  if(el) el.classList.add(isMatch ? "match" : "active");
+  lbActiveIdx = idx;
+  if(!isMatch){
+    const p = curP();
+    const coord = R[Math.floor(idx/C)] + ((idx%C)+1);
+    const sample = p.cells[idx] || "BOŞ";
+    const note = p.notes[idx] ? ` [${p.notes[idx]}]` : "";
+    const target = p.rows[Math.floor(idx/C)] ? ` (${p.rows[Math.floor(idx/C)]})` : "";
+    lbSay(`P${S.curP + 1} ${coord}: ${sample}${note}${target}`);
+  }
+}
+
+function switchPlateTo(pi){
+  if(pi === S.curP) return;
+  S.curP = pi;
+  refreshTabs();
+  refreshMetaInputs();
+}
+
+function lightUpSample(val){
+  const key = vNorm(val);
+  if(!key) return false;
+  const order = [S.curP].concat(S.plates.map((_,i)=>i).filter(i=>i!==S.curP));
+  for(const pi of order){
+    const matched = [];
+    S.plates[pi].cells.forEach((v,i)=>{ if(v && vNorm(v)===key) matched.push(i); });
+    if(!matched.length) continue;
+    switchPlateTo(pi);
+    lbClear();
+    matched.forEach(i => setLightWell(i, true));
+    lbActiveIdx = matched[0];
+    const others = order.filter(x => x!==pi && S.plates[x].cells.some(v => v && vNorm(v)===key)).map(x => "P"+(x+1));
+    lbSay(`P${pi+1} · ${S.plates[pi].cells[matched[0]]} · ${matched.length} kuyu` + (others.length ? ` (ayrıca ${others.join(", ")})` : ""));
+    return true;
+  }
+  return false;
+}
+
+function lightUpPartial(part){
+  const key = vNorm(part);
+  if(key.length < 3) return false;
+  const order = [S.curP].concat(S.plates.map((_,i)=>i).filter(i=>i!==S.curP));
+  for(const pi of order){
+    const matched = [];
+    S.plates[pi].cells.forEach((v,i)=>{ if(v && vNorm(v).includes(key)) matched.push(i); });
+    if(!matched.length) continue;
+    switchPlateTo(pi);
+    lbClear();
+    matched.forEach(i => setLightWell(i, true));
+    lbActiveIdx = matched[0];
+    lbSay(`P${pi+1} · "${part}" içeren ${matched.length} kuyu`);
+    return true;
+  }
+  return false;
+}
+
+function nextFilledWell(step = 1){
+  const p = curP();
+  const filled = [];
+  p.cells.forEach((v, i) => { if(v) filled.push(i); });
+  if(!filled.length){ lbClear(); return; }
+  const curPos = filled.indexOf(lbActiveIdx);
+  let nextPos = curPos + step;
+  if(nextPos >= filled.length) nextPos = 0;
+  if(nextPos < 0) nextPos = filled.length - 1;
+  setLightWell(filled[nextPos]);
+}
+
+lbGrid.addEventListener("click", e => {
+  e.stopPropagation();
+  enterFullscreen();
+  const w = e.target.closest(".lb-well");
+  if(!w) return;
+  const idx = +w.dataset.idx;
+  const p = curP();
+  const v = p.cells[idx];
+  if(!v){ setLightWell(idx); return; }
+  const key = vNorm(v);
+  const sameLit = w.classList.contains("active") && lbGrid.querySelectorAll(".lb-well.match").length + 1 === p.cells.filter(x => x && vNorm(x) === key).length;
+  if(sameLit){ lbClear(); lbSay("Söndürüldü"); return; }
+  const matched = [];
+  p.cells.forEach((x,i) => { if(x && vNorm(x) === key) matched.push(i); });
+  lbClear();
+  matched.forEach(i => setLightWell(i, true));
+  w.classList.remove("match"); w.classList.add("active");
+  lbActiveIdx = idx;
+  const coord = R[Math.floor(idx/C)] + ((idx%C)+1);
+  lbSay(`P${S.curP + 1} · ${v} · ${matched.length} kuyu (${coord})`);
+});
+
+function lbZoomStep(d){
+  lbZoom = Math.min(1.6, Math.max(0.5, Math.round((lbZoom + d) * 100) / 100));
+  try { localStorage.setItem("pcr_lb_zoom", String(lbZoom)); } catch(_){}
+  fitLightGrid();
+  lbSay("Boyut %" + Math.round(lbZoom * 100));
+}
+function lbBindHold(btn, fn){
+  let t = null, iv = null;
+  const stop = () => { clearTimeout(t); clearInterval(iv); };
+  btn.addEventListener("pointerdown", e => { e.preventDefault(); e.stopPropagation(); fn(); t = setTimeout(() => { iv = setInterval(fn, 90); }, 350); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener("click", e => e.stopPropagation());
+}
+lbBindHold(document.getElementById("lbZoomIn"),  () => lbZoomStep(0.03));
+lbBindHold(document.getElementById("lbZoomOut"), () => lbZoomStep(-0.03));
+(function(){
+  const b = document.getElementById("lbRotBtn");
+  b.addEventListener("click", e => { e.stopPropagation(); lbRotManual = !lbIsRot(); fitLightGrid(); });
+})();
+
+let lbSwipe = null;
+lightBoxModal.addEventListener("touchstart", e => {
+  if(e.target.closest && e.target.closest("#lbTools")){ lbSwipe = null; return; }
+  const t = e.touches[0];
+  lbSwipe = { x: t.clientX, y: t.clientY, t: Date.now() };
+}, { passive: true });
+lightBoxModal.addEventListener("touchend", e => {
+  if(!lbSwipe) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - lbSwipe.x, dy = t.clientY - lbSwipe.y, dt = Date.now() - lbSwipe.t;
+  lbSwipe = null;
+  if(dx < -Math.max(90, window.innerWidth * 0.18) && Math.abs(dy) < Math.abs(dx) * 0.6 && dt < 900){
+    closeLightBox(true);
+  }
+}, { passive: true });
+
+window.addEventListener("keydown", e => {
+  if(!lightBoxActive) return;
+  if(e.key === "VolumeDown" || e.key === "AudioVolumeDown" || e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " " || e.key === "PageDown"){
+    e.preventDefault(); nextFilledWell(1);
+  } else if(e.key === "VolumeUp" || e.key === "AudioVolumeUp" || e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp"){
+    e.preventDefault(); nextFilledWell(-1);
+  } else if(e.key === "Escape"){
+    closeLightBox(true);
+  }
+});
+
+async function acquireWakeLock(){
+  try { if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); } catch(err){}
+}
+function releaseWakeLock(){
+  if(wakeLock){ wakeLock.release().then(()=>{ wakeLock = null; }).catch(()=>{}); }
+}
+
+function enterFullscreen(){
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen;
+  if(!fn || document.fullscreenElement || document.webkitFullscreenElement) return;
+  try { const r = fn.call(el); if(r && r.catch) r.catch(()=>{}); } catch(e){}
+}
+function leaveFullscreen(){
+  const fn = document.exitFullscreen || document.webkitExitFullscreen;
+  if(!fn || !(document.fullscreenElement || document.webkitFullscreenElement)) return;
+  try { const r = fn.call(document); if(r && r.catch) r.catch(()=>{}); } catch(e){}
+}
+
+function openLightBox(){
+  lightBoxActive = true;
+  lightBoxModal.hidden = false;
+  document.body.style.overflow = "hidden";
+  history.pushState({ pcr_modal: "lightbox" }, "");
+  acquireWakeLock();
+  enterFullscreen();
+  lbRotManual = null;
+  lbClear();
+  fitLightGrid();
+  setTimeout(fitLightGrid, 350);
+  lbSay("🎤 Numarayı söyleyin · çıkmak için sola kaydırın");
+  startListening();
+}
+
+function closeLightBox(triggerBack = true){
+  if(!lightBoxActive) return;
+  lightBoxActive = false;
+  lightBoxModal.hidden = true;
+  document.body.style.overflow = "";
+  stopSpeech();
+  releaseWakeLock();
+  leaveFullscreen();
+  if(triggerBack && history.state && history.state.pcr_modal === "lightbox") history.back();
+  refresh();
+}
+
+btnOpenLightBox.onclick = openLightBox;
+
 /* ==================================================== */
-/* TÜRKÇE SES TANIMA MOTORU (Okuma Modu)                 */
+/* TÜRKÇE SES TANIMA MOTORU                             */
 /* ==================================================== */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let isListening = false;
 let speechRestartTimer = null;
 
-// Okuma modu elemanları
 ["rdMic","rdVoice"].forEach(id => { const o = document.getElementById(id); if(o) o.remove(); });
 const rdMic = document.createElement("button");
 rdMic.id = "rdMic"; rdMic.type = "button"; rdMic.textContent = "🎤"; rdMic.title = "Sesli komut: numarayı söyle";
@@ -1744,14 +1932,14 @@ function rdSay(text, err){
   clearTimeout(rdVoiceT);
   rdVoiceT = setTimeout(() => { rdVoice.hidden = true; }, 2800);
 }
-function voiceSay(text, err){ if(rdOn) rdSay(text, err); }
-function voiceActive(){ return rdOn; }
-function setMicUi(on){ rdMic.classList.toggle("on", on); }
+function voiceSay(text, err){ if(lightBoxActive) lbSay(text, err); else if(rdOn) rdSay(text, err); }
+function voiceActive(){ return lightBoxActive || rdOn; }
+function setMicUi(on){ lbDot.classList.toggle("on", on); rdMic.classList.toggle("on", on); }
 
 if(SpeechRecognition){
   recognition = new SpeechRecognition();
   recognition.lang = "tr-TR";
-  recognition.continuous = false;       // Android Chrome kararlılığı için tek seferlik döngü
+  recognition.continuous = false;
   recognition.interimResults = false;
   recognition.maxAlternatives = 3;
 
@@ -1812,7 +2000,6 @@ function stopSpeech(){
   setMicUi(false);
 }
 
-// Mikrofon izni yalnızca ilk kullanımda sorulur; sonra hatırlanır (https adreste)
 async function startListening(){
   if(!recognition){ voiceSay("Bu tarayıcı sesli komutu desteklemiyor (Chrome kullanın)", true); return; }
   if(isListening || recognition._shouldRun) return;
@@ -1837,17 +2024,68 @@ rdMic.addEventListener("click", e => {
   else startListening();
 });
 
-// Okuma modu açılınca da doğrudan dinlemeye başla
 (function(){
   const openRd = rdBtn.onclick;
   rdBtn.onclick = function(){ openRd.apply(this, arguments); startListening(); };
 })();
 
 function routeVoice(alts){
-  if(rdOn) rdVoiceHandle(alts);
+  if(lightBoxActive) handleVoiceCommand(alts);
+  else if(rdOn) rdVoiceHandle(alts);
 }
 
-/* ---------- Okuma modu komutları ---------- */
+const PLATE_WORDS = [
+  ["plate 1","plate bir","birinci plate"],["plate 2","plate iki","ikinci plate"],["plate 3","plate üç","üçüncü plate"],
+  ["plate 4","plate dört","dördüncü plate"],["plate 5","plate beş","beşinci plate"]
+];
+
+function handleVoiceCommand(alts){
+  const has = (...ws) => alts.some(t => ws.some(w => t.includes(w)));
+  const is  = (...ws) => alts.some(t => ws.includes(t));
+  lbSay('🗣️ "' + alts[0] + '"');
+
+  for(let i=0; i<PLATE_WORDS.length; i++){
+    if(has(...PLATE_WORDS[i])){
+      lbClear();
+      if(i < S.plates.length){ switchPlateTo(i); lbSay("Plate " + (i+1)); }
+      return;
+    }
+  }
+  if(has("çıkış","çık ","ana ekran") || is("çık")){ closeLightBox(true); return; }
+  if(has("sonraki","ileri","geç","sıradaki","tamam")){ nextFilledWell(1); return; }
+  if(has("geri","önceki")){ nextFilledWell(-1); return; }
+  if(has("çevir","döndür","yatay","dikey")){ lbRotManual = !lbIsRot(); fitLightGrid(); return; }
+  if(has("söndür","kapat","temizle","sıfırla")){ lbClear(); lbSay("Söndürüldü"); return; }
+  if(has("negatif") || is("n")){ if(!lightUpSample("N")) lbSay("N bulunamadı", true); return; }
+  if(has("pozitif") || is("p")){ if(!lightUpSample("P")) lbSay("P bulunamadı", true); return; }
+  if(has("çölyak","kontrol","çeke","çk","ç k") || is("çk")){
+    if(!lightUpSample("ÇK") && !lightUpSample("CK")) lbSay("ÇK bulunamadı", true);
+    return;
+  }
+  if(has("ekstra") || is("ec","e c")){ if(!lightUpSample("EC")) lbSay("EC bulunamadı", true); return; }
+
+  for(const t of alts){
+    const m = t.match(/^([a-h])\s*(\d{1,2})$/i);
+    if(m){
+      const r = R.indexOf(m[1].toUpperCase()), c = +m[2] - 1;
+      if(r >= 0 && r < 8 && c >= 0 && c < C){ setLightWell(r * C + c); return; }
+    }
+  }
+
+  for(const t of alts){
+    for(const cand of vCandidates(t)){
+      if(lightUpSample(cand)) return;
+    }
+  }
+  for(const t of alts){
+    const cands = [t.replace(/\D/g,"")].concat(vWordNumbers(t)).filter(x => x && x.length >= 3);
+    for(const cand of cands){
+      if(lightUpPartial(cand)) return;
+    }
+  }
+  lbSay("Bulunamadı: " + alts[0], true);
+}
+
 const V_CTRL = [
   [/(^|\s)pozitif(\s|$)/, ["P"]],
   [/(^|\s)negatif(\s|$)/, ["N"]],
@@ -1873,7 +2111,6 @@ function rdVoiceHandle(alts){
   if(texts.some(t => /(^|\s)(temizle|sıfırla|sifirla|kapat|iptal)(\s|$)/.test(t))){
     hl = null; hlNote = null; rdDraw(); rdSay("Seçim temizlendi"); return;
   }
-  // kontrol kuyuları
   for(const t of texts){
     for(const [re, names] of V_CTRL){
       if(re.test(t)){
@@ -1884,7 +2121,6 @@ function rdVoiceHandle(alts){
       }
     }
   }
-  // numaralar: o numarayı içeren tüm kuyular yanık, diğerleri soluk
   for(const t of texts){
     for(const cand of vCandidates(t)){
       const f = vFindCell(vNorm(cand));
@@ -1898,11 +2134,10 @@ function rdVoiceHandle(alts){
   }
   rdSay("Bulunamadı: " + texts[0], true);
 }
-
 </script>
 
 <!-- ========================================== -->
-<!-- PRIMER HESAPLAMA JS (TAM ENTEGRE)          -->
+<!-- PRIMER HESAPLAMA JS                        -->
 <!-- ========================================== -->
 <script>
 (function(){
@@ -2000,7 +2235,7 @@ function rdVoiceHandle(alts){
     {"name":"GMB151","note":"","mm":10,"f":1,"r":1,"p":0.5,"w":7.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
     {"name":"Le1","note":"GMB151 ile","mm":10,"f":0.5,"r":0.5,"p":0.5,"w":8.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
     {"name":"Rt73","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
+    {"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":4,"fav":false,"tags":[],"dna0":4},
     {"name":"Ms1","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
     {"name":"CruA","note":"Ms1, T45, Topas 19/2 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
     {"name":"Ms8","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
@@ -2042,8 +2277,7 @@ function rdVoiceHandle(alts){
     {"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5}
   ];
 
-  var APP_VERSION = "2026.11.11-4";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
-    var curStamp = EMBED_STAMP;
+  var curStamp = EMBED_STAMP;
   var dirty = false;
   var fileHandle = null;
 
@@ -2093,8 +2327,7 @@ function rdVoiceHandle(alts){
     var v = $("verInfo"), b = $("useFileBtn"); if(!v) return;
     var d = new Date(EMBED_STAMP);
     var ds = isNaN(d) ? "" : d.toLocaleString("tr-TR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-    var cv = $("credVer"); if(cv) cv.textContent = "uygulama " + APP_VERSION + (isNaN(d) ? "" : " · liste " + d.toLocaleDateString("tr-TR"));
-    var cv2 = $("credVer2"); if(cv2) cv2.textContent = "uygulama " + APP_VERSION;
+    var cv = $("credVer"); if(cv) cv.textContent = isNaN(d) ? "" : "sürüm " + d.toLocaleDateString("tr-TR");
     if(dirty){
       v.textContent = "Dosya sürümü: " + ds + ". Bu tarayıcıdaki liste dosyadakinden farklı.";
       b.hidden = false;
@@ -2220,7 +2453,6 @@ function rdVoiceHandle(alts){
     return (Math.round(x*1000)/1000).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:3});
   }
   var CONC = {f:"fu", r:"ru", p:"pu"};
-  var DNA_FIX = 5;
   var STOCK_UM = 100, DIL_UL = 100;
   function numOrNull(v){
     if(v === null || v === undefined || String(v).trim() === "") return null;
@@ -2233,7 +2465,6 @@ function rdVoiceHandle(alts){
     return fmtN(st) + " µL stok + " + fmtN(DIL_UL - st) + " µL su";
   }
   function say(t, err){ var m=$("msg"); m.textContent=t; m.className="msg"+(err?" err":""); }
-  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function norm(s){ return String(s).toLocaleLowerCase("tr-TR").trim(); }
 
   function factor(){
@@ -2518,180 +2749,177 @@ function rdVoiceHandle(alts){
     localSave(); render(); updateVer(); say("Orijinal liste yüklendi.");
   };
 
+  var GH_FILE = "genler.json";
+  var ghLast = 0;
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  var ghStamp = +(lsGet("pcr_gh_stamp")||0);
+  var ghUnp = lsGet("pcr_gh_unpushed") === "1";
 
-/* ===== GITHUB PAYLAŞIMI: genler.json (sadece token'ı olan yazar, herkes okur) ===== */
-var GH_FILE = "genler.json";
-var ghLast = 0;
-function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
-var ghStamp = +(lsGet("pcr_gh_stamp")||0);
-var ghUnp = lsGet("pcr_gh_unpushed") === "1";
-
-function ghStatus(text, isErr){
-  var el = $("ghInfo"); if(!el) return;
-  el.textContent = text;
-  el.style.color = isErr ? "#b91c1c" : "";
-}
-function ghHasUnpushed(){ return ghUnp || (ghStamp === 0 && dirty); }
-function ghUnpushed(v){
-  ghUnp = !!v;
-  if(v){ lsSet("pcr_gh_unpushed","1"); ghStatus("● Bu cihazda paylaşılmamış değişiklik var. 'GitHub'a paylaş' ile gönderin."); }
-  else lsDel("pcr_gh_unpushed");
-}
-
-function ghRepo(){
-  var c = null;
-  try{ c = JSON.parse(lsGet("pcr_gh_cfg") || "null"); }catch(e){}
-  if(c && c.owner && c.repo) return c;
-  var h = location.hostname || "";
-  if(/\.github\.io$/i.test(h)){
-    var owner = h.split(".")[0];
-    var seg = location.pathname.split("/")[1] || "";
-    var repo = (seg && !/\.html?$/i.test(seg)) ? seg : owner + ".github.io";
-    return { owner: owner, repo: repo };
+  function ghStatus(text, isErr){
+    var el = $("ghInfo"); if(!el) return;
+    el.textContent = text;
+    el.style.color = isErr ? "#b91c1c" : "";
   }
-  return null;
-}
-function ghRemoteUrl(){
-  var r = ghRepo(); if(!r) return null;
-  var h = (location.hostname || "").toLowerCase();
-  var onPages = /\.github\.io$/.test(h) && h.split(".")[0] === r.owner.toLowerCase();
-  var base = onPages ? new URL(GH_FILE, location.href).href
-                     : "https://raw.githubusercontent.com/" + r.owner + "/" + r.repo + "/HEAD/" + GH_FILE;
-  return base + "?t=" + Date.now();
-}
-function ghFetchRemote(){
-  var u = ghRemoteUrl();
-  if(!u) return Promise.resolve({ nocfg: true });
-  return fetch(u, { cache: "no-store" }).then(function(res){
-    if(res.status === 404) return { none: true };
-    if(!res.ok) throw new Error("HTTP " + res.status);
-    return res.json();
-  }).then(function(j){
-    if(j && j.none) return j;
-    if(!j || !Array.isArray(j.genes)) throw new Error("bad");
-    return { stamp: +j.stamp || 0, genes: j.genes };
-  });
-}
-function ghApply(rem){
-  genes = rem.genes.filter(function(g){ return g && g.name; }).map(function(g){
-    var c = Object.assign({}, g);
-    c.tags = Array.isArray(g.tags) ? g.tags : [];
-    c.fav = !!g.fav;
-    return c;
-  });
-  selected = []; editIdx = -1;
-  curStamp = rem.stamp || Date.now(); dirty = false;
-  localSave();
-  ghStamp = rem.stamp; lsSet("pcr_gh_stamp", String(ghStamp));
-  ghUnpushed(false);
-  render(); updateVer();
-}
-function ghSync(){
-  ghLast = Date.now();
-  ghStatus("Paylaşılan liste kontrol ediliyor…");
-  return ghFetchRemote().then(function(rem){
-    if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
-    if(rem.none){ ghStatus(ghHasUnpushed() ? "Henüz paylaşılan liste yok. 'GitHub'a paylaş' ile ilk listeyi gönderin." : "Henüz paylaşılan liste yok."); return; }
-    if(rem.stamp > ghStamp){
-      if(ghHasUnpushed()){
-        ghStatus("⚠ Paylaşılan listede yenilik var ama bu cihazda gönderilmemiş değişiklik var. 'Paylaşılanı al' ile alın ya da 'GitHub'a paylaş' ile üzerine yazın.", true);
-        return;
+  function ghHasUnpushed(){ return ghUnp || (ghStamp === 0 && dirty); }
+  function ghUnpushed(v){
+    ghUnp = !!v;
+    if(v){ lsSet("pcr_gh_unpushed","1"); ghStatus("● Bu cihazda paylaşılmamış değişiklik var. 'GitHub'a paylaş' ile gönderin."); }
+    else lsDel("pcr_gh_unpushed");
+  }
+
+  function ghRepo(){
+    var c = null;
+    try{ c = JSON.parse(lsGet("pcr_gh_cfg") || "null"); }catch(e){}
+    if(c && c.owner && c.repo) return c;
+    var h = location.hostname || "";
+    if(/\.github\.io$/i.test(h)){
+      var owner = h.split(".")[0];
+      var seg = location.pathname.split("/")[1] || "";
+      var repo = (seg && !/\.html?$/i.test(seg)) ? seg : owner + ".github.io";
+      return { owner: owner, repo: repo };
+    }
+    return null;
+  }
+  function ghRemoteUrl(){
+    var r = ghRepo(); if(!r) return null;
+    var h = (location.hostname || "").toLowerCase();
+    var onPages = /\.github\.io$/.test(h) && h.split(".")[0] === r.owner.toLowerCase();
+    var base = onPages ? new URL(GH_FILE, location.href).href
+                       : "https://raw.githubusercontent.com/" + r.owner + "/" + r.repo + "/HEAD/" + GH_FILE;
+    return base + "?t=" + Date.now();
+  }
+  function ghFetchRemote(){
+    var u = ghRemoteUrl();
+    if(!u) return Promise.resolve({ nocfg: true });
+    return fetch(u, { cache: "no-store" }).then(function(res){
+      if(res.status === 404) return { none: true };
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then(function(j){
+      if(j && j.none) return j;
+      if(!j || !Array.isArray(j.genes)) throw new Error("bad");
+      return { stamp: +j.stamp || 0, genes: j.genes };
+    });
+  }
+  function ghApply(rem){
+    genes = rem.genes.filter(function(g){ return g && g.name; }).map(function(g){
+      var c = Object.assign({}, g);
+      c.tags = Array.isArray(g.tags) ? g.tags : [];
+      c.fav = !!g.fav;
+      return c;
+    });
+    selected = []; editIdx = -1;
+    curStamp = rem.stamp || Date.now(); dirty = false;
+    localSave();
+    ghStamp = rem.stamp; lsSet("pcr_gh_stamp", String(ghStamp));
+    ghUnpushed(false);
+    render(); updateVer();
+  }
+  function ghSync(){
+    ghLast = Date.now();
+    ghStatus("Paylaşılan liste kontrol ediliyor…");
+    return ghFetchRemote().then(function(rem){
+      if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
+      if(rem.none){ ghStatus(ghHasUnpushed() ? "Henüz paylaşılan liste yok. 'GitHub'a paylaş' ile ilk listeyi gönderin." : "Henüz paylaşılan liste yok."); return; }
+      if(rem.stamp > ghStamp){
+        if(ghHasUnpushed()){
+          ghStatus("⚠ Paylaşılan listede yenilik var ama bu cihazda gönderilmemiş değişiklik var. 'Paylaşılanı al' ile alın ya da 'GitHub'a paylaş' ile üzerine yazın.", true);
+          return;
+        }
+        ghApply(rem);
+        ghStatus("✔ Paylaşılan liste yüklendi (" + genes.length + " gen).");
+      } else {
+        ghStatus(ghHasUnpushed() ? "● Bu cihazdaki değişiklikler henüz paylaşılmadı." : "✔ Liste güncel (" + genes.length + " gen).");
       }
+    }).catch(function(){
+      ghStatus("Paylaşılan liste okunamadı (internet yok?). Kayıtlı liste kullanılıyor.", true);
+    });
+  }
+
+  function b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+  function unb64(b){ return decodeURIComponent(escape(atob(String(b).replace(/\s/g,"")))); }
+  function ghApi(path, opt){
+    opt = opt || {};
+    opt.headers = Object.assign({ "Accept": "application/vnd.github+json", "Authorization": "Bearer " + lsGet("pcr_gh_token") }, opt.headers || {});
+    return fetch("https://api.github.com" + path, opt);
+  }
+  function slimGenes(){
+    return genes.map(function(g){
+      return { name:g.name, note:g.note||"", mm:g.mm, f:g.f, r:g.r, p:g.p, w:g.w, fu:g.fu||null, ru:g.ru||null, pu:g.pu||null, fav:g.fav?true:false, tags:g.tags||[], dna0:g.dna0||null };
+    });
+  }
+
+  function ghSetup(){
+    var r = ghRepo();
+    var rp = prompt("GitHub deposu (kullaniciadi/depoadi):", r ? r.owner + "/" + r.repo : "");
+    if(rp === null) return Promise.resolve(false);
+    rp = rp.trim();
+    if(rp){
+      var m = rp.match(/^([\w.-]+)\/([\w.-]+)$/);
+      if(!m){ alert("Biçim: kullaniciadi/depoadi"); return Promise.resolve(false); }
+      lsSet("pcr_gh_cfg", JSON.stringify({ owner: m[1], repo: m[2] }));
+    }
+    var tk = prompt("GitHub token (sadece bu cihazda saklanır).\nBoş bırakırsanız değişmez, 'sil' yazarsanız kaldırılır:", "");
+    if(tk === null) return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
+    tk = tk.trim();
+    if(tk.toLowerCase() === "sil"){ lsDel("pcr_gh_token"); ghStatus("Token silindi."); return Promise.resolve(false); }
+    if(tk) lsSet("pcr_gh_token", tk);
+    return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
+  }
+
+  function ghPush(){
+    var r = ghRepo(), tok = lsGet("pcr_gh_token");
+    if(!r || !tok){ return ghSetup().then(function(ok){ if(ok) return ghPush(); }); }
+    ghStatus("GitHub'a gönderiliyor…");
+    var path = "/repos/" + r.owner + "/" + r.repo + "/contents/" + GH_FILE;
+    return ghApi(path).then(function(res){
+      if(res.status === 404) return { sha: null, stamp: 0 };
+      if(!res.ok) throw { code: res.status };
+      return res.json().then(function(j){
+        var st = 0; try{ st = +JSON.parse(unb64(j.content)).stamp || 0; }catch(e){}
+        return { sha: j.sha, stamp: st };
+      });
+    }).then(function(cur){
+      if(cur.stamp > ghStamp && !confirm("Paylaşılan listede bu cihazda olmayan daha yeni bir sürüm var. Üzerine yazılsın mı?")){
+        ghStatus("İptal edildi."); return;
+      }
+      var stamp = Date.now();
+      var body = { message: "Gen listesi güncellendi", content: b64(JSON.stringify({ version: 1, stamp: stamp, genes: slimGenes() }, null, 1)) };
+      if(cur.sha) body.sha = cur.sha;
+      return ghApi(path, { method: "PUT", body: JSON.stringify(body) }).then(function(res){
+        if(!res.ok) throw { code: res.status };
+        curStamp = stamp; dirty = false; localSave();
+        ghStamp = stamp; lsSet("pcr_gh_stamp", String(stamp));
+        ghUnpushed(false); updateVer();
+        ghStatus("✔ GitHub'a paylaşıldı (" + genes.length + " gen). Diğer cihazlar yaklaşık 1–2 dakikada görür.");
+        say("Liste GitHub'a paylaşıldı.");
+      });
+    }).catch(function(e){
+      var c = e && e.code;
+      ghStatus(c === 401 ? "Token geçersiz ya da süresi dolmuş. ⚙ GitHub ayarı'ndan yenisini girin."
+             : (c === 403 || c === 404) ? "Yetki yok ya da depo bulunamadı. Token bu depoya 'Contents: Read and write' izniyle verilmeli."
+             : (c === 409 || c === 422) ? "Çakışma oldu, tekrar deneyin."
+             : "Gönderilemedi (internet?).", true);
+    });
+  }
+
+  $("ghPush").onclick = ghPush;
+  $("ghPull").onclick = function(){
+    ghFetchRemote().then(function(rem){
+      if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
+      if(rem.none){ ghStatus("Henüz paylaşılan liste yok."); return; }
+      if(ghHasUnpushed() && !confirm("Bu cihazdaki gönderilmemiş değişiklikler silinip paylaşılan liste yüklensin mi?")) return;
       ghApply(rem);
       ghStatus("✔ Paylaşılan liste yüklendi (" + genes.length + " gen).");
-    } else {
-      ghStatus(ghHasUnpushed() ? "● Bu cihazdaki değişiklikler henüz paylaşılmadı." : "✔ Liste güncel (" + genes.length + " gen).");
-    }
-  }).catch(function(){
-    ghStatus("Paylaşılan liste okunamadı (internet yok?). Kayıtlı liste kullanılıyor.", true);
+    }).catch(function(){ ghStatus("Paylaşılan liste okunamadı (internet yok?).", true); });
+  };
+  $("ghCfg").onclick = function(){ ghSetup().then(function(){ ghSync(); }); };
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && ghLast && Date.now() - ghLast > 60000) ghSync();
   });
-}
-
-function b64(str){ return btoa(unescape(encodeURIComponent(str))); }
-function unb64(b){ return decodeURIComponent(escape(atob(String(b).replace(/\s/g,"")))); }
-function ghApi(path, opt){
-  opt = opt || {};
-  opt.headers = Object.assign({ "Accept": "application/vnd.github+json", "Authorization": "Bearer " + lsGet("pcr_gh_token") }, opt.headers || {});
-  return fetch("https://api.github.com" + path, opt);
-}
-function slimGenes(){
-  return genes.map(function(g){
-    return { name:g.name, note:g.note||"", mm:g.mm, f:g.f, r:g.r, p:g.p, w:g.w, fu:g.fu||null, ru:g.ru||null, pu:g.pu||null, fav:g.fav?true:false, tags:g.tags||[], dna0:g.dna0||null };
-  });
-}
-
-function ghSetup(){
-  var r = ghRepo();
-  var rp = prompt("GitHub deposu (kullaniciadi/depoadi):", r ? r.owner + "/" + r.repo : "");
-  if(rp === null) return Promise.resolve(false);
-  rp = rp.trim();
-  if(rp){
-    var m = rp.match(/^([\w.-]+)\/([\w.-]+)$/);
-    if(!m){ alert("Biçim: kullaniciadi/depoadi"); return Promise.resolve(false); }
-    lsSet("pcr_gh_cfg", JSON.stringify({ owner: m[1], repo: m[2] }));
-  }
-  var tk = prompt("GitHub token (sadece bu cihazda saklanır).\nBoş bırakırsanız değişmez, 'sil' yazarsanız kaldırılır:", "");
-  if(tk === null) return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
-  tk = tk.trim();
-  if(tk.toLowerCase() === "sil"){ lsDel("pcr_gh_token"); ghStatus("Token silindi."); return Promise.resolve(false); }
-  if(tk) lsSet("pcr_gh_token", tk);
-  return Promise.resolve(!!(lsGet("pcr_gh_token") && ghRepo()));
-}
-
-function ghPush(){
-  var r = ghRepo(), tok = lsGet("pcr_gh_token");
-  if(!r || !tok){ return ghSetup().then(function(ok){ if(ok) return ghPush(); }); }
-  ghStatus("GitHub'a gönderiliyor…");
-  var path = "/repos/" + r.owner + "/" + r.repo + "/contents/" + GH_FILE;
-  return ghApi(path).then(function(res){
-    if(res.status === 404) return { sha: null, stamp: 0 };
-    if(!res.ok) throw { code: res.status };
-    return res.json().then(function(j){
-      var st = 0; try{ st = +JSON.parse(unb64(j.content)).stamp || 0; }catch(e){}
-      return { sha: j.sha, stamp: st };
-    });
-  }).then(function(cur){
-    if(cur.stamp > ghStamp && !confirm("Paylaşılan listede bu cihazda olmayan daha yeni bir sürüm var. Üzerine yazılsın mı?")){
-      ghStatus("İptal edildi."); return;
-    }
-    var stamp = Date.now();
-    var body = { message: "Gen listesi güncellendi", content: b64(JSON.stringify({ version: 1, stamp: stamp, genes: slimGenes() }, null, 1)) };
-    if(cur.sha) body.sha = cur.sha;
-    return ghApi(path, { method: "PUT", body: JSON.stringify(body) }).then(function(res){
-      if(!res.ok) throw { code: res.status };
-      curStamp = stamp; dirty = false; localSave();
-      ghStamp = stamp; lsSet("pcr_gh_stamp", String(stamp));
-      ghUnpushed(false); updateVer();
-      ghStatus("✔ GitHub'a paylaşıldı (" + genes.length + " gen). Diğer cihazlar yaklaşık 1–2 dakikada görür.");
-      say("Liste GitHub'a paylaşıldı.");
-    });
-  }).catch(function(e){
-    var c = e && e.code;
-    ghStatus(c === 401 ? "Token geçersiz ya da süresi dolmuş. ⚙ GitHub ayarı'ndan yenisini girin."
-           : (c === 403 || c === 404) ? "Yetki yok ya da depo bulunamadı. Token bu depoya 'Contents: Read and write' izniyle verilmeli."
-           : (c === 409 || c === 422) ? "Çakışma oldu, tekrar deneyin."
-           : "Gönderilemedi (internet?).", true);
-  });
-}
-
-$("ghPush").onclick = ghPush;
-$("ghPull").onclick = function(){
-  ghFetchRemote().then(function(rem){
-    if(rem.nocfg){ ghStatus("Paylaşım için sayfayı github.io adresinden açın ya da ⚙ ile depoyu girin."); return; }
-    if(rem.none){ ghStatus("Henüz paylaşılan liste yok."); return; }
-    if(ghHasUnpushed() && !confirm("Bu cihazdaki gönderilmemiş değişiklikler silinip paylaşılan liste yüklensin mi?")) return;
-    ghApply(rem);
-    ghStatus("✔ Paylaşılan liste yüklendi (" + genes.length + " gen).");
-  }).catch(function(){ ghStatus("Paylaşılan liste okunamadı (internet yok?).", true); });
-};
-$("ghCfg").onclick = function(){ ghSetup().then(function(){ ghSync(); }); };
-document.addEventListener("visibilitychange", function(){
-  if(!document.hidden && ghLast && Date.now() - ghLast > 60000) ghSync();
-});
-function ghInit(){ ghSync(); }
-
+  function ghInit(){ ghSync(); }
 
   load(); render(); updateVer(); ghInit();
 })();
