@@ -1323,13 +1323,14 @@ async function processImageWithGeminiStream(base64Image) {
 Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12).
 Identify:
 1. Target names on the left for rows A to H and column notes at top for cols 1 to 12 if any.
-2. For each well A1 through H12:
-   - "v": sample number (digits like 7683) or control symbol ("N", "P", "ÇK" or "CK", "EC"). Duplicate pipetting: numbers written in pairs across adjacent columns.
-   - "n": optional note or subtext (e.g. "94100").
+2. For each non-empty well A1 through H12 read:
+   - the value: a sample number (digits like 7683) or a control symbol ("N", "P", "ÇK" or "CK", "EC"). Duplicate pipetting: numbers written in pairs across adjacent columns.
+   - an optional note or subtext written under the value (e.g. "94100").
 3. Analysis name if visible.
 
-Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single line (no spaces, no indentation, no newlines). List ONLY non-empty wells. If a well has no note, its value is a plain string; use an object only when there is a note:
-{"analiz":"ANALYSIS_NAME","rows":["ROW_A","ROW_B","ROW_C","ROW_D","ROW_E","ROW_F","ROW_G","ROW_H"],"cols":["COL_1","COL_2","COL_3","COL_4","COL_5","COL_6","COL_7","COL_8","COL_9","COL_10","COL_11","COL_12"],"wells":{"A1":"7683","A2":"7683","B1":{"v":"7690","n":"94100"}}}`;
+Return ONLY JSON in exactly this shape:
+{"analiz":"ANALYSIS_NAME","rows":["ROW_A","ROW_B","ROW_C","ROW_D","ROW_E","ROW_F","ROW_G","ROW_H"],"cols":["COL_1","COL_2","COL_3","COL_4","COL_5","COL_6","COL_7","COL_8","COL_9","COL_10","COL_11","COL_12"],"wells":["A1|7683","A2|7683","B1|7690|94100","C3|N"]}
+Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE only if a subtext exists). WELL is A1..H12. List ONLY non-empty wells.`;
 
   const payload = {
     contents: [{
@@ -1341,7 +1342,17 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
     generationConfig: {
       temperature: 0.1,
       thinkingConfig: { thinkingLevel: "low" },
-      responseMimeType: "application/json"
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: "OBJECT",
+        properties: {
+          analiz: { type: "STRING" },
+          rows: { type: "ARRAY", items: { type: "STRING" } },
+          cols: { type: "ARRAY", items: { type: "STRING" } },
+          wells: { type: "ARRAY", items: { type: "STRING" } }
+        },
+        required: ["wells"]
+      }
     }
   };
 
@@ -1349,9 +1360,12 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
   const errors = [];
   let listed = false;
   const noThink = new Set();           // "thinking" ayarını reddeden modeller
+  const noSchema = new Set();          // şema (responseSchema) desteklemeyen modeller
+  let parseRetried = false;            // okunamayan yanıtta aynı model bir kez tekrar denenir
   const payloadFor = (m) => {          // düşünme ayarı model ailesine göre (hız için minimum)
     const pl = JSON.parse(JSON.stringify(payload));
     const g = pl.generationConfig;
+    if (noSchema.has(m)) delete g.responseSchema;
     if (noThink.has(m)) delete g.thinkingConfig;
     else if (/gemini-3/.test(m)) g.thinkingConfig = { thinkingLevel: "low" };
     else if (/gemini-2\.5-flash/.test(m)) g.thinkingConfig = { thinkingBudget: 0 };
@@ -1365,6 +1379,7 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
   for (let qi = 0; qi < queue.length; qi++) {
     const mName = queue[qi];
     const tTry = Date.now(); tFirst = 0; tEnd = 0;
+    let finishReason = "", blockReason = "";
     try {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/${mName}:streamGenerateContent?alt=sse&key=${S.apiKey}`;
       const response = await fetch(endpoint, {
@@ -1381,6 +1396,9 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
           throw new Error("Geçersiz API Anahtarı! Lütfen kontrol edin.");
         }
         lastError = new Error(`API Hatası (${response.status}): ${errMsg}`);
+        if (response.status === 400 && /schema/i.test(errMsg) && !noSchema.has(mName)) {
+          noSchema.add(mName); qi--; continue;   // şemayı reddeden modeli şemasız dene
+        }
         if (response.status === 400 && /think/i.test(errMsg) && !noThink.has(mName)) {
           noThink.add(mName); qi--; continue;   // aynı modeli düşünme ayarı olmadan tekrar dene
         }
@@ -1412,12 +1430,14 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
             if (jsonStr === "[DONE]") continue;
             try {
               const parsed = JSON.parse(jsonStr);
+              const fr = parsed.candidates?.[0]?.finishReason; if (fr) finishReason = fr;
+              if (parsed.promptFeedback?.blockReason) blockReason = parsed.promptFeedback.blockReason;
               const textPart = (parsed.candidates?.[0]?.content?.parts || [])
                 .filter(pt => pt && !pt.thought && typeof pt.text === "string").map(pt => pt.text).join("");
               if (textPart) {
                 if (!tFirst) tFirst = Date.now();
                 fullText += textPart;
-                const matchedWells = fullText.match(/"[A-H](?:1[0-2]|[1-9])"/g) || [];
+                const matchedWells = fullText.match(/"[A-H](?:1[0-2]|[1-9])[|"]/g) || [];
                 const wellsCount = Math.min(96, matchedWells.length);
                 const currentPct = Math.min(98, Math.max(12, Math.round((wellsCount / 96) * 100)));
                 const lastWellName = wellsCount > 0 ? matchedWells[matchedWells.length - 1].replace(/"/g, "") : "";
@@ -1432,9 +1452,15 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
       tEnd = Date.now();
       setProgress(99, "Plate Tablosuna Yerleştiriliyor...", "Renklendirme uygulanıyor");
 
-      const data = parseLooseJson(fullText);
-      if (!data) {
-        const pe = new Error("Yapay zeka yanıtı okunamadı. Tekrar deneyin (görsel daha net/yakın olabilir).");
+      const data = normalizeScan(parseLooseJson(fullText));
+      if (!data || !Object.keys(data.wells).length) {
+        if (!parseRetried) {                      // model çıktısı her seferinde biraz değişir: bir kez daha dene
+          parseRetried = true;
+          setProgress(15, "Yanıt okunamadı", "Aynı model bir kez daha deniyor…");
+          qi--; continue;
+        }
+        const why = blockReason ? " (engellendi: " + blockReason + ")" : (finishReason && finishReason !== "STOP" ? " (bitiş: " + finishReason + ")" : "");
+        const pe = new Error("Yapay zeka yanıtı okunamadı" + why + ". Tekrar deneyin. Yanıt başı: " + String(fullText).replace(/\s+/g, " ").slice(0, 140));
         pe.noRetry = true; throw pe;     // aynı görseli başka modelle baştan göndermek süreyi katlar
       }
       push();
@@ -1520,20 +1546,53 @@ function parseLooseJson(text) {
   const a = t.indexOf("{"), b = t.lastIndexOf("}");
   if (a >= 0) t = b > a ? t.slice(a, b + 1) : t.slice(a);
   const fixes = [t, t.replace(/,\s*([}\]])/g, "$1"), t.replace(/[\u201C\u201D]/g, '"').replace(/,\s*([}\]])/g, "$1")];
-  for (const x of fixes) { try { return JSON.parse(x); } catch (e) {} }
+  for (const x of fixes) { try { const r = JSON.parse(x); return Array.isArray(r) ? { wells: r } : r; } catch (e) {} }
+  // Kurtarma 1: "A1|7683|not" biçimindeki dizi öğeleri
+  const items = [];
+  const re2 = /"\s*([A-Ha-h]\s*(?:1[0-2]|[1-9]))\s*\|([^"|]*)(?:\|([^"]*))?"/g;
+  let m2;
+  while ((m2 = re2.exec(t))) items.push(m2[1] + "|" + m2[2] + (m2[3] ? "|" + m2[3] : ""));
+  // Kurtarma 2: "A1": "7683" / {"v":..} / 7683 biçimindeki nesne girdileri
   const wells = {};
-  const re = /"([A-H](?:1[0-2]|[1-9]))"\s*:\s*(\{[^{}]*\}|"[^"]*"|null)/g;
+  const re = /"([A-Ha-h](?:1[0-2]|[1-9]))"\s*:\s*(\{[^{}]*\}|"[^"]*"|-?\d+(?:\.\d+)?|null)/g;
   let m, n = 0;
-  while ((m = re.exec(t))) {
-    n++;
-    let v = null; try { v = JSON.parse(m[2]); } catch (e) {}
-    wells[m[1]] = v;
-  }
-  if (!n) return null;
+  while ((m = re.exec(t))) { n++; let v = null; try { v = JSON.parse(m[2]); } catch (e) {} wells[m[1]] = v; }
+  if (!items.length && !n) return null;
   let rows; const rm = t.match(/"rows"\s*:\s*\[([^\]]*)\]/);
   if (rm) { try { rows = JSON.parse("[" + rm[1] + "]"); } catch (e) {} }
   const an = t.match(/"analiz"\s*:\s*"([^"]*)"/);
-  return { analiz: an ? an[1] : "", rows: rows, wells: wells };
+  return { analiz: an ? an[1] : "", rows: rows, wells: items.length ? items : wells };
+}
+
+// Hangi biçimde gelirse gelsin (dizi / nesne) tek biçime çevirir: { A1: {v, n?}, ... }
+function normalizeScan(data) {
+  if (!data || typeof data !== "object") return null;
+  const out = {};
+  const put = (key, v, n) => {
+    const m = String(key == null ? "" : key).toUpperCase().replace(/[\s_-]/g, "").match(/^([A-H])(1[0-2]|[1-9])$/);
+    if (!m) return;
+    const val = (v == null ? "" : String(v)).trim();
+    if (!val) return;
+    out[m[1] + m[2]] = n ? { v: val, n: String(n).trim() } : { v: val };
+  };
+  const w = data.wells;
+  if (Array.isArray(w)) {
+    w.forEach(it => {
+      if (typeof it === "string") {
+        const parts = it.split("|");
+        if (parts.length >= 2) put(parts[0], parts[1], parts.slice(2).join("|"));
+        else { const mm = it.match(/^\s*([A-Ha-h]\s*\d{1,2})\s*[:=]\s*(.+)$/); if (mm) put(mm[1], mm[2]); }
+      } else if (it && typeof it === "object") {
+        put(it.p || it.well || it.id || it.pos || it.key, it.v !== undefined ? it.v : it.value, it.n || it.note);
+      }
+    });
+  } else if (w && typeof w === "object") {
+    Object.keys(w).forEach(k => {
+      const c = w[k]; if (c == null) return;
+      if (typeof c === "object") put(k, c.v !== undefined ? c.v : c.value, c.n || c.note); else put(k, c);
+    });
+  }
+  return { analiz: data.analiz || "", rows: Array.isArray(data.rows) ? data.rows : undefined, cols: Array.isArray(data.cols) ? data.cols : undefined, wells: out };
 }
 
 // Anahtarın erişebildiği, görsel okuyabilen Gemini modellerini listeler (flash öncelikli, en yeni sürüm önce)
@@ -2042,7 +2101,7 @@ function rdVoiceHandle(alts){
     {"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5}
   ];
 
-  var APP_VERSION = "2026.11.11-4";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
+  var APP_VERSION = "2026.11.11-5";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
     var curStamp = EMBED_STAMP;
   var dirty = false;
   var fileHandle = null;
