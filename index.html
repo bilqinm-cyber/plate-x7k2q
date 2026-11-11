@@ -577,6 +577,8 @@ if(!S.apiKey || S.apiKey.trim() === ""){
 }
 // Eski, iptal edilmiş anahtar tarayıcıda kayıtlı kaldıysa sil: ilk kamera/galeri kullanımında yenisi sorulur
 if(/^AQ\.Ab8RN6KN/.test(S.apiKey || "")){ S.apiKey = ""; }
+// Kayıtlı model seçimini bir kez sıfırla: en iyi model yeniden belirlensin
+if(S.modelRev !== 3){ S.cachedModel = ""; S.modelRev = 3; }
 
 while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
 
@@ -1295,6 +1297,7 @@ async function processImageWithGeminiStream(base64Image) {
   if (!S.apiKey) S.apiKey = DEFAULT_API_KEY;
   setProgress(10, "Yapay Zeka Bağlanıyor...", "Görsel aktarılıyor, okuma başlıyor");
 
+  const t0 = Date.now();
   const systemPrompt = `You are a specialized PCR Laboratory Assistant.
 Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12).
 Identify:
@@ -1321,7 +1324,7 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
     }
   };
 
-  const modelsToTry = [S.cachedModel, "models/gemini-3.8-flash", "models/gemini-2.5-flash", "models/gemini-2.0-flash"].filter(Boolean);
+  const modelsToTry = [S.cachedModel, "models/gemini-3.8-flash", "models/gemini-3.5-flash", "models/gemini-2.5-flash", "models/gemini-2.0-flash"].filter(Boolean);
   const errors = [];
   let listed = false;
   const noThink = new Set();           // "thinking" ayarını reddeden modeller
@@ -1360,7 +1363,7 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
           noThink.add(mName); qi--; continue;   // aynı modeli düşünme ayarı olmadan tekrar dene
         }
         errors.push(mName.replace("models/", "") + " → " + response.status);
-        if ((response.status === 404 || response.status === 400) && !listed) {
+        if ((response.status === 404 || response.status === 400) && !listed && qi === queue.length - 1) {
           // Bilinen model adları bu anahtarda yoksa: anahtarın gerçekten kullanabildiği modelleri listele
           listed = true;
           const extra = await listFlashModels();
@@ -1447,6 +1450,7 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
       }
 
       S.cachedModel = mName; save();
+      scanToast(mName, Date.now() - t0);
       setProgress(100, "Tamamlandı!", "Tüm kuyucuklar başarıyla aktarıldı");
       refreshMetaInputs(); refresh();
       return;
@@ -1461,6 +1465,19 @@ Output ONLY pure, raw JSON without markdown formatting, MINIFIED on a single lin
       (all404 ? " Anahtarın bu modellere erişimi yok; aistudio.google.com/apikey adresinden yeni bir anahtar oluşturup girin." : " Son hata: " + (lastError && lastError.message)));
   }
   throw lastError || new Error("Kullanılabilir yapay zeka modeli bulunamadı.");
+}
+
+// Tarama bitince kullanılan model ve süre kısa süre görünür
+function scanToast(model, ms) {
+  try {
+    const old = document.getElementById("scanToast"); if (old) old.remove();
+    const t = document.createElement("div");
+    t.id = "scanToast";
+    t.textContent = "✔ " + model.replace("models/", "") + " · " + (ms / 1000).toFixed(1) + " sn";
+    t.style.cssText = "position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:8px 16px;border-radius:20px;font:700 14px system-ui,sans-serif;z-index:10000;pointer-events:none";
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 9000);
+  } catch (e) {}
 }
 
 // Anahtarın erişebildiği, görsel okuyabilen Gemini modellerini listeler (flash öncelikli, en yeni sürüm önce)
@@ -1478,7 +1495,7 @@ async function listFlashModels() {
     const kind = n => /flash/.test(n) ? (/lite/.test(n) ? 1 : 2) : 0;
     const ver = n => { const v = n.match(/gemini-(\d+(?:\.\d+)?)/); return v ? parseFloat(v[1]) : 0; };
     const stable = n => /preview/.test(n) ? 0 : 1;
-    names.sort((a, b) => (kind(b) - kind(a)) || (ver(b) - ver(a)) || (stable(b) - stable(a)));
+    names.sort((a, b) => (kind(b) - kind(a)) || (stable(b) - stable(a)) || (ver(b) - ver(a)));
     return names.slice(0, 6);
   } catch (e) { return []; }
 }
@@ -1969,7 +1986,7 @@ function rdVoiceHandle(alts){
     {"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5}
   ];
 
-  var APP_VERSION = "2026.11.11";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
+  var APP_VERSION = "2026.11.11-2";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
     var curStamp = EMBED_STAMP;
   var dirty = false;
   var fileHandle = null;
