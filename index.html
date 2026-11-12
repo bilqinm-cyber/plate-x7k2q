@@ -270,8 +270,955 @@ body.drag #t input, #view-plate.drag #t input{
       </div>
       <button class="card-btn blue">Plate Düzenini Aç ➔</button>
     </div>
+    <div class="home-card" onclick="switchView('workflow')"><div><span class="card-icon">📋</span><h2 class="card-title">GDO Analiz İş Takip ve Karar Sistemi</h2><p class="card-desc">Gıda/yem, beyan, DNA kontrolü, tarama–takson–event karar takibi, Word/PDF formu.</p></div><button class="card-btn">İş Takibini Aç ➔</button></div>
   </div>
 </div>
+
+<div id="view-workflow" hidden style="max-width:1100px;margin:auto;padding:0 10px 30px"><div class="portal-nav"><h2>📋 GDO Analiz İş Takip</h2><button class="nav-btn" onclick="switchView('home')">🏠 Ana Menü</button></div><iframe id="workflow-frame" title="GDO Analiz İş Takip" style="width:100%;height:85vh;min-height:720px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;tr&quot;&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot;&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+  &lt;title&gt;GDO Analiz İş Takip &amp; Karar Sistemi&lt;/title&gt;
+  &lt;style&gt;
+    :root {
+      --primary: #1e3a8a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #d97706;
+      --info: #2563eb;
+      --purple: #7c3aed;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); margin: 0; padding: 12px; }
+    .container { max-width: 650px; margin: 0 auto; }
+    
+    .card { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    h2 { margin: 0 0 10px; font-size: 1.05rem; color: var(--primary); display: flex; align-items: center; justify-content: space-between; }
+    
+    label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: #475569; }
+    input[type=&quot;text&quot;], input[type=&quot;date&quot;] {
+      width: 100%; padding: 10px 12px; font-size: 0.95rem; border: 1.5px solid var(--border); border-radius: 8px; margin-bottom: 10px; outline: none; background: #fff;
+    }
+    input:focus { border-color: var(--info); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* Gıda / Yem Toggle */
+    .btn-toggle-group { display: flex; gap: 6px; margin-bottom: 10px; }
+    .btn-toggle {
+      flex: 1; padding: 10px; text-align: center; border: 1.5px solid var(--border); border-radius: 8px;
+      font-weight: bold; cursor: pointer; background: #fff; color: #475569; font-size: 0.9rem;
+    }
+    .btn-toggle.active { background: #eff6ff; border-color: var(--info); color: var(--info); }
+
+    /* Etiket Beyan Seçimi */
+    .checkbox-tile-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .checkbox-tile {
+      border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 4px; text-align: center;
+      cursor: pointer; background: #fff; user-select: none; transition: 0.15s;
+    }
+    .checkbox-tile.checked { background: #dbeafe; border-color: var(--info); color: var(--primary); font-weight: bold; }
+    .checkbox-tile small { display: block; font-size: 0.68rem; margin-top: 2px; }
+
+    /* DNA Toggle */
+    .dna-toggle {
+      display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1.5px solid var(--border);
+      padding: 10px 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    }
+    .dna-toggle.low { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+
+    .btn-add {
+      width: 100%; padding: 12px; background: #15803d; color: #fff; border: none; border-radius: 8px;
+      font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px;
+    }
+
+    /* Numune Kartları */
+    .sample-card {
+      background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .sample-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .sample-no { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+    .sample-codes { font-size: 1.05rem; font-weight: 800; letter-spacing: 2px; color: #1e293b; }
+    
+    /* Durum Rozetleri */
+    .status-badge {
+      display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 800; margin: 6px 0;
+    }
+    .badge-tarama { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; } /* 🟡 Sarı */
+    .badge-takson { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; } /* 🔵 Açık Mavi */
+    .badge-event-qual { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; } /* 🟣 Mor */
+    .badge-miktar { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; } /* 🟠 Turuncu */
+    .badge-uygun { background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-size: 0.85rem; } /* 🟢 Canlı Yeşil */
+    .badge-uygun-degil { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-size: 0.85rem; } /* 🔴 Kırmızı */
+
+    .action-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .btn-sm { flex: 1; padding: 8px 6px; font-size: 0.78rem; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; text-align: center; }
+    .btn-pos { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .btn-neg { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .btn-del { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; flex: 0 0 36px; }
+
+    .sub-panel {
+      margin-top: 8px; padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #94a3b8; font-size: 0.82rem;
+    }
+    .tag-btn {
+      display: inline-block; padding: 4px 8px; background: #e2e8f0; border-radius: 4px; font-weight: bold; margin: 2px; cursor: pointer; font-size: 0.75rem;
+    }
+    .tag-btn.pos { background: #fca5a5; color: #7f1d1d; }
+
+    /* Ana İndirme Butonları */
+    .btn-main { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; margin-bottom: 8px; color: #fff; }
+    .btn-word { background: #0284c7; }
+    .btn-print { background: #334155; }
+
+    #print-preview { display: none; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container { display: none; }
+      #print-preview { display: block; }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class=&quot;container&quot;&gt;
+
+  &lt;!-- Üst Form Bilgileri --&gt;
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2&gt;📋 Form Bilgileri&lt;/h2&gt;
+    &lt;div class=&quot;grid-2&quot;&gt;
+      &lt;div&gt;
+        &lt;label&gt;TARİH&lt;/label&gt;
+        &lt;input type=&quot;date&quot; id=&quot;form-date&quot;&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;label&gt;NUMUNE NO ARALIĞI&lt;/label&gt;
+        &lt;input type=&quot;text&quot; id=&quot;numune-aralik&quot; placeholder=&quot;Örn: 8359 - 8364&quot;&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;label&gt;ADI SOYADI&lt;/label&gt;
+    &lt;input type=&quot;text&quot; id=&quot;user-name&quot; placeholder=&quot;Adınızı yazın (hafızaya kaydolur)&quot;&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Numune Ekleme Kartı --&gt;
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2&gt;🧪 Yeni Numune Ekle&lt;/h2&gt;
+
+    &lt;div class=&quot;grid-2&quot;&gt;
+      &lt;div&gt;
+        &lt;label&gt;NUMUNE NO&lt;/label&gt;
+        &lt;input type=&quot;text&quot; id=&quot;sample-no&quot; placeholder=&quot;Örn: 8359&quot; inputmode=&quot;numeric&quot;&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;label&gt;MATRİS TÜRÜ&lt;/label&gt;
+        &lt;div class=&quot;btn-toggle-group&quot;&gt;
+          &lt;div class=&quot;btn-toggle active&quot; id=&quot;type-gida&quot; onclick=&quot;setMatrix(&#x27;Gıda&#x27;)&quot;&gt;Gıda&lt;/div&gt;
+          &lt;div class=&quot;btn-toggle&quot; id=&quot;type-yem&quot; onclick=&quot;setMatrix(&#x27;Yem&#x27;)&quot;&gt;Yem&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;label&gt;İÇERİK / ETİKET BEYANI (Etikette hangisi yazıyor?)&lt;/label&gt;
+    &lt;div class=&quot;checkbox-tile-group&quot;&gt;
+      &lt;div class=&quot;checkbox-tile&quot; id=&quot;tile-S&quot; onclick=&quot;toggleLabel(&#x27;S&#x27;)&quot;&gt;
+        &lt;b&gt;Soya&lt;/b&gt;
+        &lt;small id=&quot;sub-S&quot;&gt;Yok (S)&lt;/small&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;checkbox-tile&quot; id=&quot;tile-P&quot; onclick=&quot;toggleLabel(&#x27;P&#x27;)&quot;&gt;
+        &lt;b&gt;Pamuk&lt;/b&gt;
+        &lt;small id=&quot;sub-P&quot;&gt;Yok (P)&lt;/small&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;checkbox-tile&quot; id=&quot;tile-M&quot; onclick=&quot;toggleLabel(&#x27;M&#x27;)&quot;&gt;
+        &lt;b&gt;Mısır&lt;/b&gt;
+        &lt;small id=&quot;sub-M&quot;&gt;Yok (M)&lt;/small&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;checkbox-tile&quot; id=&quot;tile-K&quot; onclick=&quot;toggleLabel(&#x27;K&#x27;)&quot;&gt;
+        &lt;b&gt;Kanola&lt;/b&gt;
+        &lt;small id=&quot;sub-K&quot;&gt;Yok (K)&lt;/small&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;label&gt;NUMUNE AÇIKLAMASI (Ne Olduğu)&lt;/label&gt;
+    &lt;input type=&quot;text&quot; id=&quot;sample-desc&quot; placeholder=&quot;Örn: Pirinç unu, Mısır nişastası, Kedi maması&quot;&gt;
+
+    &lt;button class=&quot;btn-add&quot; onclick=&quot;addSample()&quot;&gt;➕ Numuneyi Ekle ve Analize Başla&lt;/button&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Numune Analiz Takip &amp; Karar Paneli --&gt;
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2&gt;📊 Numune Analiz Takibi (&lt;span id=&quot;sample-count&quot;&gt;0&lt;/span&gt;)&lt;/h2&gt;
+    &lt;button class=&quot;btn-sm btn-pos&quot; style=&quot;margin-bottom:12px;width:100%&quot; onclick=&quot;deleteAllSamples()&quot;&gt;🗑️ Tüm Numuneleri Sil&lt;/button&gt;
+    &lt;div id=&quot;sample-list&quot;&gt;
+      &lt;div style=&quot;text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 14px;&quot;&gt;Henüz numune eklenmedi.&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
+
+
+  &lt;div class=&quot;card&quot; id=&quot;plate-workflow-actions&quot; style=&quot;border:2px solid #93c5fd;background:#eff6ff&quot;&gt;
+    &lt;h2&gt;🧫 Plate Kurulumu — İş Takipten&lt;/h2&gt;
+    &lt;p style=&quot;font-size:.83rem;margin:0 0 10px&quot;&gt;İstediğin numuneleri işaretle; ilgili analizleri doğrudan PCR Plate Düzeni modülüne gönder. Dolu plate&#x27;ler korunur.&lt;/p&gt;
+    &lt;div style=&quot;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px&quot;&gt;
+      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#1e40af;color:white&quot; onclick=&quot;sendPlate(&#x27;TARAMA&#x27;)&quot;&gt;Tarama + Plant Plate Kur&lt;/button&gt;
+      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#0369a1;color:white&quot; onclick=&quot;sendPlate(&#x27;TAKSON&#x27;)&quot;&gt;Takson Plate Kur&lt;/button&gt;
+      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#7c3aed;color:white&quot; onclick=&quot;sendPlate(&#x27;EVENT&#x27;)&quot;&gt;Event Plate Kur&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;label&gt;Tarama hedefleri (virgülle ayır; ör. P35S, T-NOS, FMV)&lt;/label&gt;
+    &lt;input id=&quot;screen-targets&quot; type=&quot;text&quot; value=&quot;GDO Tarama&quot; placeholder=&quot;Tarama hedeflerini yazın&quot;&gt;
+    &lt;label&gt;Event kurulum yöntemi&lt;/label&gt;
+    &lt;select id=&quot;event-mode&quot; style=&quot;padding:9px;border:1px solid #94a3b8;border-radius:8px;width:100%;margin-bottom:8px&quot;&gt;
+      &lt;option value=&quot;DEVICE&quot;&gt;Cihaz kurulumu — dikey&lt;/option&gt;
+      &lt;option value=&quot;MANUAL&quot;&gt;Elle kurulum — yatay (taksona sığdır)&lt;/option&gt;
+    &lt;/select&gt;
+    &lt;label&gt;Event bitkisi (favorilerdeki etiketler kullanılır)&lt;/label&gt;
+    &lt;select id=&quot;event-plant&quot; style=&quot;padding:9px;border:1px solid #94a3b8;border-radius:8px;width:100%;margin-bottom:8px&quot;&gt;&lt;option value=&quot;AUTO&quot;&gt;Numunenin beyanı / pozitif taksonuna göre otomatik&lt;/option&gt;&lt;option value=&quot;S&quot;&gt;Soya&lt;/option&gt;&lt;option value=&quot;P&quot;&gt;Pamuk&lt;/option&gt;&lt;option value=&quot;M&quot;&gt;Mısır&lt;/option&gt;&lt;option value=&quot;K&quot;&gt;Kanola&lt;/option&gt;&lt;/select&gt;
+    &lt;p id=&quot;plate-action-status&quot; style=&quot;font-size:.8rem;color:#1e3a8a;margin:8px 0 0&quot;&gt;&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;!-- PCR sonuçları: numune iş akışından bağımsız ayrı not alanı --&gt;
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2&gt;📝 PCR Sonuç Notları&lt;/h2&gt;
+    &lt;p style=&quot;font-size:.82rem;color:#64748b;margin:0 0 10px&quot;&gt;Gen ve numune numarasını yazın, iki paralelin sonucunu seçin. (+,-) ve (-,+) TEKRAR olarak rapora geçer. Bu notlar numunenin analiz aşamasını değiştirmez.&lt;/p&gt;
+    &lt;div class=&quot;grid-2&quot;&gt;
+      &lt;div&gt;&lt;label&gt;NUMUNE NO&lt;/label&gt;&lt;input id=&quot;pcr-note-no&quot; type=&quot;text&quot; placeholder=&quot;Örn. 7396&quot;&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;GEN / HEDEF&lt;/label&gt;&lt;input id=&quot;pcr-note-gene&quot; type=&quot;text&quot; placeholder=&quot;Örn. Soya, 40278&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;grid-2&quot;&gt;
+      &lt;div&gt;&lt;label&gt;1. PARALEL&lt;/label&gt;&lt;select id=&quot;pcr-note-a&quot; style=&quot;width:100%;padding:10px;margin-bottom:10px&quot;&gt;&lt;option value=&quot;&quot;&gt;Seçiniz&lt;/option&gt;&lt;option value=&quot;+&quot;&gt;+&lt;/option&gt;&lt;option value=&quot;-&quot;&gt;-&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;2. PARALEL&lt;/label&gt;&lt;select id=&quot;pcr-note-b&quot; style=&quot;width:100%;padding:10px;margin-bottom:10px&quot;&gt;&lt;option value=&quot;&quot;&gt;Seçiniz&lt;/option&gt;&lt;option value=&quot;+&quot;&gt;+&lt;/option&gt;&lt;option value=&quot;-&quot;&gt;-&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;label&gt;İSTEĞE BAĞLI AÇIKLAMA&lt;/label&gt;
+    &lt;input id=&quot;pcr-note-text&quot; type=&quot;text&quot; placeholder=&quot;Örn. Tekrar çalışılacak&quot;&gt;
+    &lt;button class=&quot;btn-add&quot; onclick=&quot;addPcrNote()&quot;&gt;➕ PCR Sonuç Notunu Ekle&lt;/button&gt;
+    &lt;div id=&quot;pcr-note-list&quot; style=&quot;margin-top:12px&quot;&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Kit &amp; Lot Bilgileri --&gt;
+  &lt;details class=&quot;card&quot;&gt;
+    &lt;summary style=&quot;font-weight: 700; color: var(--primary); cursor: pointer;&quot;&gt;⚙️ Kit &amp; LOT Bilgileri (Varsayılanlar)&lt;/summary&gt;
+    &lt;div style=&quot;margin-top: 10px;&quot;&gt;
+      &lt;label&gt;DNA Ekstraksiyon Kit ve LOT No&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;kit-dna&quot; value=&quot;İnnu Prep 003-26&quot;&gt;
+
+      &lt;label&gt;MasterMiks Adı ve LOT No&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;kit-master&quot; value=&quot;Euroclone 015D2512&quot;&gt;
+
+      &lt;label&gt;GDO Tarama Kit Adı ve LOT No&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;kit-gdo&quot; value=&quot;Kogen R2081TC26052&quot;&gt;
+
+      &lt;label&gt;Plant Tarama Kit Adı ve LOT No&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;kit-plant&quot; value=&quot;Exon Plant Screen&quot;&gt;
+
+      &lt;label&gt;Diğer Kit Adı ve LOT No&lt;/label&gt;
+      &lt;input type=&quot;text&quot; id=&quot;kit-diger&quot; placeholder=&quot;Gerekirse yazın...&quot;&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+
+  &lt;!-- Çıktı Butonları --&gt;
+  &lt;button class=&quot;btn-main btn-word&quot; onclick=&quot;downloadWordDoc()&quot;&gt;📄 Word Olarak İndir (.doc)&lt;/button&gt;
+  &lt;button class=&quot;btn-main btn-print&quot; onclick=&quot;printDoc()&quot;&gt;🖨️ PDF Olarak Kaydet / Yazdır&lt;/button&gt;
+
+&lt;/div&gt;
+
+&lt;div id=&quot;print-preview&quot;&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  let matrixType = &quot;Gıda&quot;;
+  let labelDeclared = { S: false, P: false, M: false, K: false };
+  let isDnaAdequate = true;
+  let samples = [];
+
+  window.addEventListener(&#x27;DOMContentLoaded&#x27;, () =&gt; {
+    // Otomatik Tarih
+    document.getElementById(&#x27;form-date&#x27;).value = new Date().toISOString().split(&#x27;T&#x27;)[0];
+
+    // Hatırlanan Ad Soyad
+    const saved = localStorage.getItem(&#x27;kgklab_user_name&#x27;);
+    if (saved) document.getElementById(&#x27;user-name&#x27;).value = saved;
+    document.getElementById(&#x27;user-name&#x27;).addEventListener(&#x27;input&#x27;, (e) =&gt; {
+      localStorage.setItem(&#x27;kgklab_user_name&#x27;, e.target.value);
+    });
+  });
+
+  function setMatrix(type) {
+    matrixType = type;
+    document.getElementById(&#x27;type-gida&#x27;).classList.toggle(&#x27;active&#x27;, type === &#x27;Gıda&#x27;);
+    document.getElementById(&#x27;type-yem&#x27;).classList.toggle(&#x27;active&#x27;, type === &#x27;Yem&#x27;);
+  }
+
+  function toggleLabel(p) {
+    labelDeclared[p] = !labelDeclared[p];
+    document.getElementById(&#x27;tile-&#x27; + p).classList.toggle(&#x27;checked&#x27;, labelDeclared[p]);
+    document.getElementById(&#x27;sub-&#x27; + p).innerHTML = labelDeclared[p] ? 
+      `&lt;span style=&quot;color:#1d4ed8; font-weight:bold;&quot;&gt;Var (${p}E)&lt;/span&gt;` : `Yok (${p})`;
+  }
+  function setSampleDna(idx,low){
+    samples[idx].dnaLow=low;
+    renderSamples();
+  }
+
+  function addSample() {
+    const noInput = document.getElementById(&#x27;sample-no&#x27;);
+    const descInput = document.getElementById(&#x27;sample-desc&#x27;);
+    const no = noInput.value.trim();
+    const desc = descInput.value.trim();
+
+    if (!no) {
+      alert(&quot;Lütfen Numune Numarası girin!&quot;);
+      return;
+    }
+
+    const codes = {
+      S: labelDeclared.S ? &quot;SE&quot; : &quot;S&quot;,
+      P: labelDeclared.P ? &quot;PE&quot; : &quot;P&quot;,
+      M: labelDeclared.M ? &quot;ME&quot; : &quot;M&quot;,
+      K: labelDeclared.K ? &quot;KE&quot; : &quot;K&quot;
+    };
+
+    samples.push({
+      id: Date.now(),
+      no: no,
+      matrix: matrixType,
+      desc: desc,
+      dnaLow: false,
+      codes: { ...codes },
+      labelDeclared: { ...labelDeclared },
+      stage: &#x27;TARAMA&#x27;, // TARAMA, TAKSON, EVENT_VAR_YOK, MIKTAR, UYGUN, UYGUN_DEGIL
+      statusText: &#x27;🟡 Tarama Aşamasında&#x27;,
+      statusClass: &#x27;badge-tarama&#x27;,
+      taksonPositive: []
+    });
+
+    updateRange();
+    renderSamples();
+
+    // Sonraki numara hazırlığı
+    const n = parseInt(no);
+    noInput.value = isNaN(n) ? &quot;&quot; : (n + 1);
+    descInput.value = &quot;&quot;;
+    [&#x27;S&#x27;, &#x27;P&#x27;, &#x27;M&#x27;, &#x27;K&#x27;].forEach(p =&gt; {
+      if (labelDeclared[p]) toggleLabel(p);
+    });
+
+    noInput.focus();
+  }
+
+  function updateRange() {
+    if (samples.length === 0) {
+      document.getElementById(&#x27;numune-aralik&#x27;).value = &quot;&quot;;
+      return;
+    }
+    const first = samples[0].no;
+    const last = samples[samples.length - 1].no;
+    document.getElementById(&#x27;numune-aralik&#x27;).value = (samples.length === 1) ? first : `${first} - ${last}`;
+  }
+
+  function deleteSample(idx) {
+    if(!confirm(samples[idx].no + &#x27; numaralı numune silinsin mi?&#x27;)) return;
+    samples.splice(idx, 1);
+    updateRange();
+    renderSamples();
+  }
+
+  function deleteAllSamples() {
+    if(!samples.length) return;
+    if(!confirm(&#x27;Analiz takibindeki &#x27; + samples.length + &#x27; numunenin TAMAMI silinsin mi? Bu işlem geri alınamaz.&#x27;)) return;
+    samples = [];
+    updateRange();
+    renderSamples();
+  }
+
+  // --- KARAR AĞACI MOTORU ---
+
+  // 1. Aşama: GDO Tarama Sonucu
+  function onTarama(idx, res) {
+    const s = samples[idx];
+    if (res === &#x27;POS&#x27;) {
+      if (s.matrix === &#x27;Gıda&#x27;) {
+        // Gıdada GDO pozitif -&gt; DİREKT UYGUN DEĞİL
+        s.stage = &#x27;UYGUN_DEGIL&#x27;;
+        s.statusText = &#x27;🔴 UYGUN DEĞİL (Gıda GDO Pozitif - Mevzuat Gereği Analiz Bitti)&#x27;;
+        s.statusClass = &#x27;badge-uygun-degil&#x27;;
+      } else {
+        // Yemde GDO pozitif -&gt; Önce Event Var/Yok Bakılır!
+        s.stage = &#x27;EVENT_VAR_YOK&#x27;;
+        s.statusText = &#x27;🟣 Event (Var/Yok) Analizine Sevk Edildi&#x27;;
+        s.statusClass = &#x27;badge-event-qual&#x27;;
+      }
+    } else {
+      // Negatif -&gt; Takson Analizi
+      s.stage = &#x27;TAKSON&#x27;;
+      s.statusText = &#x27;🔵 Tarama Negatif -&gt; Takson Analizinde&#x27;;
+      s.statusClass = &#x27;badge-takson&#x27;;
+    }
+    renderSamples();
+  }
+
+  // 2. Aşama: Event Var/Yok (Kalitatif) Sonuçları
+  function onEventVarYok(idx, resultType) {
+    const s = samples[idx];
+    if (resultType === &#x27;ONAYLI_VAR&#x27;) {
+      s.stage = &#x27;MIKTAR&#x27;;
+      s.statusText = &#x27;🟠 Onaylı Event VAR -&gt; Miktar Tayinine Sevk Edildi&#x27;;
+      s.statusClass = &#x27;badge-miktar&#x27;;
+    } else if (resultType === &#x27;ONAYSIZ_VAR&#x27;) {
+      s.stage = &#x27;UYGUN_DEGIL&#x27;;
+      s.statusText = &#x27;🔴 UYGUN DEĞİL (Onaysız Event Tespit Edildi)&#x27;;
+      s.statusClass = &#x27;badge-uygun-degil&#x27;;
+    } else if (resultType === &#x27;YOK&#x27;) {
+      s.stage = &#x27;UYGUN&#x27;;
+      s.statusText = &#x27;🟢 UYGUN (Event Saptanamadı)&#x27;;
+      s.statusClass = &#x27;badge-uygun&#x27;;
+    }
+    renderSamples();
+  }
+
+  // 3. Aşama: Miktar Tayini Sonuçları
+  function onMiktarSonuc(idx, isPass) {
+    const s = samples[idx];
+    if (isPass) {
+      s.stage = &#x27;UYGUN&#x27;;
+      s.statusText = &#x27;🟢 UYGUN (Onaylı Event &amp; Yasal Limit İçi)&#x27;;
+      s.statusClass = &#x27;badge-uygun&#x27;;
+    } else {
+      s.stage = &#x27;UYGUN_DEGIL&#x27;;
+      s.statusText = &#x27;🔴 UYGUN DEĞİL (Yasal Limit Aşımı Tespit Edildi)&#x27;;
+      s.statusClass = &#x27;badge-uygun-degil&#x27;;
+    }
+    renderSamples();
+  }
+
+  // 4. Aşama: Takson Analizi
+  function onTaksonTemiz(idx) {
+    const s = samples[idx];
+    if (s.taksonPositive &amp;&amp; s.taksonPositive.length) {
+      alert(&#x27;Pozitif takson seçili. Önce seçimi kaldırın veya Event aşamasına geçin.&#x27;);
+      return;
+    }
+    s.stage = &#x27;UYGUN&#x27;;
+    s.statusText = &#x27;🟢 UYGUN (GDO ve Yabancı Takson Saptanmadı)&#x27;;
+    s.statusClass = &#x27;badge-uygun&#x27;;
+    renderSamples();
+  }
+
+  function toggleTaksonPlant(idx, p) {
+    const s = samples[idx];
+    s.taksonPositive = s.taksonPositive || [];
+    const posIdx = s.taksonPositive.indexOf(p);
+    if (posIdx &gt; -1) {
+      s.taksonPositive.splice(posIdx, 1);
+
+    } else {
+      s.taksonPositive.push(p);
+
+    }
+    // Birden fazla takson aynı numunede seçilebilsin; seçim sırasında aşamadan çıkma.
+    s.stage = &#x27;TAKSON&#x27;;
+    s.statusText = s.taksonPositive.length
+      ? `🔵 Takson pozitif: ${s.taksonPositive.join(&#x27;, &#x27;)} — diğer bitkiler de seçilebilir`
+      : &#x27;🔵 Takson analizinde&#x27;;
+    s.statusClass = &#x27;badge-takson&#x27;;
+    renderSamples();
+  }
+
+  function finishTaksonSelection(idx) {
+    const s = samples[idx];
+    if (!s.taksonPositive || !s.taksonPositive.length) {
+      onTaksonTemiz(idx);
+      return;
+    }
+    s.stage = &#x27;EVENT_VAR_YOK&#x27;;
+    s.statusText = `🟣 ${s.taksonPositive.join(&#x27;, &#x27;)} takson pozitif → Event (Var/Yok) analizine sevk edildi`;
+    s.statusClass = &#x27;badge-event-qual&#x27;;
+    renderSamples();
+  }
+
+  // Numune kartlarından bağımsız PCR sonuç notları.
+  let pcrNotesIndependent = [];
+  function addPcrNote() {
+    const no=document.getElementById(&#x27;pcr-note-no&#x27;).value.trim();
+    const gene=document.getElementById(&#x27;pcr-note-gene&#x27;).value.trim();
+    const a=document.getElementById(&#x27;pcr-note-a&#x27;).value;
+    const b=document.getElementById(&#x27;pcr-note-b&#x27;).value;
+    const note=document.getElementById(&#x27;pcr-note-text&#x27;).value.trim();
+    if(!no || !gene || !a || !b){alert(&#x27;Numune, gen ve iki paralel sonucu girin.&#x27;);return;}
+    pcrNotesIndependent.push({no,gene,pair:[a,b],note});
+    document.getElementById(&#x27;pcr-note-no&#x27;).value=&#x27;&#x27;;
+    document.getElementById(&#x27;pcr-note-gene&#x27;).value=&#x27;&#x27;;
+    document.getElementById(&#x27;pcr-note-a&#x27;).value=&#x27;&#x27;;
+    document.getElementById(&#x27;pcr-note-b&#x27;).value=&#x27;&#x27;;
+    document.getElementById(&#x27;pcr-note-text&#x27;).value=&#x27;&#x27;;
+    renderPcrNotes();
+  }
+  function deletePcrNote(index){
+    if(!confirm(&#x27;Bu PCR sonuç notu silinsin mi?&#x27;))return;
+    pcrNotesIndependent.splice(index,1);renderPcrNotes();
+  }
+  function renderPcrNotes(){
+    const el=document.getElementById(&#x27;pcr-note-list&#x27;);if(!el)return;
+    el.innerHTML=pcrNotesIndependent.length?pcrNotesIndependent.map((r,i)=&gt;
+      `&lt;div style=&quot;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:8px 0;font-size:.84rem&quot;&gt;&lt;span&gt;&lt;b&gt;${escapePcrText(r.gene)} ${escapePcrText(r.no)} (${r.pair.join(&#x27;,&#x27;)})&lt;/b&gt; — &lt;b&gt;${pcrDecision(r.pair)}&lt;/b&gt;${r.note?&#x27; — &#x27;+escapePcrText(r.note):&#x27;&#x27;}&lt;/span&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto&quot; onclick=&quot;deletePcrNote(${i})&quot;&gt;Sil&lt;/button&gt;&lt;/div&gt;`).join(&#x27;&#x27;):&#x27;&lt;small style=&quot;color:#64748b&quot;&gt;Henüz PCR sonuç notu eklenmedi.&lt;/small&gt;&#x27;;
+  }
+
+  function renderSamples() {
+    const listEl = document.getElementById(&#x27;sample-list&#x27;);
+    document.getElementById(&#x27;sample-count&#x27;).textContent = samples.length;
+
+    if (samples.length === 0) {
+      listEl.innerHTML = &#x27;&lt;div style=&quot;text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 14px;&quot;&gt;Henüz numune eklenmedi.&lt;/div&gt;&#x27;;
+      return;
+    }
+
+    listEl.innerHTML = samples.map((s, idx) =&gt; {
+      const codeStr = `${s.codes.S} &amp;nbsp; ${s.codes.P} &amp;nbsp; ${s.codes.M} &amp;nbsp; ${s.codes.K}`;
+      const taksonChoices = [&#x27;S&#x27;, &#x27;P&#x27;, &#x27;M&#x27;, &#x27;K&#x27;];
+
+      // Aşamalara Göre Alt Kontrol Panelleri
+      let subPanelHtml = &quot;&quot;;
+
+      if (s.stage === &#x27;TARAMA&#x27;) {
+        subPanelHtml = `
+          &lt;div class=&quot;action-row&quot;&gt;
+            &lt;button class=&quot;btn-sm btn-pos&quot; onclick=&quot;onTarama(${idx}, &#x27;POS&#x27;)&quot;&gt;Tarama (+)&lt;/button&gt;
+            &lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;onTarama(${idx}, &#x27;NEG&#x27;)&quot;&gt;Tarama (-)&lt;/button&gt;
+          &lt;/div&gt;
+        `;
+      } else if (s.stage === &#x27;TAKSON&#x27;) {
+        subPanelHtml = `
+          &lt;div class=&quot;sub-panel&quot;&gt;
+            &lt;b&gt;Takson Kontrolü (Soya, Pamuk, Mısır, Kanola):&lt;/b&gt;&lt;br&gt;
+            &lt;span style=&quot;font-size:0.72rem; color:#64748b;&quot;&gt;(Birden fazla bitkiyi seçebilirsiniz; seçim bitince Event aşamasına geçin):&lt;/span&gt;&lt;br&gt;
+            ${taksonChoices.map(p =&gt; {
+              const isPos = s.taksonPositive.includes(p);
+              return `&lt;span class=&quot;tag-btn ${isPos ? &#x27;pos&#x27; : &#x27;&#x27;}&quot; onclick=&quot;toggleTaksonPlant(${idx}, &#x27;${p}&#x27;)&quot;&gt;
+                ${p} Takson: ${isPos ? &#x27;POZİTİF (Event)&#x27; : &#x27;Negatif&#x27;}
+              &lt;/span&gt;`;
+            }).join(&#x27; &#x27;)}
+            &lt;div style=&quot;margin-top: 8px;&quot;&gt;
+              &lt;button class=&quot;btn-sm btn-neg&quot; style=&quot;width:100%;&quot; onclick=&quot;onTaksonTemiz(${idx})&quot;&gt;✅ Tüm Taksonlar Negatif → UYGUN&lt;/button&gt;
+              &lt;button class=&quot;btn-sm&quot; style=&quot;width:100%;margin-top:6px;background:#ede9fe;color:#5b21b6&quot; onclick=&quot;finishTaksonSelection(${idx})&quot;&gt;Seçilen Pozitif Taksonlarla Event Aşamasına Geç&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        `;
+      } else if (s.stage === &#x27;EVENT_VAR_YOK&#x27;) {
+        subPanelHtml = `
+          &lt;div class=&quot;sub-panel&quot; style=&quot;background:#faf5ff; border-color:#d8b4fe;&quot;&gt;
+            &lt;b&gt;Event (Var/Yok) Sonucu:&lt;/b&gt;
+            &lt;div class=&quot;action-row&quot; style=&quot;margin-top:6px;&quot;&gt;
+              &lt;button class=&quot;btn-sm&quot; style=&quot;background:#e9d5ff; color:#581c87;&quot; onclick=&quot;onEventVarYok(${idx}, &#x27;ONAYLI_VAR&#x27;)&quot;&gt;Onaylı Event VAR&lt;/button&gt;
+              &lt;button class=&quot;btn-sm btn-pos&quot; onclick=&quot;onEventVarYok(${idx}, &#x27;ONAYSIZ_VAR&#x27;)&quot;&gt;Onaysız Gen Tespit&lt;/button&gt;
+              &lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;onEventVarYok(${idx}, &#x27;YOK&#x27;)&quot;&gt;Event YOK&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        `;
+      } else if (s.stage === &#x27;MIKTAR&#x27;) {
+        subPanelHtml = `
+          &lt;div class=&quot;sub-panel&quot; style=&quot;background:#fff7ed; border-color:#fdba74;&quot;&gt;
+            &lt;b&gt;Miktar Tayini Sonucu (% qPCR):&lt;/b&gt;
+            &lt;div class=&quot;action-row&quot; style=&quot;margin-top:6px;&quot;&gt;
+              &lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;onMiktarSonuc(${idx}, true)&quot;&gt;✅ Limit İçi / Uygun&lt;/button&gt;
+              &lt;button class=&quot;btn-sm btn-pos&quot; onclick=&quot;onMiktarSonuc(${idx}, false)&quot;&gt;❌ Limit Aşımı&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        `;
+      } else {
+        // UYGUN veya UYGUN DEĞİL (Nihai sonuç)
+        subPanelHtml = `
+          &lt;div style=&quot;display:flex; justify-content:flex-end; margin-top:4px;&quot;&gt;
+          &lt;/div&gt;
+        `;
+      }
+
+      return `
+        &lt;div class=&quot;sample-card&quot;&gt;
+          &lt;div class=&quot;sample-header&quot;&gt;
+            &lt;div&gt;
+              &lt;label style=&quot;display:inline-flex;align-items:center;margin-right:6px&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;plate-select&quot; data-no=&quot;${s.no}&quot; checked style=&quot;width:19px;height:19px&quot; title=&quot;Plate kurulumuna dahil et&quot;&gt;&lt;/label&gt;&lt;span class=&quot;sample-no&quot;&gt;${s.no}&lt;/span&gt;
+              &lt;span style=&quot;font-size:0.76rem; font-weight:bold; background:#e2e8f0; padding:2px 6px; border-radius:4px; margin-left:4px;&quot;&gt;${s.matrix}&lt;/span&gt;
+              
+            &lt;/div&gt;
+            &lt;div class=&quot;sample-codes&quot;&gt;${codeStr}&lt;/div&gt;
+          &lt;/div&gt;
+
+          &lt;div style=&quot;font-size: 0.85rem; color: #475569;&quot;&gt;
+            ${s.desc ? `📦 Ürün: &lt;b&gt;${s.desc}&lt;/b&gt;` : &#x27;&lt;i&gt;Açıklama girilmedi&lt;/i&gt;&#x27;}
+          &lt;/div&gt;
+
+          &lt;div&gt;
+            &lt;span class=&quot;status-badge ${s.statusClass}&quot;&gt;${s.statusText}&lt;/span&gt;
+          &lt;/div&gt;
+
+          &lt;div class=&quot;sub-panel&quot; style=&quot;margin-top:8px&quot;&gt;
+            &lt;b&gt;DNA ölçümü (numune kaydından sonra)&lt;/b&gt;
+            &lt;div class=&quot;action-row&quot;&gt;
+              &lt;button class=&quot;btn-sm ${!s.dnaLow?&#x27;btn-neg&#x27;:&#x27;&#x27;}&quot; style=&quot;${!s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},false)&quot;&gt;≥ 10 ng/µL&lt;/button&gt;
+              &lt;button class=&quot;btn-sm ${s.dnaLow?&#x27;btn-pos&#x27;:&#x27;&#x27;}&quot; style=&quot;${s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},true)&quot;&gt;&amp;lt; 10 ng/µL — Plant&lt;/button&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+          ${subPanelHtml}
+          &lt;div style=&quot;display:flex;justify-content:flex-end;margin-top:8px&quot;&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;deleteSample(${idx})&quot;&gt;🗑️ Numuneyi Sil&lt;/button&gt;&lt;/div&gt;
+        &lt;/div&gt;
+      `;
+    }).join(&#x27;&#x27;);
+  }
+
+  // PCR paralel sonuçlarının rapor değerlendirmesi.
+  function pcrDecision(pair) {
+    if (!pair || !pair[0] || !pair[1]) return &#x27;Sonuç eksik&#x27;;
+    if (pair[0] !== pair[1]) return &#x27;TEKRAR&#x27;;
+    return pair[0] === &#x27;+&#x27; ? &#x27;UYGUN DEĞİL&#x27; : &#x27;UYGUN&#x27;;
+  }
+  function escapePcrText(value) {
+    return String(value).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g, c =&gt; ({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[c]));
+  }
+  // Rapor satırlarını doğrudan numune kartlarındaki PCR sonuçlarından oluştur.
+  // Aşama kararı, paralel PCR sonucunu asla geçersiz kılamaz.
+  function getPcrReportRows() {
+    // Ayrı girilen PCR notları, numunenin aşamasından bağımsızdır.
+    const rows=pcrNotesIndependent.filter(r=&gt;r.pair[0]!== &#x27;-&#x27; || r.pair[1]!== &#x27;-&#x27;).map(r=&gt;({
+      no:r.no,gene:r.gene,pair:r.pair,decision:pcrDecision(r.pair),note:r.note
+    }));
+    // Analiz akışında UYGUN DEĞİL kararı verilen numuneleri de rapora dahil et.
+    samples.forEach(s=&gt;{
+      if(s.stage!==&#x27;UYGUN_DEGIL&#x27;)return;
+      let gene=&#x27;GDO Tarama&#x27;;
+      if(/Onaysız Event/i.test(s.statusText||&#x27;&#x27;))gene=&#x27;Event&#x27;;
+      else if(/Limit Aşımı/i.test(s.statusText||&#x27;&#x27;))gene=&#x27;Miktar Tayini&#x27;;
+      if(!rows.some(r=&gt;r.no===s.no &amp;&amp; r.gene.toLocaleLowerCase(&#x27;tr&#x27;)===gene.toLocaleLowerCase(&#x27;tr&#x27;) &amp;&amp; r.pair[0]===&#x27;+&#x27; &amp;&amp; r.pair[1]===&#x27;+&#x27;))
+        rows.push({no:s.no,gene,pair:[&#x27;+&#x27;,&#x27;+&#x27;],decision:&#x27;UYGUN DEĞİL&#x27;});
+    });
+    return rows;
+  }
+  function getPcrReportHtml() {
+    const rows = getPcrReportRows();
+    if (!rows.length) return &#x27;&amp;nbsp;&#x27;;
+    return rows.map(r =&gt; `${escapePcrText(r.gene)} ${escapePcrText(r.no)} (${r.pair.join(&#x27;,&#x27;)}) — &lt;b&gt;${r.decision}&lt;/b&gt;${r.note ? &#x27; — &#x27;+escapePcrText(r.note) : &#x27;&#x27;}`).join(&#x27;&lt;br&gt;&#x27;);
+  }
+
+  function getFormattedDate() {
+    const val = document.getElementById(&#x27;form-date&#x27;).value;
+    if (!val) return &quot;&quot;;
+    const p = val.split(&#x27;-&#x27;);
+    return `${p[2]}.${p[1]}.${p[0]}`;
+  }
+
+  // 2 Sayfalık Orijinal Şablon (Ön Yüz ve Arka Yüz)
+  function buildDocumentHtml() {
+    const dateStr = getFormattedDate();
+    const userName = document.getElementById(&#x27;user-name&#x27;).value || &quot;&quot;;
+    const numRange = document.getElementById(&#x27;numune-aralik&#x27;).value || &quot;&quot;;
+    const kitDna = document.getElementById(&#x27;kit-dna&#x27;).value;
+    const kitMaster = document.getElementById(&#x27;kit-master&#x27;).value;
+    const kitGdo = document.getElementById(&#x27;kit-gdo&#x27;).value;
+    const kitPlant = document.getElementById(&#x27;kit-plant&#x27;).value;
+    const kitDiger = document.getElementById(&#x27;kit-diger&#x27;).value;
+
+    const check = &quot;&amp;#9745;&quot;;
+    const hasDnaLow = samples.some(s =&gt; s.dnaLow);
+
+    let sampleRows = &quot;&quot;;
+    if (samples.length === 0) {
+      sampleRows = &quot;&lt;tr&gt;&lt;td colspan=&#x27;2&#x27; style=&#x27;padding:50px 0;&#x27;&gt;&amp;nbsp;&lt;/td&gt;&lt;/tr&gt;&quot;;
+    } else {
+      sampleRows = samples.map(s =&gt; {
+        // Çıktıda G veya Y harfi ASLA yer almaz, sadece: 8364   S   P   ME   K
+        const codeText = `${s.no} &amp;nbsp;&amp;nbsp;&amp;nbsp; ${s.codes.S} &amp;nbsp;&amp;nbsp; ${s.codes.P} &amp;nbsp;&amp;nbsp; ${s.codes.M} &amp;nbsp;&amp;nbsp; ${s.codes.K}`;
+        return `
+          &lt;tr style=&quot;height: 25px;&quot;&gt;
+            &lt;td style=&quot;border: none; padding: 2px 4px; font-weight: bold; font-size: 11pt; width: 45%;&quot;&gt;
+              ${codeText}
+            &lt;/td&gt;
+            &lt;td style=&quot;border: none; padding: 2px 4px; font-size: 10pt; width: 55%;&quot;&gt;
+              ${s.desc || &#x27;&#x27;}
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        `;
+      }).join(&#x27;&#x27;);
+    }
+
+    return `
+      &lt;!-- SAYFA 1: ÖN YÜZ --&gt;
+      &lt;div class=&quot;page-container&quot;&gt;
+        &lt;table class=&quot;main-table&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th colspan=&quot;3&quot; class=&quot;doc-header&quot;&gt;
+                MOLEKÜLER BİYOLOJİ LABORATUVARI ANALİZ İŞ TAKİP FORMU
+              &lt;/th&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td class=&quot;meta-label&quot;&gt;TARİH&lt;/td&gt;
+              &lt;td colspan=&quot;2&quot; class=&quot;meta-val&quot;&gt;${dateStr}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td class=&quot;meta-label&quot;&gt;ADI SOYADI&lt;/td&gt;
+              &lt;td colspan=&quot;2&quot; class=&quot;meta-val&quot;&gt;${userName}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td class=&quot;meta-label&quot;&gt;İMZASI&lt;/td&gt;
+              &lt;td colspan=&quot;2&quot; class=&quot;meta-val&quot;&gt;&amp;nbsp;&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td class=&quot;meta-label&quot;&gt;NUMUNE NO&lt;/td&gt;
+              &lt;td colspan=&quot;2&quot; class=&quot;meta-val&quot;&gt;${numRange}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr class=&quot;col-headers&quot;&gt;
+              &lt;th style=&quot;width: 44%;&quot;&gt;İŞ TAKİP&lt;/th&gt;
+              &lt;th style=&quot;width: 44%;&quot;&gt;AÇIKLAMA&lt;/th&gt;
+              &lt;th style=&quot;width: 12%;&quot;&gt;KONTROL&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;!-- 1. Madde: Numuneler --&gt;
+            &lt;tr&gt;
+              &lt;td colspan=&quot;2&quot; style=&quot;vertical-align: top; padding: 6px; height: 390px;&quot;&gt;
+                &lt;div style=&quot;display: flex; justify-content: space-between; font-weight: bold; font-size: 10pt; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 6px;&quot;&gt;
+                  &lt;span&gt;1-İçerik veya etiket kontrolü&lt;/span&gt;
+                  &lt;span style=&quot;font-size: 13pt;&quot;&gt;${check}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;table style=&quot;width: 100%; border-collapse: collapse; border: none;&quot;&gt;
+                  ${sampleRows}
+                &lt;/table&gt;
+              &lt;/td&gt;
+              &lt;td class=&quot;tc&quot; style=&quot;vertical-align: top; padding-top: 8px; font-size: 13pt;&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 2 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;2-Terazi doğrulama&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 3 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;3-Homojenizasyon ve Tartım&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 4 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;4-İç Kontrol Parametreleri&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 5 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;5-Sıcaklık Kontrol&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+        &lt;div class=&quot;footer-row&quot;&gt;
+          &lt;span&gt;KGKLAB&lt;/span&gt;
+          &lt;span&gt;MBA-FR-007 07.10.2019 Rev:01/23.01.2026&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;!-- SAYFA SONU (ARKA YÜZE GEÇİŞ) --&gt;
+      &lt;br clear=&quot;all&quot; style=&quot;page-break-before: always; mso-break-type: section-break;&quot;&gt;
+
+      &lt;!-- SAYFA 2: ARKA YÜZ --&gt;
+      &lt;div class=&quot;page-container&quot; style=&quot;page-break-before: always;&quot;&gt;
+        &lt;table class=&quot;main-table&quot;&gt;
+          &lt;tbody&gt;
+            &lt;!-- 6 --&gt;
+            &lt;tr style=&quot;height: 52px;&quot;&gt;
+              &lt;td style=&quot;width: 44%; vertical-align: middle; padding: 6px;&quot;&gt;
+                &lt;div style=&quot;display: flex; justify-content: space-between; font-weight: bold; font-size: 10pt;&quot;&gt;
+                  &lt;span&gt;6-DNA Ekstraksiyonu&lt;/span&gt;
+                  &lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/td&gt;
+              &lt;td style=&quot;width: 44%; font-size: 9.5pt; font-weight: bold; vertical-align: middle; padding: 6px;&quot;&gt;
+                Kit Adı ve LOT No: &lt;span style=&quot;font-weight: normal;&quot;&gt;${kitDna}&lt;/span&gt;
+              &lt;/td&gt;
+              &lt;td style=&quot;width: 12%;&quot; class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 7 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;7-DNA Saflık ve miktarları&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td style=&quot;font-size: 9pt; vertical-align: middle;&quot;&gt;${hasDnaLow ? &#x27;DNA &amp;lt; 10 ng/µL olan numunelere Bitkisel Orijin Analizi uygulandı.&#x27; : &#x27;&#x27;}&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 8 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;8-PCR Çalışma Plate Düzeni&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 9 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;9-PCR Miksleri Hesaplanması&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 10 --&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;vertical-align: top; padding: 8px;&quot;&gt;
+                &lt;div style=&quot;display: flex; justify-content: space-between; font-weight: bold; font-size: 10pt; margin-bottom: 12px;&quot;&gt;
+                  &lt;span&gt;10-PCR Miksleri Hazırlanması&lt;/span&gt;
+                  &lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div style=&quot;font-size: 9.5pt; line-height: 2.1;&quot;&gt;
+                  &lt;div&gt;&lt;b&gt;MasterMiks Adı ve LOT No:&lt;/b&gt;&lt;br&gt;&amp;nbsp;&amp;nbsp;${kitMaster}&lt;/div&gt;
+                  &lt;div style=&quot;margin-top: 8px;&quot;&gt;&lt;b&gt;GDO Tarama Kit Adı ve LOT No:&lt;/b&gt;&lt;br&gt;&amp;nbsp;&amp;nbsp;${kitGdo}&lt;/div&gt;
+                  &lt;div style=&quot;margin-top: 8px;&quot;&gt;&lt;b&gt;Plant Tarama Kit Adı ve LOT No:&lt;/b&gt;&lt;br&gt;&amp;nbsp;&amp;nbsp;${kitPlant} ${hasDnaLow ? &#x27;(Uygulandı)&#x27; : &#x27;&#x27;}&lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/td&gt;
+              &lt;td style=&quot;vertical-align: top; padding: 8px; font-size: 9.5pt;&quot;&gt;
+                &lt;b&gt;Diğer Kit Adı ve LOT No:&lt;/b&gt;
+                &lt;div style=&quot;margin-top: 8px;&quot;&gt;${kitDiger || &#x27;&amp;nbsp;&#x27;}&lt;/div&gt;
+              &lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot; style=&quot;vertical-align: top; padding-top: 8px;&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 11 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;11-Cihazın Programlanması&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 12 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;12 -PCR Kurulumu&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 13 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;13-Cihazdaki plate düzeni&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 14 --&gt;
+            &lt;tr style=&quot;min-height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;14-PCR sonuçları değerlendirme&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td style=&quot;font-size:9pt;vertical-align:middle;line-height:1.45&quot;&gt;${getPcrReportHtml()}&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 15 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;15-PCR sonuçlarının aktarılması&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 16 --&gt;
+            &lt;tr style=&quot;height: 38px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;&lt;span&gt;16-Temizlik Kontrol&lt;/span&gt;&lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;&lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;!-- 17 --&gt;
+            &lt;tr style=&quot;height: 48px;&quot;&gt;
+              &lt;td class=&quot;item-cell&quot;&gt;
+                &lt;span style=&quot;font-size: 8.5pt;&quot;&gt;17-Hepafiltreli Havalandırma cihazının çalıştırılması ve Hepafiltre kontrolü&lt;/span&gt;
+                &lt;span class=&quot;chk&quot;&gt;${check}&lt;/span&gt;
+              &lt;/td&gt;
+              &lt;td&gt;&amp;nbsp;&lt;/td&gt;
+              &lt;td class=&quot;tc chk-col&quot;&gt;${check}&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+        &lt;div class=&quot;footer-row&quot;&gt;
+          &lt;span&gt;KGKLAB&lt;/span&gt;
+          &lt;span&gt;MBA-FR-007 07.10.2019 Rev:01/23.01.2026&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    `;
+  }
+
+  function downloadWordDoc() {
+    const content = buildDocumentHtml();
+    const numRange = document.getElementById(&#x27;numune-aralik&#x27;).value || &#x27;Analiz&#x27;;
+    const filename = `Analiz_Is_Takip_${numRange.replace(/\s+/g, &#x27;_&#x27;)}.doc`;
+
+    const fullDoc = `
+      &lt;html xmlns:o=&#x27;urn:schemas-microsoft-com:office:office&#x27; xmlns:w=&#x27;urn:schemas-microsoft-com:office:word&#x27; xmlns=&#x27;http://www.w3.org/TR/REC-html40&#x27;&gt;
+      &lt;head&gt;
+        &lt;meta charset=&#x27;utf-8&#x27;&gt;
+        &lt;title&gt;Analiz İş Takip Formu&lt;/title&gt;
+        &lt;!--[if gte mso 9]&gt;
+        &lt;xml&gt;
+        &lt;w:WordDocument&gt;
+          &lt;w:View&gt;Print&lt;/w:View&gt;
+          &lt;w:Zoom&gt;100&lt;/w:Zoom&gt;
+          &lt;w:DoNotOptimizeForBrowser/&gt;
+        &lt;/w:WordDocument&gt;
+        &lt;/xml&gt;
+        &lt;![endif]--&gt;
+        &lt;style&gt;
+          @page { size: 21.0cm 29.7cm; margin: 1.2cm 1.2cm 1.2cm 1.2cm; mso-page-orientation: portrait; }
+          body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; margin: 0; padding: 0; }
+          .page-container { width: 100%; min-height: 25.5cm; }
+          table.main-table { width: 100%; border-collapse: collapse; border: 1.5pt solid black; }
+          table.main-table td, table.main-table th { border: 1pt solid black; padding: 4px 6px; }
+          .doc-header { text-align: center; font-weight: bold; font-size: 11pt; padding: 8px !important; }
+          .meta-label { width: 32%; font-weight: bold; font-size: 9.5pt; text-align: center; }
+          .meta-val { font-size: 10pt; padding-left: 10px !important; font-weight: bold; }
+          .col-headers th { font-size: 10pt; text-align: center; padding: 6px !important; }
+          .item-cell { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 9.5pt; }
+          .chk { font-size: 12pt; }
+          .tc { text-align: center; }
+          .chk-col { font-size: 13pt; }
+          .footer-row { margin-top: 15px; display: flex; justify-content: space-between; font-size: 8.5pt; font-weight: bold; }
+        &lt;/style&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        ${content}
+      &lt;/body&gt;
+      &lt;/html&gt;
+    `;
+
+    const blob = new Blob([&#x27;\ufeff&#x27;, fullDoc], { type: &#x27;application/msword&#x27; });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement(&#x27;a&#x27;);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function printDoc() {
+    const preview = document.getElementById(&#x27;print-preview&#x27;);
+    preview.innerHTML = `
+      &lt;style&gt;
+        .page-container { width: 100%; min-height: 26cm; box-sizing: border-box; }
+        table.main-table { width: 100%; border-collapse: collapse; border: 1.5pt solid black; }
+        table.main-table td, table.main-table th { border: 1pt solid black; padding: 4px 6px; font-family: Arial, sans-serif; }
+        .doc-header { text-align: center; font-weight: bold; font-size: 11pt; padding: 8px !important; }
+        .meta-label { width: 32%; font-weight: bold; font-size: 9.5pt; text-align: center; }
+        .meta-val { font-size: 10pt; padding-left: 10px !important; font-weight: bold; }
+        .col-headers th { font-size: 10pt; text-align: center; padding: 6px !important; }
+        .item-cell { display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 9.5pt; }
+        .chk { font-size: 12pt; }
+        .tc { text-align: center; }
+        .chk-col { font-size: 13pt; }
+        .footer-row { margin-top: 15px; display: flex; justify-content: space-between; font-size: 8.5pt; font-weight: bold; font-family: Arial, sans-serif; }
+      &lt;/style&gt;
+      ${buildDocumentHtml()}
+    `;
+    window.print();
+  }
+
+
+  // İş takip verilerini doğrudan plate modülüne gönderir.
+  function sendPlate(stage){
+    const selected = new Set([...document.querySelectorAll(&#x27;.plate-select:checked&#x27;)].map(x=&gt;x.dataset.no));
+    const picked = samples.filter(s=&gt;selected.has(s.no));
+    if(!picked.length){ alert(&#x27;Önce en az bir numune seçin.&#x27;); return; }
+    const plant = document.getElementById(&#x27;event-plant&#x27;).value;
+    window.parent.postMessage({type:&#x27;GDO_BUILD_PLATES&#x27;,stage,plant,eventMode:document.getElementById(&#x27;event-mode&#x27;).value,targets:document.getElementById(&#x27;screen-targets&#x27;).value,samples:picked.map(s=&gt;({no:s.no,matrix:s.matrix,desc:s.desc,dnaLow:s.dnaLow,labelDeclared:s.labelDeclared,taksonPositive:s.taksonPositive,stage:s.stage}))},&#x27;*&#x27;);
+    document.getElementById(&#x27;plate-action-status&#x27;).textContent=&#x27;Plate kurulumu isteği gönderildi.&#x27;;
+  }
+
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;"></iframe></div>
 
 <!-- 2. PCR ÇALIŞMA PLATE DÜZENİ MODÜLÜ -->
 <div id="view-plate" hidden>
@@ -283,13 +1230,13 @@ body.drag #t input, #view-plate.drag #t input{
  <div id="mainApp">
   <h1>PCR ÇALIŞMA PLATE DÜZENİ</h1>
 
-  <div class="plate-tabs noprint" id="pTabs">
-   <button class="ptab active" data-p="0">Plate 1 <span class="badge">0</span></button>
-   <button class="ptab" data-p="1">Plate 2 <span class="badge">0</span></button>
-   <button class="ptab" data-p="2">Plate 3 <span class="badge">0</span></button>
-   <button class="ptab" data-p="3">Plate 4 <span class="badge">0</span></button>
-   <button class="ptab" data-p="4">Plate 5 <span class="badge">0</span></button>
+  <div class="noprint" style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px">
+    <label for="plateCountInput" style="font-weight:700">Plate sayısı</label>
+    <input id="plateCountInput" type="number" min="1" max="100" value="5" style="width:75px;padding:8px;border:1px solid #94a3b8;border-radius:7px">
+    <button id="applyPlateCount">Plate sayısını uygula</button>
+    <button id="clearAllPlates" style="background:#b91c1c;color:white">Tüm plate'leri temizle</button>
   </div>
+  <div class="plate-tabs noprint" id="pTabs"></div>
 
   <div class="noprint" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:10px">
    <button class="pri" id="rdBtn">Okuma modu (tam ekran)</button>
@@ -513,12 +1460,14 @@ body.drag #t input, #view-plate.drag #t input{
 <!-- ========================================== -->
 <script>
 function switchView(viewId, pushHistory = true) {
+  if (viewId === 'gdo') viewId = 'home';
   if (pushHistory) {
     history.pushState({ appView: viewId }, "");
   }
   document.getElementById('view-home').hidden = (viewId !== 'home');
   document.getElementById('view-plate').hidden = (viewId !== 'plate');
   document.getElementById('view-primer').hidden = (viewId !== 'primer');
+  document.getElementById('view-workflow').hidden = (viewId !== 'workflow');
   document.body.className = `view-${viewId}-active`;
   window.scrollTo(0, 0);
 
@@ -547,7 +1496,7 @@ window.addEventListener('popstate', (e) => {
 <script>
 const DEFAULT_API_KEY = "";
 const R="ABCDEFGH".split(""), C=12;
-const MAX_PLATES = 5;
+const MAX_PLATES = 5; // Başlangıç sayısı; kullanıcı değiştirebilir.
 
 function createBlankPlate(){
   return {
@@ -596,7 +1545,9 @@ if(/^AQ\.Ab8RN6KN/.test(S.apiKey || "")){ S.apiKey = ""; }
 // Kayıtlı model seçimini bir kez sıfırla: en iyi model yeniden belirlensin
 if(S.modelRev !== 4){ S.cachedModel = ""; S.modelRev = 4; }
 
-while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
+if(!S.plates.length) S.plates.push(createBlankPlate());
+if(S.plates.length < MAX_PLATES) while(S.plates.length < MAX_PLATES) S.plates.push(createBlankPlate());
+S.curP = Math.max(0,Math.min(S.curP,S.plates.length-1));
 
 S.plates.forEach(p => {
   if(!p.cols || !Array.isArray(p.cols) || p.cols.length !== 12){
@@ -727,7 +1678,35 @@ const ins=[...t.querySelectorAll("input[data-i]")];
 const nts=[...t.querySelectorAll("input[data-n]")];
 const rls=[...t.querySelectorAll(".rl")];
 const cls=[...t.querySelectorAll(".cl")];
-const ptabs=[...document.querySelectorAll("#view-plate .ptab")];
+const tabsRoot=document.getElementById('pTabs');
+let ptabs=[];
+function rebuildPlateTabs(){
+ tabsRoot.innerHTML='';
+ S.plates.forEach((p,i)=>{
+   const b=document.createElement('button');b.className='ptab';b.dataset.p=i;
+   b.innerHTML='Plate '+(i+1)+' <span class="badge">0</span>';
+   b.addEventListener('click',()=>{if(S.curP===i)return;S.curP=i;refreshMetaInputs();refresh();});
+   tabsRoot.appendChild(b);
+ });
+ ptabs=[...tabsRoot.querySelectorAll('.ptab')];
+ document.getElementById('plateCountInput').value=S.plates.length;
+}
+rebuildPlateTabs();
+document.getElementById('applyPlateCount').onclick=()=>{
+ const desired=Number(document.getElementById('plateCountInput').value);
+ if(!Number.isInteger(desired)||desired<1||desired>100){alert('Plate sayısı 1–100 arasında olmalı.');return;}
+ if(desired<S.plates.length){
+   const removed=S.plates.slice(desired);
+   if(removed.some(p=>p.cells.some(Boolean)||p.rows.some(Boolean)||p.cols.some(Boolean))&&!confirm('Azaltılacak plate’lerde veri var. Bu plate’ler silinsin mi?')){document.getElementById('plateCountInput').value=S.plates.length;return;}
+   S.plates.length=desired;
+ }else while(S.plates.length<desired)S.plates.push(createBlankPlate());
+ S.curP=Math.min(S.curP,desired-1);rebuildPlateTabs();refreshMetaInputs();refresh();
+ alert('Toplam '+desired+' plate hazır.');
+};
+document.getElementById('clearAllPlates').onclick=()=>{
+ if(!confirm('TÜM '+S.plates.length+' plate ve içerikleri kalıcı olarak temizlensin mi?'))return;
+ S.plates=S.plates.map(()=>createBlankPlate());S.curP=0;hist=[];rebuildPlateTabs();refreshMetaInputs();refresh();alert('Tüm plate’ler temizlendi.');
+};
 
 function refreshTabs(){
  ptabs.forEach((b,idx)=>{
@@ -792,15 +1771,6 @@ function refresh(){
  save();
 }
 
-ptabs.forEach(b=>{
- b.addEventListener("click",()=>{
-   const targetP = +b.dataset.p;
-   if(targetP === S.curP) return;
-   S.curP = targetP;
-   refreshMetaInputs();
-   refresh();
- });
-});
 
 ins.forEach((el,i)=>{
  el.addEventListener("focus",()=>{sel=i;t.querySelectorAll("td.sel").forEach(x=>x.classList.remove("sel"));el.parentNode.classList.add("sel")});
@@ -1971,6 +2941,213 @@ function rdVoiceHandle(alts){
 
 </script>
 
+
+<script>
+// İş takipten plate oluşturma: paralel numune yerleşimi ve otomatik genişleyen plate sayısı.
+(function(){
+ const plantNames={S:'Soya',P:'Pamuk',M:'Mısır',K:'Kanola'};
+ const norm=x=>String(x||'').toLocaleLowerCase('tr-TR').trim();
+ const isEmpty=p=>!p.cells.some(Boolean)&&!p.rows.some(Boolean)&&!p.cols.some(Boolean);
+ const favGenes=tag=>{
+   const live=(window.getGdoFavoriteGenes?window.getGdoFavoriteGenes():[]).filter(g=>g.tags.some(t=>norm(t)===norm(tag))).map(g=>g.name);
+   // Mısır için kullanıcı tarafından verilen dokuz hedefin tamamını kur.
+   if(norm(tag)===norm('Mısır'))return uniq([...live,...['DAS 40278','DP23211','DP915635','MON87419','DP202216','DP051291','DAS1131','MON 94804','DP910521']]);
+   return live;
+ };
+ const blank=()=>createBlankPlate();
+ const uniq=xs=>[...new Set(xs)];
+ function base(title,samples){const p=blank();p.meta.analiz=title;p.meta.numune=uniq(samples.map(s=>s.no)).join(', ');p.meta.aciklama='GDO İş Takip otomatik kurulum; cihaz protokolünü doğrulayın.';return p;}
+ function put(p,r,c,v,note){if(r<0||r>7||c<0||c>11)throw Error('Kuyu sınırı aşıldı');const i=r*12+c;if(p.cells[i])throw Error('Dolu kuyunun üzerine yazma engellendi');p.cells[i]=String(v);if(note)p.notes[i]=note;}
+ function screen(samples,targets){
+   const out=[];const genes=(targets||'GDO Tarama').split(',').map(x=>x.trim()).filter(Boolean);
+   for(const gene of genes){
+     let offset=0;
+     while(offset<samples.length){
+       const reserve=samples.length-offset<=36;
+       const first=reserve?2:1,cap=(8-first)*6;
+       const part=samples.slice(offset,offset+cap),p=base('GDO TARAMA — '+gene,part);
+       p.rows[0]='KONTROL';['N','N','P','P','EC','ÇK'].forEach((v,c)=>put(p,0,c,v));
+       part.forEach((sm,i)=>{const r=first+Math.floor(i/6),c=(i%6)*2;put(p,r,c,sm.no,'');put(p,r,c+1,sm.no,'');});
+       p.meta.aciklama='Tarama: A satırı N N P P EC ÇK; her numune yan yana iki kuyuda (paralel).';
+       out.push(p);offset+=part.length;
+     }
+   }
+   const low=samples.filter(x=>x.dnaLow);let pos=0;
+   // Plant alt satırlarda; iki paralel kuyu / numune ve ardından N, P.
+   for(const p of out){
+     while(pos<low.length){
+       const r=[7,6,5,4,3,2,1].find(r=>p.cells.slice(r*12,r*12+12).every(x=>!x));if(r===undefined)break;
+       const part=low.slice(pos,pos+4);p.rows[r]='PLANT';
+       part.forEach((sm,i)=>{put(p,r,2*i,sm.no,'');put(p,r,2*i+1,sm.no,'');});
+       put(p,r,part.length*2+1,'N');put(p,r,part.length*2+3,'P');pos+=part.length;p.meta.analiz+=' + PLANT';
+     }
+   }
+   while(pos<low.length){const p=base('PLANT',low.slice(pos,pos+32));
+     for(let r=7;r>=0&&pos<low.length;r--){const part=low.slice(pos,pos+4);p.rows[r]='PLANT';
+       part.forEach((sm,i)=>{put(p,r,2*i,sm.no,'');put(p,r,2*i+1,sm.no,'');});
+       put(p,r,part.length*2+1,'N');put(p,r,part.length*2+3,'P');pos+=part.length;}
+     out.push(p);
+   }
+   return out;
+ }
+ function taxon(samples){
+   const genes=favGenes('Takson');if(!genes.length)throw Error('Favori takson genleri bulunamadı.');
+   const match={S:/^lec$/i,P:/^acp1$/i,M:/^hmg$/i,K:/^fata/i};
+   const active=['S','P','M','K'].map(k=>({k,gene:genes.find(g=>match[k].test(g))})).filter(x=>samples.some(sm=>!sm.labelDeclared?.[x.k]&&!sm.taksonPositive?.includes(x.k)));
+   for(const x of active)if(!x.gene)throw Error(plantNames[x.k]+' için takson favorisi yok.');
+   const out=[];
+   // 4 numune x 2 paralel + 4 kontrol = 12 sütun.
+   for(let offset=0;offset<samples.length;offset+=4){
+     const part=samples.slice(offset,offset+4);if(!active.some(x=>part.some(sm=>!sm.labelDeclared?.[x.k]&&!sm.taksonPositive?.includes(x.k))))continue;
+     const p=base('TAKSON — Soya / Pamuk / Mısır / Kanola',part);
+     active.forEach((x,r)=>{p.rows[r]=plantNames[x.k]+' — '+x.gene;
+       part.forEach((sm,i)=>{if(!sm.labelDeclared?.[x.k]&&!sm.taksonPositive?.includes(x.k)){put(p,r,i*2,sm.no,'');put(p,r,i*2+1,sm.no,'');}});
+       ['N','P','ÇK','EC'].forEach((v,j)=>put(p,r,8+j,v));
+     });
+     p.meta.aciklama='Takson yatay; her numune iki yan yana kuyuda, kontroller sağda.';out.push(p);
+   }
+   return out;
+ }
+ function event(samples,choice,mode){
+   const out=[];
+   const deviceGroups=[];
+   for(const k of ['S','P','M','K']){
+     const relevant=samples.filter(sm=>choice==='AUTO'?(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k)):(choice===k&&(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k))));
+     if(!relevant.length)continue;
+     const genes=uniq(favGenes(plantNames[k]));
+     if(!genes.length)throw Error(plantNames[k]+' event favorisi yok. Primer hesaplayıcıya genler.json yükleyin ve favorileri kontrol edin.');
+     if(mode==='MANUAL'){
+       // Elle kurulum: genler yatay; her numune iki bitişik kuyuda, ardından N ve P.
+       for(let gs=0;gs<genes.length;gs+=6){
+         for(let ss=0;ss<relevant.length;ss+=4){
+           const part=relevant.slice(ss,ss+4),group=genes.slice(gs,gs+6),p=base('EVENT — '+plantNames[k]+' (ELLE)',part);
+           group.forEach((g,r)=>{
+             p.rows[r]=k+' — '+g;
+             part.forEach((sm,i)=>{put(p,r,i*2,sm.no);put(p,r,i*2+1,sm.no);});
+             put(p,r,part.length*2,'N');put(p,r,part.length*2+1,'P');
+           });
+           p.meta.aciklama='Elle event kurulumu: yatay, numunelerden hemen sonra N/P.';
+           out.push(p);
+         }
+       }
+     }else{
+       // Cihaz: en fazla BEŞ gen/sütun. Dokuz gen 5+4 olarak ayrılır.
+       for(let gs=0;gs<genes.length;gs+=5){
+         for(let ss=0;ss<relevant.length;ss+=3){
+           const part=relevant.slice(ss,ss+3),group=genes.slice(gs,gs+5),p=base('EVENT — '+plantNames[k]+' (CİHAZ)',part);
+           group.forEach((g,c)=>{
+             p.cols[c]=k+' — '+g;
+             part.forEach((sm,i)=>{put(p,i*2,c,sm.no);put(p,i*2+1,c,sm.no);});
+             put(p,part.length*2,c,'N');put(p,part.length*2+1,c,'P');
+           });
+           p.meta.aciklama='Cihaz event kurulumu: dikey, en fazla 5 gen/plate; N/P numunelerden sonra.';
+           deviceGroups.push({p,plant:k,groupIndex:gs,part:part.map(x=>String(x.no))});
+         }
+       }
+     }
+   }
+   if(mode!=='MANUAL'){
+     // Önce aynı bitkinin 5+4 şeklindeki ayrı bloklarını koru.
+     // Farklı bitkilerin genlerini, boş sütun kaldığında ortak plate'e al.
+     const packed=[];
+     for(const item of deviceGroups){
+       const src=item.p;
+       const occupied=src.cols.filter(Boolean).length;
+       let destination=null;
+       for(const dest of packed){
+         const used=dest.p.cols.filter(Boolean).length;
+         if(dest.plants.has(item.plant) || used+occupied>5)continue;
+         destination=dest;break;
+       }
+       if(!destination){packed.push({p:src,plants:new Set([item.plant])});continue;}
+       const target=destination.p;
+       const startCol=target.cols.filter(Boolean).length;
+       for(let c=0;c<occupied;c++){
+         target.cols[startCol+c]=src.cols[c];
+         for(let r=0;r<8;r++){
+           const i=r*12+c;
+           if(src.cells[i])put(target,r,startCol+c,src.cells[i],src.notes[i]||'');
+         }
+       }
+       destination.plants.add(item.plant);
+       target.meta.analiz='EVENT — '+[...destination.plants].map(k=>plantNames[k]).join(' + ')+' (CİHAZ)';
+       target.meta.numune=uniq(target.meta.numune.split(', ').filter(Boolean).concat(item.part)).join(', ');
+       target.meta.aciklama='Cihaz kurulumu: farklı bitkiler aynı plate; toplam en fazla 5 event geni.';
+     }
+     out.push(...packed.map(x=>x.p));
+   }
+   return out;
+ }
+ function mergeEventIntoTaxon(taxonPlates,eventPlates){
+   const remaining=[];
+   for(const ep of eventPlates){
+     if(!ep.meta.analiz.includes('(ELLE)')){remaining.push(ep);continue;}
+     const pending=ep.rows.map((name,r)=>({name,r})).filter(x=>x.name);
+     for(const tp of taxonPlates){
+       for(let i=0;i<pending.length;){
+         const er=pending[i].r;
+         const tr=Array.from({length:8},(_,j)=>j).find(r=>!tp.rows[r]&&tp.cells.slice(r*12,r*12+12).every(x=>!x));
+         if(tr===undefined)break;
+         const values=ep.cells.slice(er*12,er*12+12);
+         if(values.some((v,c)=>v&&tp.cells[tr*12+c]))break;
+         tp.rows[tr]=pending[i].name;
+         values.forEach((v,c)=>{if(v)put(tp,tr,c,v,ep.notes[er*12+c]||'');});
+         tp.meta.analiz+=' + EVENT';
+         tp.meta.aciklama+=' Boş satıra '+pending[i].name+' eklendi.';
+         pending.splice(i,1);
+       }
+     }
+     if(pending.length){
+       // Yerleşmeyen genleri yeni bir plate'e taşı.
+       const p=base(ep.meta.analiz,[]);
+       pending.forEach((x,r)=>{
+         p.rows[r]=x.name;
+         ep.cells.slice(x.r*12,x.r*12+12).forEach((v,c)=>{if(v)put(p,r,c,v);});
+       });
+       p.meta.numune=ep.meta.numune;p.meta.aciklama=ep.meta.aciklama;
+       remaining.push(p);
+     }
+   }
+   return remaining;
+ }
+ function install(made){
+   const planned=[];const used=new Set();const rejected=new Set();let overwrites=0;
+   for(const p of made){
+     let idx=S.plates.findIndex((existing,i)=>!used.has(i)&&isEmpty(existing));
+     if(idx<0){
+       idx=S.plates.findIndex((existing,i)=>!used.has(i)&&!rejected.has(i));
+       if(idx>=0){
+         const ok=confirm('Plate '+(idx+1)+' dolu. Var olan plate silinip yeni kurulum bu plate üzerine yazılsın mı?\n\nTamam = Eski plate silinsin, İptal = Eski plate korunsun ve yeni plate açılsın.');
+         if(ok)overwrites++;else {rejected.add(idx);idx=-1;}
+       }
+     }
+     if(idx<0){idx=S.plates.length;S.plates.push(blank());}
+     used.add(idx);planned.push({idx,p});
+   }
+   // Tüm kararlar alındıktan sonra değişiklikleri uygula.
+   planned.forEach(({idx,p})=>{S.plates[idx]=p;});
+   S.curP=planned[0].idx;rebuildPlateTabs();save();switchView('plate');refreshMetaInputs();refresh();
+   alert('Kurulan plate numaraları: '+planned.map(x=>'Plate '+(x.idx+1)).join(', ')+'.\nToplam '+planned.length+' plate kuruldu.'+(overwrites?'\n'+overwrites+' eski plate onayınızla değiştirildi.':''));
+ }
+ window.addEventListener('message',function(e){
+   if(e.source!==document.getElementById('workflow-frame')?.contentWindow)return;
+   const d=e.data;if(!d||d.type!=='GDO_BUILD_PLATES')return;
+   try{
+     const samples=d.samples||[];if(!samples.length)throw Error('Numune seçilmedi.');
+     let made;
+     if(d.stage==='TARAMA')made=screen(samples,d.targets);
+     else if(d.stage==='TAKSON'){
+       const tp=taxon(samples);
+       // Takson sonucu pozitif olanların eventleri uygun boş sütunlara sığarsa birleştirilir.
+       const ep=event(samples,'AUTO',d.eventMode);made=tp.concat(mergeEventIntoTaxon(tp,ep));
+     }else {const ep=event(samples,d.plant||'AUTO',d.eventMode);made=ep;}
+     if(!made.length)throw Error('Bu analiz için uygun numune veya favori gen yok.');
+     install(made);
+   }catch(err){alert('Plate kurulamadı: '+err.message);}
+ });
+})();
+</script>
+
 <!-- ========================================== -->
 <!-- PRIMER HESAPLAMA JS (TAM ENTEGRE)          -->
 <!-- ========================================== -->
@@ -1978,139 +3155,14 @@ function rdVoiceHandle(alts){
 (function(){
   var KEY = "primerProbGenlerDna5_v5";
   var genes = [];
+  window.getGdoFavoriteGenes = function(){ return genes.filter(function(g){return g.fav && Array.isArray(g.tags) && g.tags.length;}).map(function(g){return {name:g.name,tags:g.tags.slice()};}); };
   var editIdx = -1;
   var selected = [];
   var $ = function(id){ return document.getElementById(id); };
   var FIELDS = ["mm","f","r","p","w"];
   var EMBED_STAMP = 1793100000000;
 
-  var DEFAULT_GENES = [
-    {"name":"TC-1507","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"HMG","note":"TC-1507 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DAS 59122","note":"","mm":12.5,"f":0.625,"r":0.625,"p":0.5,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MHMG","note":"DAS 59122 ile","mm":12.5,"f":1.0,"r":1.0,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"GA21","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"Adh1","note":"GA21, MON863, NK603 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"Bt 11","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"ZmAdh","note":"Bt 11, 3272, MIR604 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 810","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"HMG","note":"MON 810, MON 87460, MON 87427 ile Mısır","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},
-    {"name":"MON863","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON88017","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"HMG","note":"MON88017, MON89034 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"MIR 162","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"ZmAdh1","note":"MIR 162, MZHGOJG ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"3272","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"NK603","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"MIR604","note":"","mm":12.5,"f":1.5,"r":0.75,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"T25","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Adh1","note":"T25 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON89034","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"MON 87460","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 87427","note":"","mm":12.5,"f":1.125,"r":1.125,"p":1.0,"w":4.25,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"DAS 40278","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.375,"w":5.375,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Mısır"],"dna0":5},
-    {"name":"MHMG","note":"DAS 40278 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 87403","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"HMG","note":"MON 87403, MON 87411 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"DP4114","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.35,"w":4.15,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"HMG","note":"DP4114, DP915635 ile","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 87411","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"MZHGOJG","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"5307","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.313,"w":5.437,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"ZmAdh","note":"5307 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"MZIR098","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Adh1","note":"MZIR098 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON87429","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"HMG","note":"MON87429 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON95379","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MHMG","note":"MON95379 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DP23211","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
-    {"name":"MHMG","note":"DP23211 ile","mm":10,"f":0.75,"r":0.75,"p":0.45,"w":8.05,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DP915635","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.24,"w":4.86,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
-    {"name":"MON87419","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
-    {"name":"HMG","note":"MON87419 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DP202216","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},
-    {"name":"HMG","note":"DP202216, DP051291 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.3,"w":5.7,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DP051291","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DAS1131","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MHMG","note":"DAS1131 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 95275","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"HMG","note":"MON 95275, MON 94804 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"MON 94804","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"DP910521","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"HMG","note":"DP910521 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"40-3-2","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"Lec","note":"40-3-2, MON89788, MON 87708 ile Soya","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},
-    {"name":"A 2704-12","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Le1","note":"A 2704-12 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON89788","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"DP356043","note":"","mm":12.5,"f":1.875,"r":1.875,"p":0.5,"w":3.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Le1-2","note":"DP356043 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.75,"w":3.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON87701","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
-    {"name":"Le1","note":"MON87701, MON 87705, MON 87769 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"A5547-127","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Le1 VIC","note":"A5547-127 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"BPS-CV-127","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
-    {"name":"Lec","note":"BPS-CV-127 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"DP 305423","note":"","mm":12.5,"f":2.0,"r":1.25,"p":0.55,"w":3.7,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
-    {"name":"Le1-2","note":"DP 305423 ile","mm":12.5,"f":1.375,"r":1.375,"p":0.25,"w":4.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 87705","note":"","mm":12.5,"f":0.563,"r":0.563,"p":1.25,"w":5.124,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"MON 87708","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.75,"w":5.25,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
-    {"name":"MON 87769","note":"","mm":12.5,"f":1.5,"r":1.5,"p":1.0,"w":3.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},
-    {"name":"DAS 68416","note":"","mm":12.5,"f":1.375,"r":1.375,"p":0.375,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
-    {"name":"Le1","note":"DAS 68416, DAS 81419, SYTTOH2 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DAS 81419","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.3,"w":5.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},
-    {"name":"FG 72","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"Le1","note":"FG 72 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"DAS 44406","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":5},
-    {"name":"Le1","note":"DAS 44406 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON87751","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.75,"w":4.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":4},
-    {"name":"Lec","note":"MON87751 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":4,"fav":false,"tags":[],"dna0":4},
-    {"name":"SYTTOH2","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"GMB151","note":"","mm":10,"f":1,"r":1,"p":0.5,"w":7.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Le1","note":"GMB151 ile","mm":10,"f":0.5,"r":0.5,"p":0.5,"w":8.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Rt73","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},
-    {"name":"Ms1","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"CruA","note":"Ms1, T45, Topas 19/2 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Ms8","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"OSR CruA","note":"Ms8, Rf3 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Rf3","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"T45","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Topas 19/2","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 88302","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"CCF","note":"MON 88302 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.625,"w":5.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"073496","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.5,"w":4.6,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Kanola"],"dna0":5},
-    {"name":"FatA(A)","note":"073496, MON94100 ile Kanola","mm":12.5,"f":0.6,"r":1.8,"p":0.3,"w":4.8,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},
-    {"name":"MON94100","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Kanola"],"dna0":5},
-    {"name":"15985","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"Acp1","note":"15985, MON 1445 ile Pamuk","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},
-    {"name":"MON 1445","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},
-    {"name":"MON 531","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"Acp","note":"MON 531, MON 88913 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"281-24-236","note":"","mm":12.5,"f":0.875,"r":1.125,"p":0.438,"w":5.062,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
-    {"name":"Sah7","note":"281-24-236, 3006-210-23 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"3006-210-23","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
-    {"name":"LLCotton25","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"AdhC","note":"LLCotton25, GHB 614 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"T304-40","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Adh C (HEX)","note":"T304-40 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"MON 88913","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.5,"w":4.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},
-    {"name":"GHB 614","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
-    {"name":"GHB119","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"AdhC","note":"GHB119 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"GHB811","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},
-    {"name":"AdhC","note":"GHB811 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"COT102","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"Sah7","note":"COT102 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"RUR H 7-1","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},
-    {"name":"Glu","note":"RUR H 7-1 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},
-    {"name":"LLRice62","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"PLD","note":"LLRice62 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"BEZELYE","note":"","mm":10,"f":0.34,"r":0.34,"p":0.3,"w":9.02,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":5},
-    {"name":"PATATES","note":"","mm":12.5,"f":1.0,"r":1.0,"p":0.5,"w":5.0,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},
-    {"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5}
-  ];
+  var DEFAULT_GENES = [{"name":"TC-1507","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"TC-1507 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 59122","note":"","mm":12.5,"f":0.625,"r":0.625,"p":0.5,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MHMG","note":"DAS 59122 ile","mm":12.5,"f":1,"r":1,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GA21","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"GA21, MON863, NK603 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Bt 11","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh","note":"Bt 11, 3272, MIR604 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 810","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"MON 810, MON 87460, MON 87427 ile Mısır","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},{"name":"MON863","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON88017","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON88017, MON89034 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MIR 162","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh1","note":"MIR 162, MZHGOJG ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"3272","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"NK603","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MIR604","note":"","mm":12.5,"f":1.5,"r":0.75,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T25","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"T25 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON89034","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 87460","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON 87427","note":"","mm":12.5,"f":1.125,"r":1.125,"p":1,"w":4.25,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"DAS 40278","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.375,"w":5.375,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DAS 40278 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87403","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON 87403, MON 87411 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"DP4114","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.35,"w":4.15,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"DP4114, DP915635 ile","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87411","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"MZHGOJG","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"5307","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.313,"w":5.437,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh","note":"5307 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MZIR098","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"MZIR098 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON87429","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"MON87429 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON95379","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MHMG","note":"MON95379 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP23211","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DP23211 ile","mm":10,"f":0.75,"r":0.75,"p":0.45,"w":8.05,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP915635","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.24,"w":4.86,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MON87419","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"MON87419 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP202216","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"DP202216, DP051291 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.3,"w":5.7,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP051291","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"DAS1131","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DAS1131 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 95275","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON 95275, MON 94804 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"MON 94804","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":4},{"name":"DP910521","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"DP910521 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"40-3-2","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"Lec","note":"40-3-2, MON89788, MON 87708 ile Soya","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},{"name":"A 2704-12","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"A 2704-12 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON89788","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"DP356043","note":"","mm":12.5,"f":1.875,"r":1.875,"p":0.5,"w":3.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1-2","note":"DP356043 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.75,"w":3.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON87701","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"Le1","note":"MON87701, MON 87705, MON 87769 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"A5547-127","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1 VIC","note":"A5547-127 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"BPS-CV-127","note":"","mm":12.5,"f":1,"r":1,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Lec","note":"BPS-CV-127 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"DP 305423","note":"","mm":12.5,"f":2,"r":1.25,"p":0.55,"w":3.7,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1-2","note":"DP 305423 ile","mm":12.5,"f":1.375,"r":1.375,"p":0.25,"w":4.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87705","note":"","mm":12.5,"f":0.563,"r":0.563,"p":1.25,"w":5.124,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 87708","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.75,"w":5.25,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"MON 87769","note":"","mm":12.5,"f":1.5,"r":1.5,"p":1,"w":3.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"DAS 68416","note":"","mm":12.5,"f":1.375,"r":1.375,"p":0.375,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1","note":"DAS 68416, DAS 81419, SYTTOH2 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 81419","note":"","mm":12.5,"f":1,"r":1,"p":0.3,"w":5.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"FG 72","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"FG 72 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 44406","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1","note":"DAS 44406 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON87751","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.75,"w":4.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":4},{"name":"Lec","note":"MON87751 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":4,"fav":false,"tags":[],"dna0":4},{"name":"SYTTOH2","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GMB151","note":"","mm":10,"f":1,"r":1,"p":0.5,"w":7.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"GMB151 ile","mm":10,"f":0.5,"r":0.5,"p":0.5,"w":8.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Rt73","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"Ms1","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"CruA","note":"Ms1, T45, Topas 19/2 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Ms8","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"OSR CruA","note":"Ms8, Rf3 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Rf3","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T45","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Topas 19/2","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 88302","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"CCF","note":"MON 88302 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.625,"w":5.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"073496","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.5,"w":4.6,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Kanola"],"dna0":5},{"name":"FatA(A)","note":"073496, MON94100 ile Kanola","mm":12.5,"f":0.6,"r":1.8,"p":0.3,"w":4.8,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},{"name":"MON94100","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Kanola"],"dna0":5},{"name":"15985","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"Acp1","note":"15985, MON 1445 ile Pamuk","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},{"name":"MON 1445","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 531","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Acp","note":"MON 531, MON 88913 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"281-24-236","note":"","mm":12.5,"f":0.875,"r":1.125,"p":0.438,"w":5.062,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"Sah7","note":"281-24-236, 3006-210-23 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"3006-210-23","note":"","mm":12.5,"f":1,"r":1,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"LLCotton25","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"AdhC","note":"LLCotton25, GHB 614 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T304-40","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh C (HEX)","note":"T304-40 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 88913","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.5,"w":4.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"GHB 614","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"GHB119","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"AdhC","note":"GHB119 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GHB811","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"AdhC","note":"GHB811 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"COT102","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Sah7","note":"COT102 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"RUR H 7-1","note":"","mm":12.5,"f":1,"r":1,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},{"name":"Glu","note":"RUR H 7-1 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},{"name":"LLRice62","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"PLD","note":"LLRice62 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"BEZELYE","note":"","mm":10,"f":0.34,"r":0.34,"p":0.3,"w":9.02,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":5},{"name":"PATATES","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Tarama","note":"Tarama","mm":12.5,"f":1,"r":0,"p":4,"w":3.5,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":null}];
 
   var APP_VERSION = "2026.11.11-5";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
     var curStamp = EMBED_STAMP;
@@ -2766,5 +3818,7 @@ function ghInit(){ ghSync(); }
   load(); render(); updateVer(); ghInit();
 })();
 </script>
+
+
 </body>
 </html>
