@@ -237,6 +237,22 @@ body.drag #t input, #view-plate.drag #t input{
  .print-plate-page{page-break-after:always;break-after:page;box-sizing:border-box}
  .print-plate-page:last-child{page-break-after:avoid;break-after:avoid}
 }
+#rdDist{flex-direction:column;align-items:stretch;gap:8px;border-radius:14px;white-space:normal;max-width:min(96vw,700px);width:max-content;box-sizing:border-box;overflow-x:hidden}
+#rdDist .delivery-row{display:flex;justify-content:center;padding:2px 0 6px;border-bottom:1px solid rgba(255,255,255,.25)}
+#rdDist .delivery-row button{min-width:190px;min-height:44px;font-size:14px!important}
+#rdDist .plate-jump-row{display:flex;align-items:center;gap:6px;overflow-x:auto;white-space:nowrap;padding:3px 2px 6px;max-width:100%}
+#rdDist .plate-jump-row .rd-pbtn{min-height:35px;flex-shrink:0}
+</style>
+<style id="well-delivery-style">
+#rd .rd-tools{display:flex;align-items:center;justify-content:center;gap:2px;min-width:0}
+#rd .rd-tools .well-delivery{font-size:15px!important;font-weight:800!important;min-width:88px;min-height:48px;padding:10px 14px!important;margin:0 4px!important;border-radius:8px;border:2px solid #a1a1aa;background:#52525b;color:#fff;line-height:1.2;white-space:nowrap;box-shadow:0 2px 6px #0005}
+#rd .rd-tools .well-delivery:active{background:#27272a}
+</style>
+<style id="rd-delivery-visible-fix">
+#rdDelivery{position:fixed;left:max(8px,env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:1001;pointer-events:auto}
+#rdDelivery[hidden]{display:none!important}
+#rdDelivery button{min-width:100px;min-height:52px;padding:10px 14px;border-radius:10px;background:#30343b;color:#fff;border:2px solid #f8fafc;box-shadow:0 3px 12px #0008;font-size:16px;font-weight:800;cursor:pointer}
+#rdDelivery button:active{background:#555b66}
 </style>
 </head>
 <body class="view-home-active">
@@ -2029,7 +2045,7 @@ undoBtn.onclick=()=>{
 /* Okuma Modu */
 let rot=null,rdOn=false;
 const rd=document.createElement("div");rd.id="rd";rd.hidden=true;
-rd.innerHTML="<div id='rw'><div id='rin'></div></div><div id='rdDist' hidden></div>";
+rd.innerHTML="<div id='rw'><div id='rin'></div></div><div id='rdDelivery' hidden></div><div id='rdDist' hidden></div>";
 document.body.appendChild(rd);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -2061,7 +2077,7 @@ function renderDistBanner(){
         if(match) foundInOtherPlate = true;
       }
     });
-    if(!foundInOtherPlate){ distEl.innerHTML=deliveryButton(); distEl.hidden=!deliveryButton(); return; }
+    if(!foundInOtherPlate){ distEl.hidden=true; return; }
 
     let h = `<span style="color:#60a5fa;margin-right:4px">${esc(hl)} [${esc(hlNote)}] ➔</span>`;
     S.plates.forEach((p, idx)=>{
@@ -2074,11 +2090,11 @@ function renderDistBanner(){
       const has = wells.length > 0;
       h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
     });
-    distEl.innerHTML = h + deliveryButton(); distEl.hidden = false;
+    distEl.innerHTML = `<div class="plate-jump-row">${h}</div>`; distEl.hidden = false;
   } else {
     let foundInOtherPlate = false;
     S.plates.forEach((p, idx)=>{ if(idx !== S.curP && p.cells.some(v => v === hl)) foundInOtherPlate = true; });
-    if(!foundInOtherPlate){ distEl.innerHTML=deliveryButton(); distEl.hidden=!deliveryButton(); return; }
+    if(!foundInOtherPlate){ distEl.hidden=true; return; }
 
     let h = `<span style="color:#60a5fa;margin-right:4px">#${esc(hl)} ➔</span>`;
     S.plates.forEach((p, idx)=>{
@@ -2087,7 +2103,7 @@ function renderDistBanner(){
       const has = wells.length > 0;
       h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
     });
-    distEl.innerHTML = h + deliveryButton(); distEl.hidden = false;
+    distEl.innerHTML = `<div class="plate-jump-row">${h}</div>`; distEl.hidden = false;
   }
 }
 
@@ -2099,7 +2115,7 @@ function rdDraw(){
  const p = curP();
  const isCtrl = !!FIX[hl];
 
- let h="<div><button data-a='x'>✕</button><button data-a='r'>↻</button></div>";
+ let h="<div class='rd-tools'><button data-a='x'>✕</button><button data-a='r'>↻</button>"+"</div>";
  for(let c=1;c<=C;c++){
   const cVal = p.cols ? (p.cols[c-1] || "") : "";
   const cGlow = getGlow(cVal);
@@ -2138,6 +2154,11 @@ function rdDraw(){
  ri.querySelectorAll(".hd").forEach(e=>e.style.fontSize=Math.min(fs*.8,hh*.5)+"px");
  ri.querySelectorAll("small").forEach(e=>{e.style.fontSize=Math.max(9,fs*.58)+"px";e.style.textTransform="uppercase"});
  ri.querySelectorAll("button").forEach(b=>{b.style.fontSize="20px";b.style.padding="6px 10px";b.style.margin="2px"});
+ const deliveryEl=document.getElementById('rdDelivery');
+ if(hl&&!isCtrl){
+   deliveryEl.hidden=false;
+   deliveryEl.innerHTML=`<button type="button" data-delivery="1">${deliveredSamples[String(hl)]?'↩ Geri Al':'✓ Verildi'}</button>`;
+ }else{deliveryEl.hidden=true;deliveryEl.innerHTML='';}
  renderDistBanner();
 }
 
