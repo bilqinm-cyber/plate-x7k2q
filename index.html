@@ -2033,9 +2033,23 @@ rd.innerHTML="<div id='rw'><div id='rin'></div></div><div id='rdDist' hidden></d
 document.body.appendChild(rd);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+const deliveredKey='pcr_delivered_samples_v1';
+let deliveredSamples={};
+try{deliveredSamples=JSON.parse(localStorage.getItem(deliveredKey)||'{}')||{};}catch(e){}
+function deliveredToggle(){
+ if(!hl||FIX[hl])return;
+ const k=String(hl), now=!deliveredSamples[k];
+ if(now)deliveredSamples[k]=true;else delete deliveredSamples[k];
+ try{localStorage.setItem(deliveredKey,JSON.stringify(deliveredSamples));}catch(e){alert('Tarayıcıya kayıt yapılamadı: '+e.message);}
+ rdDraw();refresh();
+}
+function deliveryButton(){
+ if(!hl||FIX[hl])return '';
+ return `<button type="button" data-delivery="1" style="background:${deliveredSamples[String(hl)]?'#52525b':'#2563eb'};color:white;border:0;border-radius:8px;padding:9px 12px;font-weight:800;margin:3px">${deliveredSamples[String(hl)]?'✓ Numune verildi — Geri al':'✓ Numune Verildi'}</button>`;
+}
 function renderDistBanner(){
   const distEl = document.getElementById("rdDist");
-  if(!isMultiPlateActive() || !hl){ distEl.hidden = true; return; }
+  if(!hl){ distEl.hidden = true; return; }
   const isCtrl = !!FIX[hl];
   
   if(isCtrl){
@@ -2047,7 +2061,7 @@ function renderDistBanner(){
         if(match) foundInOtherPlate = true;
       }
     });
-    if(!foundInOtherPlate){ distEl.hidden = true; return; }
+    if(!foundInOtherPlate){ distEl.innerHTML=deliveryButton(); distEl.hidden=!deliveryButton(); return; }
 
     let h = `<span style="color:#60a5fa;margin-right:4px">${esc(hl)} [${esc(hlNote)}] ➔</span>`;
     S.plates.forEach((p, idx)=>{
@@ -2060,11 +2074,11 @@ function renderDistBanner(){
       const has = wells.length > 0;
       h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
     });
-    distEl.innerHTML = h; distEl.hidden = false;
+    distEl.innerHTML = h + deliveryButton(); distEl.hidden = false;
   } else {
     let foundInOtherPlate = false;
     S.plates.forEach((p, idx)=>{ if(idx !== S.curP && p.cells.some(v => v === hl)) foundInOtherPlate = true; });
-    if(!foundInOtherPlate){ distEl.hidden = true; return; }
+    if(!foundInOtherPlate){ distEl.innerHTML=deliveryButton(); distEl.hidden=!deliveryButton(); return; }
 
     let h = `<span style="color:#60a5fa;margin-right:4px">#${esc(hl)} ➔</span>`;
     S.plates.forEach((p, idx)=>{
@@ -2073,7 +2087,7 @@ function renderDistBanner(){
       const has = wells.length > 0;
       h += `<button class="rd-pbtn ${has?'has':''} ${idx===S.curP?'cur':''}" data-gop="${idx}">${has ? `P${idx+1}: ${wells.join(",")} (${wells.length})` : `P${idx+1}: YOK`}</button>`;
     });
-    distEl.innerHTML = h; distEl.hidden = false;
+    distEl.innerHTML = h + deliveryButton(); distEl.hidden = false;
   }
 }
 
@@ -2108,7 +2122,7 @@ function rdDraw(){
    let isDim = false;
    if(hl){ isDim = (isCtrl && hlNote) ? (v !== hl || nClean !== hlNote) : (v !== hl); }
 
-   h+="<div class='rc"+(isDim?" dim":"")+"' data-i='"+i+"' style='background:"+(v?st.bg:"var(--card)")+"'>";
+   h+="<div class='rc"+(isDim?" dim":"")+"' data-i='"+i+"' style='background:"+(v&&deliveredSamples[String(v)]&&!FIX[v]?"#a1a1aa":v?st.bg:"var(--card)" )+"'>";
    h+=esc(v);
    if(st.sym) h+="<span class='r-sym'>"+st.sym+"</span>";
    if(nVal) h+="<small "+nStyle+">"+esc(nVal)+"</small>";
@@ -2149,6 +2163,7 @@ rd.addEventListener("click",e=>{
    else{ const rw=document.getElementById("rw"); rot=!(rot===null?rw.clientHeight>rw.clientWidth:rot); rdDraw(); }
    return;
  }
+ if(e.target.closest("[data-delivery]")){deliveredToggle();return;}
  const goP = e.target.closest("[data-gop]");
  if(goP){ S.curP = +goP.dataset.gop; rdDraw(); return; }
 
@@ -2456,7 +2471,7 @@ async function processImageWithGeminiStream(base64Image) {
   const t0 = Date.now();
   let tFirst = 0, tEnd = 0;
   const systemPrompt = `You are a specialized PCR Laboratory Assistant.
-Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12).
+Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to H, 12 columns labeled 1 to 12). The photo may be UPSIDE DOWN or rotated: mentally rotate to make printed heading upright, row A at top, row H at bottom, column 1 at left. Use PRINTED row and column labels as the definitive coordinate system. Carefully inspect every row A-H and every column 1-12, including faint ink and the rightmost columns. Do not skip a visible cell. If a handwritten cell is ambiguous, report it in uncertainWells rather than inventing a value.
 Identify:
 1. Target names on the left for rows A to H and column notes at top for cols 1 to 12 if any.
 2. For each non-empty well A1 through H12 read:
@@ -2465,7 +2480,7 @@ Identify:
 3. Analysis name if visible.
 
 Return ONLY JSON in exactly this shape:
-{"analiz":"ANALYSIS_NAME","rows":["ROW_A","ROW_B","ROW_C","ROW_D","ROW_E","ROW_F","ROW_G","ROW_H"],"cols":["COL_1","COL_2","COL_3","COL_4","COL_5","COL_6","COL_7","COL_8","COL_9","COL_10","COL_11","COL_12"],"wells":["A1|7683","A2|7683","B1|7690|94100","C3|N"]}
+{"analiz":"ANALYSIS_NAME","rows":["ROW_A","ROW_B","ROW_C","ROW_D","ROW_E","ROW_F","ROW_G","ROW_H"],"cols":["COL_1","COL_2","COL_3","COL_4","COL_5","COL_6","COL_7","COL_8","COL_9","COL_10","COL_11","COL_12"],"wells":["A1|7683","A2|7683","B1|7690|94100","C3|N"],"uncertainWells":["D9","H12"]}
 Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE only if a subtext exists). WELL is A1..H12. List ONLY non-empty wells.`;
 
   const payload = {
@@ -2485,7 +2500,8 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
           analiz: { type: "STRING" },
           rows: { type: "ARRAY", items: { type: "STRING" } },
           cols: { type: "ARRAY", items: { type: "STRING" } },
-          wells: { type: "ARRAY", items: { type: "STRING" } }
+          wells: { type: "ARRAY", items: { type: "STRING" } },
+          uncertainWells: { type: "ARRAY", items: { type: "STRING" } }
         },
         required: ["wells"]
       }
@@ -2610,6 +2626,7 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
         const pe = new Error("Yapay zeka yanıtı okunamadı" + why + ". Tekrar deneyin. Yanıt başı: " + String(fullText).replace(/\s+/g, " ").slice(0, 140));
         pe.noRetry = true; throw pe;     // aynı görseli başka modelle baştan göndermek süreyi katlar
       }
+      const previousPlate=JSON.parse(JSON.stringify(curP()));
       push();
       const p = curP();
 
@@ -2653,6 +2670,11 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
       // OCR bazen tek yazılmış numuneyi tek kuyu sanıyor. Kontrolleri değiştirmeden
       // numuneleri iki paralel kuyuda tamamla; dolu bir kuyunun üstüne asla yazma.
       const pairReport = completeScannedParallelWells(p);
+      const uncertain=(data.uncertainWells||[]);
+      const report='Fotoğraftan '+Object.keys(data.wells||{}).length+' kuyu okundu. '+pairReport.added+' paralel tamamlandı.'+(uncertain.length?'\nBelirsiz kuyular: '+uncertain.join(', '):'')+'\n\nPlateyi kontrol edip kabul ediyor musunuz?\nİptal: önceki plate geri yüklenir.';
+      if(!confirm(report)){
+        S.plates[S.curP]=previousPlate;save();refreshMetaInputs();refresh();return;
+      }
       S.cachedModel = mName; save();
       const tDone = Date.now();
       const sec = (a, b) => ((b - a) / 1000).toFixed(1);
@@ -3309,7 +3331,9 @@ function rdVoiceHandle(alts){
      else if(d.stage==='TAKSON'){
        const tp=taxon(samples);
        // Takson sonucu pozitif olanların eventleri uygun boş sütunlara sığarsa birleştirilir.
-       const ep=event(samples,'AUTO',d.eventMode);made=tp.concat(mergeEventIntoTaxon(tp,ep));
+       const includeEvent=confirm('Takson dağıtımına EVENT analizleri de eklensin mi?\n\nTamam: Takson + Event\nİptal: Yalnızca Takson');
+       if(includeEvent){const ep=event(samples,'AUTO',d.eventMode);made=tp.concat(mergeEventIntoTaxon(tp,ep));}
+       else made=tp;
      }else {const ep=event(samples,d.plant||'AUTO',d.eventMode);made=ep;}
      if(!made.length)throw Error('Bu analiz için uygun numune veya favori gen yok.');
      install(made);
