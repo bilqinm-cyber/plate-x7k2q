@@ -798,7 +798,7 @@ body.drag #t input, #view-plate.drag #t input{
       s.statusClass = &#x27;badge-uygun-degil&#x27;;
     } else if (resultType === &#x27;YOK&#x27;) {
       s.stage = &#x27;UYGUN&#x27;;
-      s.statusText = '🟢 UYGUN (Beyan edilen Event analizinde negatif sonuç: '+((s.eventPending||[]).join(', ')||'Event')+')';
+      s.statusText = &#x27;🟢 UYGUN (Beyan edilen Event analizinde negatif sonuç: &#x27;+((s.eventPending||[]).join(&#x27;, &#x27;)||&#x27;Event&#x27;)+&#x27;)&#x27;;
       s.statusClass = &#x27;badge-uygun&#x27;;
     }
     renderSamples();
@@ -822,31 +822,33 @@ body.drag #t input, #view-plate.drag #t input{
   // 4. Aşama: Takson Analizi
   // Beyanda SE/PE/ME/KE bulunuyorsa takson negatif olsa da ilgili event doğrulamasına geç.
   function declaredEventCodes(s) {
-    return ['S','P','M','K'].filter(k => !!(s.labelDeclared && s.labelDeclared[k])).map(k => k+'E');
+    return [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;].filter(k =&gt; !!(s.labelDeclared &amp;&amp; s.labelDeclared[k])).map(k =&gt; k+&#x27;E&#x27;);
   }
   function onTaksonTemiz(idx) {
     const s = samples[idx];
-    if (s.taksonPositive && s.taksonPositive.length) {
-      alert('Pozitif takson seçili. Önce seçimi kaldırın veya Event aşamasına geçin.');
+    if (s.taksonPositive &amp;&amp; s.taksonPositive.length) {
+      alert(&#x27;Pozitif takson seçili. Önce seçimi kaldırın veya Event aşamasına geçin.&#x27;);
       return;
     }
     const declared=declaredEventCodes(s);
     if(declared.length){
-      s.stage='EVENT_VAR_YOK';
+      s.stage=&#x27;EVENT_VAR_YOK&#x27;;
       s.eventPending=declared;
-      s.statusText='🟣 Takson negatif; beyanda '+declared.join(', ')+' var → Beyan edilen Event analizi bekleniyor';
-      s.statusClass='badge-event-qual';
+      s.statusText=&#x27;🟣 Takson negatif; beyanda &#x27;+declared.join(&#x27;, &#x27;)+&#x27; var → Beyan edilen Event analizi bekleniyor&#x27;;
+      s.statusClass=&#x27;badge-event-qual&#x27;;
     } else {
-      s.stage='UYGUN';
+      s.stage=&#x27;UYGUN&#x27;;
       s.eventPending=[];
-      s.statusText='🟢 UYGUN (Tarama ve takson negatif; beyan edilen Event yok)';
-      s.statusClass='badge-uygun';
+      s.statusText=&#x27;🟢 UYGUN (Tarama ve takson negatif; beyan edilen Event yok)&#x27;;
+      s.statusClass=&#x27;badge-uygun&#x27;;
     }
     renderSamples();
   }
 
   function toggleTaksonPlant(idx, p) {
     const s = samples[idx];
+    // Etikette event beyanı bulunan bitkinin taksonu analiz edilmez.
+    if (s.labelDeclared?.[p]) return;
     s.taksonPositive = s.taksonPositive || [];
     const posIdx = s.taksonPositive.indexOf(p);
     if (posIdx &gt; -1) {
@@ -872,8 +874,8 @@ body.drag #t input, #view-plate.drag #t input{
       return;
     }
     s.stage = &#x27;EVENT_VAR_YOK&#x27;;
-    s.eventPending=[...new Set([...declaredEventCodes(s),...s.taksonPositive.map(k=>k+'E')])];
-    s.statusText = `🟣 ${s.taksonPositive.join(', ')} takson pozitif → Event analizine sevk edildi (${s.eventPending.join(', ')})`;
+    s.eventPending=[...new Set([...declaredEventCodes(s),...s.taksonPositive.filter(k=&gt;!s.labelDeclared?.[k]).map(k=&gt;k+&#x27;E&#x27;)])];
+    s.statusText = `🟣 ${s.taksonPositive.join(&#x27;, &#x27;)} takson pozitif → Event analizine sevk edildi (${s.eventPending.join(&#x27;, &#x27;)})`;
     s.statusClass = &#x27;badge-event-qual&#x27;;
     renderSamples();
   }
@@ -933,14 +935,17 @@ body.drag #t input, #view-plate.drag #t input{
       } else if (s.stage === &#x27;TAKSON&#x27;) {
         subPanelHtml = `
           &lt;div class=&quot;sub-panel&quot;&gt;
-            &lt;b&gt;Takson Kontrolü (Soya, Pamuk, Mısır, Kanola):&lt;/b&gt;&lt;br&gt;
-            &lt;span style=&quot;font-size:0.72rem; color:#64748b;&quot;&gt;(Birden fazla bitkiyi seçebilirsiniz; seçim bitince Event aşamasına geçin):&lt;/span&gt;&lt;br&gt;
-            ${taksonChoices.map(p =&gt; {
+            &lt;b&gt;Takson Kontrolü (Beyan Edilmeyen Bitkiler):&lt;/b&gt;&lt;br&gt;
+            &lt;span style=&quot;font-size:0.72rem; color:#64748b;&quot;&gt;(SE/PE/ME/KE beyanlı bitkilerin taksonu çalışılmaz; diğerleri çoklu seçilebilir):&lt;/span&gt;&lt;br&gt;
+            ${taksonChoices.filter(p =&gt; !s.labelDeclared?.[p]).map(p =&gt; {
               const isPos = s.taksonPositive.includes(p);
               return `&lt;span class=&quot;tag-btn ${isPos ? &#x27;pos&#x27; : &#x27;&#x27;}&quot; onclick=&quot;toggleTaksonPlant(${idx}, &#x27;${p}&#x27;)&quot;&gt;
                 ${p} Takson: ${isPos ? &#x27;POZİTİF (Event)&#x27; : &#x27;Negatif&#x27;}
               &lt;/span&gt;`;
             }).join(&#x27; &#x27;)}
+            ${taksonChoices.filter(p =&gt; s.labelDeclared?.[p]).map(p =&gt;
+              `&lt;span class=&quot;tag-btn&quot; style=&quot;background:#ede9fe;color:#5b21b6;cursor:default&quot;&gt;${p}E beyanlı → ${p} taksonu çalışılmaz; Event beklenir&lt;/span&gt;`
+            ).join(&#x27; &#x27;)}
             &lt;div style=&quot;margin-top: 8px;&quot;&gt;
               &lt;button class=&quot;btn-sm btn-neg&quot; style=&quot;width:100%;&quot; onclick=&quot;onTaksonTemiz(${idx})&quot;&gt;✅ Tüm Taksonlar Negatif → Beyanı Kontrol Et&lt;/button&gt;
               &lt;button class=&quot;btn-sm&quot; style=&quot;width:100%;margin-top:6px;background:#ede9fe;color:#5b21b6&quot; onclick=&quot;finishTaksonSelection(${idx})&quot;&gt;Seçilen Pozitif Taksonlarla Event Aşamasına Geç&lt;/button&gt;
@@ -2187,6 +2192,8 @@ function rdClose(triggerBack = true){
 addEventListener("keydown",e=>{if(e.key==="Escape"&&rdOn)rdClose(true)});
 
 rdBtn.onclick=()=>{
+ // Okuma modu açıldığında mikrofon kapalı kalır; yalnızca 🎤 düğmesi açar.
+ if(typeof stopSpeech === "function") stopSpeech();
  rdOn=true; rd.hidden=false; document.body.style.overflow="hidden";
  history.pushState({ pcr_modal: "rd" }, ""); rdDraw();
 };
@@ -3104,11 +3111,7 @@ rdMic.addEventListener("click", e => {
   else startListening();
 });
 
-// Okuma modu açılınca da doğrudan dinlemeye başla
-(function(){
-  const openRd = rdBtn.onclick;
-  rdBtn.onclick = function(){ openRd.apply(this, arguments); /* Mikrofon yalnızca 🎤 düğmesiyle açılır. */ };
-})();
+// Ses tanıma yalnızca mikrofon düğmesine basıldığında başlatılır.
 
 function routeVoice(alts){
   if(rdOn) rdVoiceHandle(alts);
