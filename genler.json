@@ -1,6 +1,6 @@
 {
  "version": 1,
- "stamp": 1794553699061,
+ "stamp": 1794554034990,
  "genes": [
   {
    "name": "TC-1507",
@@ -1941,6 +1941,21 @@
    "r": 0,
    "p": 4,
    "w": 3.5,
+   "fu": null,
+   "ru": null,
+   "pu": null,
+   "fav": false,
+   "tags": [],
+   "dna0": null
+  },
+  {
+   "name": "Plant",
+   "note": "Bitki",
+   "mm": 12.5,
+   "f": 0,
+   "r": 0,
+   "p": 7.5,
+   "w": 0,
    "fu": null,
    "ru": null,
    "pu": null,
