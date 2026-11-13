@@ -380,6 +380,14 @@ body.drag #t input, #view-plate.drag #t input{
       body { background: #fff; padding: 0; }
       .container { display: none; }
       #print-preview { display: block; }
+      @page { size: A4 portrait; margin: 9mm; }
+      #print-preview .page-container { height:275mm!important; min-height:275mm!important; max-height:275mm!important; display:flex; flex-direction:column; box-sizing:border-box; page-break-inside:avoid; break-inside:avoid; }
+      #print-preview .page-container > table.main-table { width:100%; height:calc(100% - 7mm)!important; flex:1 1 auto; }
+      #print-preview .page-container > .footer-row { flex:0 0 5mm; margin-top:2mm!important; align-items:end; }
+      #print-preview .page-container:first-of-type { page-break-after:always; break-after:page; }
+      #print-preview .page-container:last-of-type { page-break-after:auto; break-after:auto; }
+      #print-preview table.main-table { break-inside:avoid; page-break-inside:avoid; }
+      #print-preview .footer-row { margin-top:6px!important; }
     }
   &lt;/style&gt;
 &lt;/head&gt;
@@ -448,6 +456,14 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;button class=&quot;btn-add&quot; onclick=&quot;addSample()&quot;&gt;➕ Numuneyi Ekle ve Analize Başla&lt;/button&gt;
   &lt;/div&gt;
 
+  &lt;div class=&quot;card&quot; id=&quot;sample-edit-card&quot; style=&quot;display:none;border:2px solid #2563eb&quot;&gt;
+    &lt;h2&gt;✏️ Numuneyi Düzenle&lt;/h2&gt;
+    &lt;div class=&quot;grid-2&quot;&gt;&lt;div&gt;&lt;label&gt;Numune No&lt;/label&gt;&lt;input type=&quot;text&quot; id=&quot;edit-no&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;label&gt;Matris&lt;/label&gt;&lt;select id=&quot;edit-matrix&quot; style=&quot;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px&quot;&gt;&lt;option&gt;Gıda&lt;/option&gt;&lt;option&gt;Yem&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;&lt;/div&gt;
+    &lt;label&gt;Numune Açıklaması&lt;/label&gt;&lt;input type=&quot;text&quot; id=&quot;edit-desc&quot;&gt;
+    &lt;label&gt;İlk Etiket Beyanı (birden fazla seçilebilir)&lt;/label&gt;
+    &lt;div class=&quot;grid-2&quot; style=&quot;margin-bottom:12px&quot;&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-S&quot;&gt; Soya&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-P&quot;&gt; Pamuk&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-M&quot;&gt; Mısır&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-K&quot;&gt; Kanola&lt;/label&gt;&lt;/div&gt;
+    &lt;div class=&quot;action-row&quot;&gt;&lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;saveSampleEdit()&quot;&gt;Kaydet&lt;/button&gt;&lt;button class=&quot;btn-sm btn-del&quot; onclick=&quot;cancelSampleEdit()&quot;&gt;İptal&lt;/button&gt;&lt;/div&gt;
+  &lt;/div&gt;
   &lt;!-- Numune Analiz Takip &amp; Karar Paneli --&gt;
   &lt;div class=&quot;card&quot;&gt;
     &lt;h2&gt;📊 Numune Analiz Takibi (&lt;span id=&quot;sample-count&quot;&gt;0&lt;/span&gt;)&lt;/h2&gt;
@@ -615,6 +631,27 @@ body.drag #t input, #view-plate.drag #t input{
     const first = samples[0].no;
     const last = samples[samples.length - 1].no;
     document.getElementById(&#x27;numune-aralik&#x27;).value = (samples.length === 1) ? first : `${first} - ${last}`;
+  }
+
+  let editingSampleId = null;
+  function editSample(idx) {
+    const s=samples[idx]; if(!s) return;
+    editingSampleId=s.id;
+    document.getElementById(&#x27;edit-no&#x27;).value=s.no;
+    document.getElementById(&#x27;edit-matrix&#x27;).value=s.matrix;
+    document.getElementById(&#x27;edit-desc&#x27;).value=s.desc||&#x27;&#x27;;
+    [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;].forEach(k=&gt;document.getElementById(&#x27;edit-&#x27;+k).checked=!!s.labelDeclared[k]);
+    const card=document.getElementById(&#x27;sample-edit-card&#x27;);card.style.display=&#x27;block&#x27;;card.scrollIntoView({behavior:&#x27;smooth&#x27;,block:&#x27;start&#x27;});
+  }
+  function cancelSampleEdit(){editingSampleId=null;document.getElementById(&#x27;sample-edit-card&#x27;).style.display=&#x27;none&#x27;;}
+  function saveSampleEdit(){
+    const s=samples.find(x=&gt;x.id===editingSampleId);if(!s)return;
+    const no=document.getElementById(&#x27;edit-no&#x27;).value.trim();
+    if(!no){alert(&#x27;Numune numarası boş olamaz.&#x27;);return;}
+    if(samples.some(x=&gt;x!==s&amp;&amp;x.no===no)){alert(&#x27;Bu numune numarası zaten kayıtlı.&#x27;);return;}
+    s.no=no;s.matrix=document.getElementById(&#x27;edit-matrix&#x27;).value;s.desc=document.getElementById(&#x27;edit-desc&#x27;).value.trim();
+    [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;].forEach(k=&gt;{s.labelDeclared[k]=document.getElementById(&#x27;edit-&#x27;+k).checked;s.codes[k]=s.labelDeclared[k]?k+&#x27;E&#x27;:k;});
+    cancelSampleEdit();updateRange();renderSamples();
   }
 
   function deleteSample(idx) {
@@ -860,7 +897,7 @@ body.drag #t input, #view-plate.drag #t input{
             &lt;/div&gt;
           &lt;/div&gt;
           ${subPanelHtml}
-          &lt;div style=&quot;display:flex;justify-content:flex-end;margin-top:8px&quot;&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;deleteSample(${idx})&quot;&gt;🗑️ Numuneyi Sil&lt;/button&gt;&lt;/div&gt;
+          &lt;div style=&quot;display:flex;justify-content:flex-end;margin-top:8px&quot;&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;editSample(${idx})&quot;&gt;✏️ Düzenle&lt;/button&gt; &lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;deleteSample(${idx})&quot;&gt;🗑️ Numuneyi Sil&lt;/button&gt;&lt;/div&gt;
         &lt;/div&gt;
       `;
     }).join(&#x27;&#x27;);
@@ -1019,10 +1056,10 @@ body.drag #t input, #view-plate.drag #t input{
       &lt;/div&gt;
 
       &lt;!-- SAYFA SONU (ARKA YÜZE GEÇİŞ) --&gt;
-      &lt;br clear=&quot;all&quot; style=&quot;page-break-before: always; mso-break-type: section-break;&quot;&gt;
+      
 
       &lt;!-- SAYFA 2: ARKA YÜZ --&gt;
-      &lt;div class=&quot;page-container&quot; style=&quot;page-break-before: always;&quot;&gt;
+      &lt;div class=&quot;page-container&quot;&gt;
         &lt;table class=&quot;main-table&quot;&gt;
           &lt;tbody&gt;
             &lt;!-- 6 --&gt;
@@ -1152,7 +1189,7 @@ body.drag #t input, #view-plate.drag #t input{
         &lt;style&gt;
           @page { size: 21.0cm 29.7cm; margin: 1.2cm 1.2cm 1.2cm 1.2cm; mso-page-orientation: portrait; }
           body { font-family: Arial, sans-serif; font-size: 10pt; color: #000; margin: 0; padding: 0; }
-          .page-container { width: 100%; min-height: 25.5cm; }
+          .page-container { width: 100%; min-height: 0; }
           table.main-table { width: 100%; border-collapse: collapse; border: 1.5pt solid black; }
           table.main-table td, table.main-table th { border: 1pt solid black; padding: 4px 6px; }
           .doc-header { text-align: center; font-weight: bold; font-size: 11pt; padding: 8px !important; }
@@ -1187,7 +1224,7 @@ body.drag #t input, #view-plate.drag #t input{
     const preview = document.getElementById(&#x27;print-preview&#x27;);
     preview.innerHTML = `
       &lt;style&gt;
-        .page-container { width: 100%; min-height: 26cm; box-sizing: border-box; }
+        .page-container { width: 100%; min-height: 0; box-sizing: border-box; }
         table.main-table { width: 100%; border-collapse: collapse; border: 1.5pt solid black; }
         table.main-table td, table.main-table th { border: 1pt solid black; padding: 4px 6px; font-family: Arial, sans-serif; }
         .doc-header { text-align: center; font-weight: bold; font-size: 11pt; padding: 8px !important; }
@@ -1202,6 +1239,7 @@ body.drag #t input, #view-plate.drag #t input{
       &lt;/style&gt;
       ${buildDocumentHtml()}
     `;
+    // Yalnızca iki A4 yüz: ilk sayfa ve arka sayfa.
     window.print();
   }
 
