@@ -382,8 +382,8 @@ body.drag #t input, #view-plate.drag #t input{
       #print-preview { display: block; }
       @page { size: A4 portrait; margin: 9mm; }
       #print-preview .page-container { height:275mm!important; min-height:275mm!important; max-height:275mm!important; display:flex; flex-direction:column; box-sizing:border-box; page-break-inside:avoid; break-inside:avoid; }
-      #print-preview .page-container > table.main-table { width:100%; height:calc(100% - 7mm)!important; flex:1 1 auto; }
-      #print-preview .page-container > .footer-row { flex:0 0 5mm; margin-top:2mm!important; align-items:end; }
+      #print-preview .page-container &gt; table.main-table { width:100%; height:calc(100% - 7mm)!important; flex:1 1 auto; }
+      #print-preview .page-container &gt; .footer-row { flex:0 0 5mm; margin-top:2mm!important; align-items:end; }
       #print-preview .page-container:first-of-type { page-break-after:always; break-after:page; }
       #print-preview .page-container:last-of-type { page-break-after:auto; break-after:auto; }
       #print-preview table.main-table { break-inside:avoid; page-break-inside:avoid; }
@@ -534,6 +534,16 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;/div&gt;
   &lt;/details&gt;
 
+  &lt;div class=&quot;card&quot;&gt;
+    &lt;h2&gt;💾 İş Takip Kayıtları&lt;/h2&gt;
+    &lt;p style=&quot;font-size:.82rem;color:#475569&quot;&gt;Numuneler, analiz durumları, PCR sonuç notları ve form bilgileri otomatik kaydedilir. Tarayıcı verileri silinirse kayıtlar kaybolabileceğinden ayrıca yedek alabilirsiniz.&lt;/p&gt;
+    &lt;div class=&quot;action-row&quot;&gt;
+      &lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;downloadWorkflowBackup()&quot;&gt;Yedeği İndir (.json)&lt;/button&gt;
+      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#dbeafe;color:#1d4ed8&quot; onclick=&quot;document.getElementById(&#x27;workflow-backup-file&#x27;).click()&quot;&gt;Yedekten Yükle&lt;/button&gt;
+      &lt;input id=&quot;workflow-backup-file&quot; type=&quot;file&quot; accept=&quot;.json,application/json&quot; hidden onchange=&quot;importWorkflowBackup(event)&quot;&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+
   &lt;!-- Çıktı Butonları --&gt;
   &lt;button class=&quot;btn-main btn-word&quot; onclick=&quot;downloadWordDoc()&quot;&gt;📄 Word Olarak İndir (.doc)&lt;/button&gt;
   &lt;button class=&quot;btn-main btn-print&quot; onclick=&quot;printDoc()&quot;&gt;🖨️ PDF Olarak Kaydet / Yazdır&lt;/button&gt;
@@ -547,6 +557,47 @@ body.drag #t input, #view-plate.drag #t input{
   let labelDeclared = { S: false, P: false, M: false, K: false };
   let isDnaAdequate = true;
   let samples = [];
+  const WORKFLOW_SAVE_KEY = &#x27;pcr_workflow_saved_v1&#x27;;
+  const WORKFLOW_FIELDS = [&#x27;form-date&#x27;,&#x27;numune-aralik&#x27;,&#x27;user-name&#x27;,&#x27;kit-dna&#x27;,&#x27;kit-master&#x27;,&#x27;kit-gdo&#x27;,&#x27;kit-plant&#x27;,&#x27;kit-diger&#x27;,&#x27;screen-targets&#x27;,&#x27;event-mode&#x27;];
+  function persistWorkflow() {
+    try {
+      const fields = {};
+      WORKFLOW_FIELDS.forEach(id =&gt; { const el=document.getElementById(id); if(el) fields[id]=el.value; });
+      localStorage.setItem(WORKFLOW_SAVE_KEY, JSON.stringify({version:1,samples,pcrNotesIndependent,fields,savedAt:new Date().toISOString()}));
+    } catch(err) { console.warn(&#x27;İş takip kaydedilemedi:&#x27;,err); }
+  }
+  function restoreWorkflow() {
+    try {
+      const raw=localStorage.getItem(WORKFLOW_SAVE_KEY);
+      if(!raw) return;
+      const data=JSON.parse(raw);
+      if(!data || !Array.isArray(data.samples)) return;
+      samples=data.samples;
+      pcrNotesIndependent=Array.isArray(data.pcrNotesIndependent)?data.pcrNotesIndependent:[];
+      Object.entries(data.fields||{}).forEach(([id,value])=&gt;{
+        const el=document.getElementById(id); if(el &amp;&amp; typeof value===&#x27;string&#x27;) el.value=value;
+      });
+      updateRange();renderSamples();renderPcrNotes();
+    } catch(err) { console.warn(&#x27;Kayıt geri yüklenemedi:&#x27;,err); }
+  }
+  function downloadWorkflowBackup() {
+    persistWorkflow();
+    const raw=localStorage.getItem(WORKFLOW_SAVE_KEY);
+    if(!raw){alert(&#x27;Yedek alınamadı. Tarayıcı depolamasını kontrol edin.&#x27;);return;}
+    const blob=new Blob([raw],{type:&#x27;application/json;charset=utf-8&#x27;});
+    const url=URL.createObjectURL(blob),a=document.createElement(&#x27;a&#x27;);
+    a.href=url;a.download=&#x27;PCR_Is_Takip_Yedek_&#x27;+new Date().toISOString().slice(0,10)+&#x27;.json&#x27;;a.click();
+    setTimeout(()=&gt;URL.revokeObjectURL(url),1000);
+  }
+  function importWorkflowBackup(event) {
+    const file=event.target.files?.[0];if(!file)return;
+    file.text().then(raw=&gt;{
+      const data=JSON.parse(raw);
+      if(!Array.isArray(data.samples))throw new Error(&#x27;Geçersiz yedek&#x27;);
+      if(!confirm(&#x27;Mevcut iş takip kayıtları yedekteki verilerle değiştirilsin mi?&#x27;))return;
+      localStorage.setItem(WORKFLOW_SAVE_KEY,JSON.stringify(data));restoreWorkflow();
+    }).catch(err=&gt;alert(&#x27;Yedek yüklenemedi: &#x27;+err.message)).finally(()=&gt;{event.target.value=&#x27;&#x27;;});
+  }
 
   window.addEventListener(&#x27;DOMContentLoaded&#x27;, () =&gt; {
     // Otomatik Tarih
@@ -558,6 +609,10 @@ body.drag #t input, #view-plate.drag #t input{
     document.getElementById(&#x27;user-name&#x27;).addEventListener(&#x27;input&#x27;, (e) =&gt; {
       localStorage.setItem(&#x27;kgklab_user_name&#x27;, e.target.value);
     });
+    restoreWorkflow();
+    WORKFLOW_FIELDS.forEach(id=&gt;{const el=document.getElementById(id);if(el){el.addEventListener(&#x27;input&#x27;,persistWorkflow);el.addEventListener(&#x27;change&#x27;,persistWorkflow);}});
+    window.addEventListener(&#x27;pagehide&#x27;,persistWorkflow);
+
   });
 
   function setMatrix(type) {
@@ -796,12 +851,14 @@ body.drag #t input, #view-plate.drag #t input{
     pcrNotesIndependent.splice(index,1);renderPcrNotes();
   }
   function renderPcrNotes(){
+    persistWorkflow();
     const el=document.getElementById(&#x27;pcr-note-list&#x27;);if(!el)return;
     el.innerHTML=pcrNotesIndependent.length?pcrNotesIndependent.map((r,i)=&gt;
       `&lt;div style=&quot;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:8px 0;font-size:.84rem&quot;&gt;&lt;span&gt;&lt;b&gt;${escapePcrText(r.gene)} ${escapePcrText(r.no)} (${r.pair.join(&#x27;,&#x27;)})&lt;/b&gt; — &lt;b&gt;${pcrDecision(r.pair)}&lt;/b&gt;${r.note?&#x27; — &#x27;+escapePcrText(r.note):&#x27;&#x27;}&lt;/span&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto&quot; onclick=&quot;deletePcrNote(${i})&quot;&gt;Sil&lt;/button&gt;&lt;/div&gt;`).join(&#x27;&#x27;):&#x27;&lt;small style=&quot;color:#64748b&quot;&gt;Henüz PCR sonuç notu eklenmedi.&lt;/small&gt;&#x27;;
   }
 
   function renderSamples() {
+    persistWorkflow();
     const listEl = document.getElementById(&#x27;sample-list&#x27;);
     document.getElementById(&#x27;sample-count&#x27;).textContent = samples.length;
 
