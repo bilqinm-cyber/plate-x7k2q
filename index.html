@@ -2321,6 +2321,40 @@ function resizeImageToBase64(file, maxDim) {
   });
 }
 
+// Fotoğraftan okunan numuneleri otomatik çift kuyuya tamamlar.
+// Sadece sayısal numuneler işlenir; N/P/EC/ÇK kontrol kuyuları aynen kalır.
+function completeScannedParallelWells(p) {
+  const cells = p.cells, notes = p.notes || (p.notes = Array(96).fill(''));
+  const numeric = v => /^\d{3,}$/.test(String(v || '').trim());
+  const added = [];
+  let unpaired = 0;
+  // Fotoğraftaki çiftler yatay mı dikey mi? Mevcut gerçek çiftlerden çıkar.
+  let horizontal = 0, vertical = 0;
+  for (let r=0;r<8;r++) for(let c=0;c<12;c++) {
+    const i=r*12+c, v=cells[i]; if(!numeric(v))continue;
+    if(c<11 && cells[i+1]===v) horizontal++;
+    if(r<7 && cells[i+12]===v) vertical++;
+  }
+  const verticalMode = vertical>horizontal && vertical>0;
+  const original = cells.slice();
+  const seen = new Set();
+  for(let r=0;r<8;r++) for(let c=0;c<12;c++) {
+    const i=r*12+c, v=original[i]; if(!numeric(v) || seen.has(i))continue;
+    const adjacent = verticalMode ? [i-12,i+12] : [i-1,i+1];
+    const valid = j => j>=0 && j<96 && (verticalMode ? j%12===c : Math.floor(j/12)===r);
+    // Zaten gerçek bir paraleli varsa yeniden çoğaltma.
+    const mate=adjacent.find(j=>valid(j) && original[j]===v && !seen.has(j));
+    if(mate!==undefined){seen.add(i);seen.add(mate);continue;}
+    // Önce doğal ikili hizalamayı, sonra diğer komşuyu dene.
+    const preferred=verticalMode ? (r%2===0 ? [i+12,i-12] : [i-12,i+12]) : (c%2===0 ? [i+1,i-1] : [i-1,i+1]);
+    const empty=preferred.find(j=>valid(j) && !cells[j] && !seen.has(j));
+    if(empty===undefined){unpaired++;seen.add(i);continue;}
+    cells[empty]=v; notes[empty]=notes[i] || '';
+    seen.add(i);seen.add(empty);added.push(empty);
+  }
+  return {added:added.length,unpaired,orientation:verticalMode?'dikey':'yatay'};
+}
+
 async function processImageWithGeminiStream(base64Image) {
   if (!S.apiKey) S.apiKey = DEFAULT_API_KEY;
   setProgress(10, "Yapay Zeka Bağlanıyor...", "Görsel aktarılıyor, okuma başlıyor");
@@ -2332,7 +2366,7 @@ Analyze this handwritten 96-well PCR plate layout worksheet (8 rows labeled A to
 Identify:
 1. Target names on the left for rows A to H and column notes at top for cols 1 to 12 if any.
 2. For each non-empty well A1 through H12 read:
-   - the value: a sample number (digits like 7683) or a control symbol ("N", "P", "ÇK" or "CK", "EC"). Duplicate pipetting: numbers written in pairs across adjacent columns.
+   - the value: a sample number (digits like 7683) or a control symbol ("N", "P", "ÇK" or "CK", "EC"). CRITICAL: Every sample is run in duplicate (two parallel wells). Read BOTH wells for each sample. If the handwritten number is written only once across two adjacent wells, return the same number in BOTH well positions. Do not duplicate control symbols N, P, EC, ÇK. Prefer horizontal pairs; if the sheet clearly uses vertical pairs, preserve that orientation. Never invent a sample number.
    - an optional note or subtext written under the value (e.g. "94100").
 3. Analysis name if visible.
 
@@ -2522,6 +2556,9 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
         });
       }
 
+      // OCR bazen tek yazılmış numuneyi tek kuyu sanıyor. Kontrolleri değiştirmeden
+      // numuneleri iki paralel kuyuda tamamla; dolu bir kuyunun üstüne asla yazma.
+      const pairReport = completeScannedParallelWells(p);
       S.cachedModel = mName; save();
       const tDone = Date.now();
       const sec = (a, b) => ((b - a) / 1000).toFixed(1);
@@ -2529,8 +2566,9 @@ Every item of "wells" is one string: "WELL|VALUE" or "WELL|VALUE|NOTE" (add NOTE
         "foto " + (((window._pcrResizeMs || 0) / 1000).toFixed(1)) + " · ilk yanıt " + sec(tTry, tFirst || tEnd) +
         " · okuma " + sec(tFirst || tEnd, tEnd) + " · yerleştirme " + sec(tEnd, tDone) + " sn" +
         (qi > 0 || errors.length ? " · " + (qi + 1) + ". modelde" : ""));
-      setProgress(100, "Tamamlandı!", "Tüm kuyucuklar başarıyla aktarıldı");
+      setProgress(100, "Tamamlandı!", "Paralel kuyular kontrol edildi: " + pairReport.added + " kuyu tamamlandı" + (pairReport.unpaired ? ", " + pairReport.unpaired + " numune için boş eş kuyu bulunamadı" : ""));
       refreshMetaInputs(); refresh();
+      if (pairReport.unpaired) alert(pairReport.unpaired + ' numune için güvenli boş paralel kuyu bulunamadı. Plate üzerinde kontrol edin; mevcut dolu kuyular değiştirilmedi.');
       return;
     } catch (err) {
       if (err.message && err.message.includes("Geçersiz API Anahtarı")) throw err;
