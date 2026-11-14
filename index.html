@@ -90,7 +90,7 @@ body.drag #t input, #view-plate.drag #t input{
 #rd{position:fixed;inset:0;z-index:999;background:#f6f7f9;overflow:hidden;touch-action:manipulation}
 #rd[hidden]{display:none}
 #rw{position:absolute;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px)}
-#rin{position:absolute;display:grid;gap:2px;padding:2px;background:#c9ced6;grid-template-columns:minmax(0,1.1fr) repeat(12,minmax(0,1fr));grid-template-rows:minmax(0,.55fr) repeat(8,minmax(0,1fr))}
+#rin{position:absolute;display:grid;gap:2px;padding:2px;background:#c9ced6;grid-template-columns:minmax(0,1.1fr) repeat(12,minmax(0,1fr));grid-template-rows:minmax(0,.85fr) repeat(8,minmax(0,1fr))}
 #rin>div{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;color:#1b1f24;font-weight:700;overflow:hidden;line-height:1.1;text-align:center;position:relative}
 #rin>div.rc{color:#000;font-weight:800;text-shadow:0 0 3px #fff,0 0 6px #fff}
 #rin>div .r-sym{position:absolute;top:2px;right:4px;font-size:.65em;font-weight:900;opacity:.85}
@@ -261,6 +261,7 @@ body.drag #t input, #view-plate.drag #t input{
 <div id="view-home">
   <div class="home-header">
     <h1>PCR Moleküler Biyoloji Portalı</h1>
+    <p style="margin:5px 0 3px;font-weight:700;color:#0f6b5c">Sürüm 2026.11.14-14 · made by bilqinm</p>
     <p>Lütfen gerçekleştirmek istediğiniz çalışma modülünü seçin:</p>
   </div>
   
@@ -361,6 +362,20 @@ body.drag #t input, #view-plate.drag #t input{
     .sample-no { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
     .sample-codes { font-size: 1.05rem; font-weight: 800; letter-spacing: 2px; color: #1e293b; }
     
+
+    /* Kısa numune satırı: detaylar yalnızca okla açılır */
+    details.sample-collapsible { padding: 0; overflow: hidden; }
+    .sample-compact-summary { display:flex; align-items:center; gap:8px; padding:11px 10px; cursor:pointer; list-style:none; min-width:0; }
+    .sample-compact-summary::-webkit-details-marker { display:none; }
+    .sample-plate-checkbox { display:flex; align-items:center; flex:0 0 auto; }
+    .sample-compact-number { font-weight:800; color:var(--primary); white-space:nowrap; }
+    .sample-compact-desc { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.88rem; }
+    .sample-compact-codes { font-weight:800; font-size:.8rem; white-space:nowrap; color:#334155; }
+    .sample-chevron { font-size:1.25rem; line-height:1; transition:transform .15s; color:#475569; }
+    details[open] &gt; summary .sample-chevron { transform:rotate(180deg); }
+    .sample-expanded { padding:0 12px 12px; border-top:1px solid #e2e8f0; }
+    @media(max-width:440px) { .sample-compact-summary { gap:6px; padding:10px 7px; } .sample-compact-desc { font-size:.8rem; } }
+
     /* Durum Rozetleri */
     .status-badge {
       display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 800; margin: 6px 0;
@@ -405,15 +420,23 @@ body.drag #t input, #view-plate.drag #t input{
       #print-preview table.main-table { break-inside:avoid; page-break-inside:avoid; }
       #print-preview .footer-row { margin-top:6px!important; }
     }
-  &lt;/style&gt;
+  
+    .sample-compact-stage{font-size:.68rem;font-weight:700;color:#475569;background:#e2e8f0;border-radius:5px;padding:3px 5px;white-space:nowrap;flex-shrink:0}
+
+    details.collapsible-section &gt; summary.collapsible-heading {display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;color:var(--primary);font-size:1.08rem;cursor:pointer;list-style:none;user-select:none;}
+    details.collapsible-section &gt; summary.collapsible-heading::-webkit-details-marker{display:none;}
+    details.collapsible-section &gt; summary.collapsible-heading .section-arrow{font-size:1.3rem;transition:transform .15s;}
+    details.collapsible-section[open] &gt; summary.collapsible-heading .section-arrow{transform:rotate(180deg);}
+    details.collapsible-section &gt; summary.collapsible-heading + *{margin-top:12px;}
+&lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
 
 &lt;div class=&quot;container&quot;&gt;
 
   &lt;!-- Üst Form Bilgileri --&gt;
-  &lt;div class=&quot;card&quot;&gt;
-    &lt;h2&gt;📋 Form Bilgileri&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;📋 Form Bilgileri &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
     &lt;div class=&quot;grid-2&quot;&gt;
       &lt;div&gt;
         &lt;label&gt;TARİH&lt;/label&gt;
@@ -426,11 +449,11 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;/div&gt;
     &lt;label&gt;ADI SOYADI&lt;/label&gt;
     &lt;input type=&quot;text&quot; id=&quot;user-name&quot; placeholder=&quot;Adınızı yazın (hafızaya kaydolur)&quot;&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
   &lt;!-- Numune Ekleme Kartı --&gt;
-  &lt;div class=&quot;card&quot;&gt;
-    &lt;h2&gt;🧪 Yeni Numune Ekle&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot; id=&quot;new-sample-section&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;🧪 Yeni Numune Ekle &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
 
     &lt;div class=&quot;grid-2&quot;&gt;
       &lt;div&gt;
@@ -466,37 +489,69 @@ body.drag #t input, #view-plate.drag #t input{
       &lt;/div&gt;
     &lt;/div&gt;
 
+
+    &lt;div style=&quot;margin:14px 0;padding:12px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc&quot;&gt;
+      &lt;label style=&quot;font-weight:700&quot;&gt;ÖZEL İSTEK Mİ?&lt;/label&gt;
+      &lt;select id=&quot;special-mode&quot; onchange=&quot;toggleSpecialRequest()&quot; style=&quot;width:100%;padding:10px;border:1px solid #94a3b8;border-radius:8px&quot;&gt;&lt;option value=&quot;no&quot;&gt;Hayır — normal analiz&lt;/option&gt;&lt;option value=&quot;yes&quot;&gt;Evet — yalnızca seçilen analizler&lt;/option&gt;&lt;/select&gt;
+      &lt;div id=&quot;special-options&quot; style=&quot;display:none;margin-top:10px&quot;&gt;
+        &lt;div style=&quot;font-weight:700;margin-bottom:7px&quot;&gt;İstenen analizler (birden fazla seçilebilir)&lt;/div&gt;
+        &lt;div class=&quot;grid-2&quot; style=&quot;gap:8px&quot;&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;A:TARAMA&quot;&gt; Tarama&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;A:PLANT&quot;&gt; Plant&lt;/label&gt;
+          &lt;small style=&quot;grid-column:1/-1;color:#64748b&quot;&gt;DNA &amp;lt; 10 ng/µL ise özel istekte Plant seçilmese bile Plant otomatik kurulur.&lt;/small&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;T:S&quot;&gt; Soya Taksonu&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;T:P&quot;&gt; Pamuk Taksonu&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;T:M&quot;&gt; Mısır Taksonu&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;T:K&quot;&gt; Kanola Taksonu&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;E:S&quot;&gt; Soya Eventleri&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;E:P&quot;&gt; Pamuk Eventleri&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;E:M&quot;&gt; Mısır Eventleri&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;special-choice&quot; value=&quot;E:K&quot;&gt; Kanola Eventleri&lt;/label&gt;
+        &lt;/div&gt;
+        &lt;small style=&quot;color:#64748b&quot;&gt;Seçilmeyen analizler İSTENMEDİ sayılır; negatif kabul edilmez. Tarama ve Plant yalnızca seçildiklerinde çalışılır.&lt;/small&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
     &lt;label&gt;NUMUNE AÇIKLAMASI (Ne Olduğu)&lt;/label&gt;
     &lt;input type=&quot;text&quot; id=&quot;sample-desc&quot; placeholder=&quot;Örn: Pirinç unu, Mısır nişastası, Kedi maması&quot;&gt;
 
     &lt;button class=&quot;btn-add&quot; onclick=&quot;addSample()&quot;&gt;➕ Numuneyi Ekle ve Analize Başla&lt;/button&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
   &lt;div class=&quot;card&quot; id=&quot;sample-edit-card&quot; style=&quot;display:none;border:2px solid #2563eb&quot;&gt;
     &lt;h2&gt;✏️ Numuneyi Düzenle&lt;/h2&gt;
     &lt;div class=&quot;grid-2&quot;&gt;&lt;div&gt;&lt;label&gt;Numune No&lt;/label&gt;&lt;input type=&quot;text&quot; id=&quot;edit-no&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;label&gt;Matris&lt;/label&gt;&lt;select id=&quot;edit-matrix&quot; style=&quot;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px&quot;&gt;&lt;option&gt;Gıda&lt;/option&gt;&lt;option&gt;Yem&lt;/option&gt;&lt;/select&gt;&lt;/div&gt;&lt;/div&gt;
     &lt;label&gt;Numune Açıklaması&lt;/label&gt;&lt;input type=&quot;text&quot; id=&quot;edit-desc&quot;&gt;
+    &lt;label&gt;Özel İstek&lt;/label&gt;&lt;select id=&quot;edit-special-mode&quot; onchange=&quot;document.getElementById(&#x27;edit-special-options&#x27;).style.display=this.value===&#x27;yes&#x27;?&#x27;block&#x27;:&#x27;none&#x27;&quot; style=&quot;width:100%;padding:9px&quot;&gt;&lt;option value=&quot;no&quot;&gt;Hayır&lt;/option&gt;&lt;option value=&quot;yes&quot;&gt;Evet&lt;/option&gt;&lt;/select&gt;
+    &lt;div id=&quot;edit-special-options&quot; style=&quot;display:none&quot; class=&quot;grid-2&quot;&gt;
+      &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;A:TARAMA&quot;&gt; Tarama&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;A:PLANT&quot;&gt; Plant&lt;/label&gt;
+          &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;T:S&quot;&gt; Soya Taksonu&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;T:P&quot;&gt; Pamuk Taksonu&lt;/label&gt;
+      &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;T:M&quot;&gt; Mısır Taksonu&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;T:K&quot;&gt; Kanola Taksonu&lt;/label&gt;
+      &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;E:S&quot;&gt; Soya Eventleri&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;E:P&quot;&gt; Pamuk Eventleri&lt;/label&gt;
+      &lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;E:M&quot;&gt; Mısır Eventleri&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; class=&quot;edit-special-choice&quot; value=&quot;E:K&quot;&gt; Kanola Eventleri&lt;/label&gt;
+    &lt;/div&gt;
     &lt;label&gt;İlk Etiket Beyanı (birden fazla seçilebilir)&lt;/label&gt;
     &lt;div class=&quot;grid-2&quot; style=&quot;margin-bottom:12px&quot;&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-S&quot;&gt; Soya&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-P&quot;&gt; Pamuk&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-M&quot;&gt; Mısır&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-K&quot;&gt; Kanola&lt;/label&gt;&lt;/div&gt;
     &lt;div class=&quot;action-row&quot;&gt;&lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;saveSampleEdit()&quot;&gt;Kaydet&lt;/button&gt;&lt;button class=&quot;btn-sm btn-del&quot; onclick=&quot;cancelSampleEdit()&quot;&gt;İptal&lt;/button&gt;&lt;/div&gt;
   &lt;/div&gt;
   &lt;!-- Numune Analiz Takip &amp; Karar Paneli --&gt;
-  &lt;div class=&quot;card&quot;&gt;
-    &lt;h2&gt;📊 Numune Analiz Takibi (&lt;span id=&quot;sample-count&quot;&gt;0&lt;/span&gt;)&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot; id=&quot;sample-tracking-section&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;📊 Numune Analiz Takibi (&lt;span id=&quot;sample-count&quot;&gt;0&lt;/span&gt;) &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
     &lt;button class=&quot;btn-sm btn-pos&quot; style=&quot;margin-bottom:12px;width:100%&quot; onclick=&quot;deleteAllSamples()&quot;&gt;🗑️ Tüm Numuneleri Sil&lt;/button&gt;
     &lt;div id=&quot;sample-list&quot;&gt;
       &lt;div style=&quot;text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 14px;&quot;&gt;Henüz numune eklenmedi.&lt;/div&gt;
     &lt;/div&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
 
 
-  &lt;div class=&quot;card&quot; id=&quot;plate-workflow-actions&quot; style=&quot;border:2px solid #93c5fd;background:#eff6ff&quot;&gt;
-    &lt;h2&gt;🧫 Plate Kurulumu — İş Takipten&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot; id=&quot;plate-workflow-actions&quot; style=&quot;border:2px solid #93c5fd;background:#eff6ff&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;🧫 Plate Kurulumu — İş Takipten &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
     &lt;p style=&quot;font-size:.83rem;margin:0 0 10px&quot;&gt;İstediğin numuneleri işaretle; ilgili analizleri doğrudan PCR Plate Düzeni modülüne gönder. Dolu plate&#x27;ler korunur.&lt;/p&gt;
     &lt;div style=&quot;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px&quot;&gt;
-      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#1e40af;color:white&quot; onclick=&quot;sendPlate(&#x27;TARAMA&#x27;)&quot;&gt;Tarama + Plant Plate Kur&lt;/button&gt;
+      &lt;button class=&quot;btn-sm&quot; style=&quot;background:#1e40af;color:white&quot; onclick=&quot;sendPlate(&#x27;TARAMA&#x27;)&quot;&gt;Tarama / Plant Plate Kur&lt;/button&gt;
       &lt;button class=&quot;btn-sm&quot; style=&quot;background:#0369a1;color:white&quot; onclick=&quot;sendPlate(&#x27;TAKSON&#x27;)&quot;&gt;Takson Plate Kur&lt;/button&gt;
+      &lt;label style=&quot;display:inline-flex;align-items:center;gap:5px;font-size:13px&quot;&gt;&lt;input type=&quot;checkbox&quot; id=&quot;takson-with-event&quot;&gt; Eventleri de kur (elle, aynı plate)&lt;/label&gt;
       &lt;button class=&quot;btn-sm&quot; style=&quot;background:#7c3aed;color:white&quot; onclick=&quot;sendPlate(&#x27;EVENT&#x27;)&quot;&gt;Event Plate Kur&lt;/button&gt;
     &lt;/div&gt;
     &lt;label&gt;Tarama hedefleri (virgülle ayır; ör. P35S, T-NOS, FMV)&lt;/label&gt;
@@ -509,11 +564,11 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;label&gt;Event bitkisi (favorilerdeki etiketler kullanılır)&lt;/label&gt;
     &lt;select id=&quot;event-plant&quot; style=&quot;padding:9px;border:1px solid #94a3b8;border-radius:8px;width:100%;margin-bottom:8px&quot;&gt;&lt;option value=&quot;AUTO&quot;&gt;Numunenin beyanı / pozitif taksonuna göre otomatik&lt;/option&gt;&lt;option value=&quot;S&quot;&gt;Soya&lt;/option&gt;&lt;option value=&quot;P&quot;&gt;Pamuk&lt;/option&gt;&lt;option value=&quot;M&quot;&gt;Mısır&lt;/option&gt;&lt;option value=&quot;K&quot;&gt;Kanola&lt;/option&gt;&lt;/select&gt;
     &lt;p id=&quot;plate-action-status&quot; style=&quot;font-size:.8rem;color:#1e3a8a;margin:8px 0 0&quot;&gt;&lt;/p&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
   &lt;!-- PCR sonuçları: numune iş akışından bağımsız ayrı not alanı --&gt;
-  &lt;div class=&quot;card&quot;&gt;
-    &lt;h2&gt;📝 PCR Sonuç Notları&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;📝 PCR Sonuç Notları &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
     &lt;p style=&quot;font-size:.82rem;color:#64748b;margin:0 0 10px&quot;&gt;Gen ve numune numarasını yazın, iki paralelin sonucunu seçin. (+,-) ve (-,+) TEKRAR olarak rapora geçer. Bu notlar numunenin analiz aşamasını değiştirmez.&lt;/p&gt;
     &lt;div class=&quot;grid-2&quot;&gt;
       &lt;div&gt;&lt;label&gt;NUMUNE NO&lt;/label&gt;&lt;input id=&quot;pcr-note-no&quot; type=&quot;text&quot; placeholder=&quot;Örn. 7396&quot;&gt;&lt;/div&gt;
@@ -527,7 +582,7 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;input id=&quot;pcr-note-text&quot; type=&quot;text&quot; placeholder=&quot;Örn. Tekrar çalışılacak&quot;&gt;
     &lt;button class=&quot;btn-add&quot; onclick=&quot;addPcrNote()&quot;&gt;➕ PCR Sonuç Notunu Ekle&lt;/button&gt;
     &lt;div id=&quot;pcr-note-list&quot; style=&quot;margin-top:12px&quot;&gt;&lt;/div&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
   &lt;!-- Kit &amp; Lot Bilgileri --&gt;
   &lt;details class=&quot;card&quot;&gt;
@@ -550,15 +605,15 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;/div&gt;
   &lt;/details&gt;
 
-  &lt;div class=&quot;card&quot;&gt;
-    &lt;h2&gt;💾 İş Takip Kayıtları&lt;/h2&gt;
+  &lt;details class=&quot;card collapsible-section&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;💾 İş Takip Kayıtları &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
     &lt;p style=&quot;font-size:.82rem;color:#475569&quot;&gt;Numuneler, analiz durumları, PCR sonuç notları ve form bilgileri Chrome tarayıcı depolamasına otomatik kaydedilir. Tarayıcı verileri silinirse kayıtlar kaybolabileceğinden ayrıca yedek alabilirsiniz.&lt;/p&gt;
     &lt;div class=&quot;action-row&quot;&gt;
       &lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;downloadWorkflowBackup()&quot;&gt;Yedeği İndir (.json)&lt;/button&gt;
       &lt;button class=&quot;btn-sm&quot; style=&quot;background:#dbeafe;color:#1d4ed8&quot; onclick=&quot;document.getElementById(&#x27;workflow-backup-file&#x27;).click()&quot;&gt;Yedekten Yükle&lt;/button&gt;
       &lt;input id=&quot;workflow-backup-file&quot; type=&quot;file&quot; accept=&quot;.json,application/json&quot; hidden onchange=&quot;importWorkflowBackup(event)&quot;&gt;
     &lt;/div&gt;
-  &lt;/div&gt;
+  &lt;/details&gt;
 
   &lt;!-- Çıktı Butonları --&gt;
   &lt;button class=&quot;btn-main btn-word&quot; onclick=&quot;downloadWordDoc()&quot;&gt;📄 Word Olarak İndir (.doc)&lt;/button&gt;
@@ -591,6 +646,8 @@ body.drag #t input, #view-plate.drag #t input{
       const data=JSON.parse(raw);
       if(!data || !Array.isArray(data.samples)) return;
       samples=data.samples;
+      const duplicate=findDuplicateInList(samples);
+      if(duplicate!==null)alert(&#x27;Mevcut kayıtlarda mükerrer numune var: &#x27;+duplicate+&#x27;. Kayıtlar silinmedi; lütfen mükerrer kaydı kontrol edip kaldırın. Yeni mükerrer kayıt eklenmesi engellendi.&#x27;);
       pcrNotesIndependent=Array.isArray(data.pcrNotesIndependent)?data.pcrNotesIndependent:[];
       Object.entries(data.fields||{}).forEach(([id,value])=&gt;{
         const el=document.getElementById(id); if(el &amp;&amp; typeof value===&#x27;string&#x27;) el.value=value;
@@ -611,7 +668,7 @@ body.drag #t input, #view-plate.drag #t input{
     const file=event.target.files?.[0];if(!file)return;
     file.text().then(raw=&gt;{
       const data=JSON.parse(raw);
-      if(!Array.isArray(data.samples))throw new Error(&#x27;Geçersiz yedek&#x27;);
+      if(!Array.isArray(data.samples))throw new Error(&#x27;Geçersiz yedek&#x27;); const duplicate=findDuplicateInList(data.samples);if(duplicate!==null)throw new Error(&#x27;Yedekte aynı numarayla birden fazla kayıt var: &#x27;+duplicate+&#x27;. Önce yedeği düzeltin.&#x27;);
       if(!confirm(&#x27;Mevcut iş takip kayıtları yedekteki verilerle değiştirilsin mi?&#x27;))return;
       localStorage.setItem(WORKFLOW_SAVE_KEY,JSON.stringify(data));restoreWorkflow();
     }).catch(err=&gt;alert(&#x27;Yedek yüklenemedi: &#x27;+err.message)).finally(()=&gt;{event.target.value=&#x27;&#x27;;});
@@ -636,6 +693,8 @@ body.drag #t input, #view-plate.drag #t input{
         if(!Array.isArray(data.samples))return;
         // İlk açılışta ana sayfada saklanan kayıtlar önceliklidir.
         samples=data.samples;
+        const duplicate=findDuplicateInList(samples);
+        if(duplicate!==null)alert(&#x27;Mevcut kayıtlarda mükerrer numune var: &#x27;+duplicate+&#x27;. Kayıtlar korunmuştur; mükerrer kayıtları kontrol edin.&#x27;);
         pcrNotesIndependent=Array.isArray(data.pcrNotesIndependent)?data.pcrNotesIndependent:[];
         Object.entries(data.fields||{}).forEach(([id,value])=&gt;{
           const el=document.getElementById(id);
@@ -667,6 +726,29 @@ body.drag #t input, #view-plate.drag #t input{
     renderSamples();
   }
 
+  function toggleSpecialRequest(){
+    document.getElementById(&#x27;special-options&#x27;).style.display=document.getElementById(&#x27;special-mode&#x27;).value===&#x27;yes&#x27;?&#x27;block&#x27;:&#x27;none&#x27;;
+  }
+  function selectedSpecial(){return [...document.querySelectorAll(&#x27;.special-choice:checked&#x27;)].map(x=&gt;x.value);}
+  function specialLabel(s){
+    if(!s.specialRequest)return &#x27;&#x27;;
+    const names={S:&#x27;Soya&#x27;,P:&#x27;Pamuk&#x27;,M:&#x27;Mısır&#x27;,K:&#x27;Kanola&#x27;};
+    return (s.specialAnalyses||[]).map(x=&gt;{const [kind,k]=x.split(&#x27;:&#x27;);return kind===&#x27;A&#x27;?(k===&#x27;PLANT&#x27;?&#x27;Plant&#x27;:&#x27;Tarama&#x27;):(names[k]+&#x27; &#x27;+(kind===&#x27;T&#x27;?&#x27;Taksonu&#x27;:&#x27;Eventleri&#x27;));}).join(&#x27;, &#x27;);
+  }
+  // Numune numarasi tekil anahtardir; bosluk ve sayisal sifir farklari ayni kaydi ifade eder.
+  function normalizeSampleNo(value){
+    const v=String(value??&#x27;&#x27;).trim();
+    return /^\d+$/.test(v)?String(BigInt(v)):v.toLocaleUpperCase(&#x27;tr-TR&#x27;);
+  }
+  function findDuplicateSample(no,exclude){
+    const key=normalizeSampleNo(no);
+    return samples.find(s=&gt;s!==exclude&amp;&amp;normalizeSampleNo(s.no)===key);
+  }
+  function findDuplicateInList(list){
+    const seen=new Set();
+    for(const s of list){const key=normalizeSampleNo(s.no);if(seen.has(key))return s.no;seen.add(key);}
+    return null;
+  }
   function addSample() {
     const noInput = document.getElementById(&#x27;sample-no&#x27;);
     const descInput = document.getElementById(&#x27;sample-desc&#x27;);
@@ -677,6 +759,10 @@ body.drag #t input, #view-plate.drag #t input{
       alert(&quot;Lütfen Numune Numarası girin!&quot;);
       return;
     }
+    if(findDuplicateSample(no)){
+      alert(&#x27;Bu numune numarası zaten kayıtlı: &#x27;+no+&#x27;\nYeni kayıt oluşturulmadı. Mevcut numuneyi Düzenle seçeneğiyle güncelleyin.&#x27;);
+      noInput.focus();noInput.select();return;
+    }
 
     const codes = {
       S: labelDeclared.S ? &quot;SE&quot; : &quot;S&quot;,
@@ -685,17 +771,22 @@ body.drag #t input, #view-plate.drag #t input{
       K: labelDeclared.K ? &quot;KE&quot; : &quot;K&quot;
     };
 
+    const specialRequest=document.getElementById(&#x27;special-mode&#x27;).value===&#x27;yes&#x27;;
+    const specialAnalyses=specialRequest?selectedSpecial():[];
+    if(specialRequest&amp;&amp;!specialAnalyses.length){alert(&#x27;Özel istek için en az bir analiz seçin.&#x27;);return;}
     samples.push({
       id: Date.now(),
+      specialRequest,
+      specialAnalyses,
       no: no,
       matrix: matrixType,
       desc: desc,
       dnaLow: false,
       codes: { ...codes },
       labelDeclared: { ...labelDeclared },
-      stage: &#x27;TARAMA&#x27;, // TARAMA, TAKSON, EVENT_VAR_YOK, MIKTAR, UYGUN, UYGUN_DEGIL
-      statusText: &#x27;🟡 Tarama Aşamasında&#x27;,
-      statusClass: &#x27;badge-tarama&#x27;,
+      stage: specialRequest ? &#x27;OZEL_ISTEK&#x27; : &#x27;TARAMA&#x27;, // TARAMA, TAKSON, EVENT_VAR_YOK, MIKTAR, UYGUN, UYGUN_DEGIL
+      statusText: specialRequest ? &#x27;🟣 Özel istek — yalnızca seçilen analizler&#x27; : &#x27;🟡 Tarama Aşamasında&#x27;,
+      statusClass: specialRequest ? &#x27;badge-event-qual&#x27; : &#x27;badge-tarama&#x27;,
       taksonPositive: []
     });
 
@@ -706,6 +797,9 @@ body.drag #t input, #view-plate.drag #t input{
     const n = parseInt(no);
     noInput.value = isNaN(n) ? &quot;&quot; : (n + 1);
     descInput.value = &quot;&quot;;
+    document.getElementById(&#x27;special-mode&#x27;).value=&#x27;no&#x27;;
+    document.querySelectorAll(&#x27;.special-choice&#x27;).forEach(x=&gt;x.checked=false);
+    toggleSpecialRequest();
     [&#x27;S&#x27;, &#x27;P&#x27;, &#x27;M&#x27;, &#x27;K&#x27;].forEach(p =&gt; {
       if (labelDeclared[p]) toggleLabel(p);
     });
@@ -730,6 +824,9 @@ body.drag #t input, #view-plate.drag #t input{
     document.getElementById(&#x27;edit-no&#x27;).value=s.no;
     document.getElementById(&#x27;edit-matrix&#x27;).value=s.matrix;
     document.getElementById(&#x27;edit-desc&#x27;).value=s.desc||&#x27;&#x27;;
+    document.getElementById(&#x27;edit-special-mode&#x27;).value=s.specialRequest?&#x27;yes&#x27;:&#x27;no&#x27;;
+    document.getElementById(&#x27;edit-special-options&#x27;).style.display=s.specialRequest?&#x27;grid&#x27;:&#x27;none&#x27;;
+    document.querySelectorAll(&#x27;.edit-special-choice&#x27;).forEach(x=&gt;x.checked=(s.specialAnalyses||[]).includes(x.value));
     [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;].forEach(k=&gt;document.getElementById(&#x27;edit-&#x27;+k).checked=!!s.labelDeclared[k]);
     const card=document.getElementById(&#x27;sample-edit-card&#x27;);card.style.display=&#x27;block&#x27;;card.scrollIntoView({behavior:&#x27;smooth&#x27;,block:&#x27;start&#x27;});
   }
@@ -738,7 +835,13 @@ body.drag #t input, #view-plate.drag #t input{
     const s=samples.find(x=&gt;x.id===editingSampleId);if(!s)return;
     const no=document.getElementById(&#x27;edit-no&#x27;).value.trim();
     if(!no){alert(&#x27;Numune numarası boş olamaz.&#x27;);return;}
-    if(samples.some(x=&gt;x!==s&amp;&amp;x.no===no)){alert(&#x27;Bu numune numarası zaten kayıtlı.&#x27;);return;}
+    if(findDuplicateSample(no,s)){alert(&#x27;Bu numune numarası zaten kayıtlı.&#x27;);return;}
+    const special=document.getElementById(&#x27;edit-special-mode&#x27;).value===&#x27;yes&#x27;;
+    const analyses=special?[...document.querySelectorAll(&#x27;.edit-special-choice:checked&#x27;)].map(x=&gt;x.value):[];
+    if(special&amp;&amp;!analyses.length){alert(&#x27;En az bir özel analiz seçin.&#x27;);return;}
+    s.specialRequest=special;s.specialAnalyses=analyses;
+    if(special){s.stage=&#x27;OZEL_ISTEK&#x27;;s.statusText=&#x27;🟣 Özel istek — yalnızca seçilen analizler&#x27;;s.statusClass=&#x27;badge-event-qual&#x27;;}
+    else if(s.stage===&#x27;OZEL_ISTEK&#x27;){s.stage=&#x27;TARAMA&#x27;;s.statusText=&#x27;🟡 Tarama Aşamasında&#x27;;s.statusClass=&#x27;badge-tarama&#x27;;}
     s.no=no;s.matrix=document.getElementById(&#x27;edit-matrix&#x27;).value;s.desc=document.getElementById(&#x27;edit-desc&#x27;).value.trim();
     [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;].forEach(k=&gt;{s.labelDeclared[k]=document.getElementById(&#x27;edit-&#x27;+k).checked;s.codes[k]=s.labelDeclared[k]?k+&#x27;E&#x27;:k;});
     cancelSampleEdit();updateRange();renderSamples();
@@ -908,6 +1011,40 @@ body.drag #t input, #view-plate.drag #t input{
       `&lt;div style=&quot;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;padding:8px 0;font-size:.84rem&quot;&gt;&lt;span&gt;&lt;b&gt;${escapePcrText(r.gene)} ${escapePcrText(r.no)} (${r.pair.join(&#x27;,&#x27;)})&lt;/b&gt; — &lt;b&gt;${pcrDecision(r.pair)}&lt;/b&gt;${r.note?&#x27; — &#x27;+escapePcrText(r.note):&#x27;&#x27;}&lt;/span&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto&quot; onclick=&quot;deletePcrNote(${i})&quot;&gt;Sil&lt;/button&gt;&lt;/div&gt;`).join(&#x27;&#x27;):&#x27;&lt;small style=&quot;color:#64748b&quot;&gt;Henüz PCR sonuç notu eklenmedi.&lt;/small&gt;&#x27;;
   }
 
+  // Özel istek: istenen analizlerin her biri ayrı değerlendirilir.
+  const specialAnalysisNames={&#x27;A:TARAMA&#x27;:&#x27;Tarama&#x27;,&#x27;A:PLANT&#x27;:&#x27;Plant&#x27;,
+    &#x27;T:S&#x27;:&#x27;Soya Taksonu&#x27;,&#x27;T:P&#x27;:&#x27;Pamuk Taksonu&#x27;,&#x27;T:M&#x27;:&#x27;Mısır Taksonu&#x27;,&#x27;T:K&#x27;:&#x27;Kanola Taksonu&#x27;,
+    &#x27;E:S&#x27;:&#x27;Soya Eventleri&#x27;,&#x27;E:P&#x27;:&#x27;Pamuk Eventleri&#x27;,&#x27;E:M&#x27;:&#x27;Mısır Eventleri&#x27;,&#x27;E:K&#x27;:&#x27;Kanola Eventleri&#x27;};
+  function setSpecialResult(idx,code,result){
+    const sm=samples[idx];if(!sm||!sm.specialRequest||!(sm.specialAnalyses||[]).includes(code))return;
+    if(!sm.specialResults||typeof sm.specialResults!==&#x27;object&#x27;)sm.specialResults={};
+    sm.specialResults[code]=result;
+    renderSamples();
+  }
+  function setSpecialDecision(idx,value){
+    const sm=samples[idx];if(!sm||!sm.specialRequest)return;
+    sm.specialDecision=value;renderSamples();
+  }
+  function specialResultPanel(sm,idx){
+    const choices=sm.specialAnalyses||[];
+    const results=sm.specialResults||{};
+    const buttons=[[&#x27;NEG&#x27;,&#x27;Negatif (-)&#x27;],[&#x27;POS&#x27;,&#x27;Pozitif (+)&#x27;],[&#x27;REPEAT&#x27;,&#x27;Tekrar&#x27;],[&#x27;PENDING&#x27;,&#x27;Bekliyor&#x27;]];
+    const rows=choices.map(code=&gt;{
+      const val=results[code]||&#x27;PENDING&#x27;;
+      const safe=String(code).replace(/[^A-Z:]/g,&#x27;&#x27;);
+      return `&lt;div style=&quot;border:1px solid #d5dce6;border-radius:8px;padding:8px;margin-top:7px;background:#fff&quot;&gt;
+        &lt;div style=&quot;font-weight:700;margin-bottom:5px&quot;&gt;${specialAnalysisNames[code]||escapePcrText(code)} — &lt;span style=&quot;color:${val===&#x27;POS&#x27;?&#x27;#b91c1c&#x27;:val===&#x27;NEG&#x27;?&#x27;#047857&#x27;:&#x27;#64748b&#x27;}&quot;&gt;${val===&#x27;POS&#x27;?&#x27;Pozitif&#x27;:val===&#x27;NEG&#x27;?&#x27;Negatif&#x27;:val===&#x27;REPEAT&#x27;?&#x27;TEKRAR&#x27;:&#x27;Sonuç bekleniyor&#x27;}&lt;/span&gt;&lt;/div&gt;
+        &lt;div style=&quot;display:flex;flex-wrap:wrap;gap:5px&quot;&gt;${buttons.map(([key,label])=&gt;`&lt;button type=&quot;button&quot; class=&quot;btn-sm&quot; style=&quot;padding:6px 9px;${val===key?&#x27;outline:2px solid #2563eb;background:#dbeafe;&#x27;:&#x27;&#x27;}&quot; onclick=&quot;setSpecialResult(${idx},&#x27;${safe}&#x27;,&#x27;${key}&#x27;)&quot;&gt;${label}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;
+      &lt;/div&gt;`;
+    }).join(&#x27;&#x27;);
+    const complete=choices.length&gt;0&amp;&amp;choices.every(code=&gt;[&#x27;NEG&#x27;,&#x27;POS&#x27;].includes(results[code]));
+    const anyPositive=choices.some(code=&gt;results[code]===&#x27;POS&#x27;);
+    const summary=complete?(anyPositive?&#x27;İstenen analizlerde pozitif sonuç mevcut; uygunluk kararı ayrıca değerlendirilmeli.&#x27;:&#x27;İstenen analizlerin tamamı negatif. Yalnızca talep edilen kapsam için değerlendirildi.&#x27;):&#x27;Tüm istenen analizlerin sonuçları henüz tamamlanmadı.&#x27;;
+    return `&lt;div class=&quot;sub-panel&quot;&gt;&lt;b&gt;Özel istek — analiz bazlı sonuçlar&lt;/b&gt;&lt;div style=&quot;font-size:.78rem;margin-top:4px&quot;&gt;Seçilmeyen analizler: İSTENMEDİ. Sonuçlar otomatik genel GDO uygunluğu anlamına gelmez.&lt;/div&gt;${rows}&lt;div style=&quot;margin-top:8px;font-size:.8rem;font-weight:600&quot;&gt;${summary}&lt;/div&gt;
+      &lt;div style=&quot;margin-top:9px;border-top:1px solid #cbd5e1;padding-top:8px&quot;&gt;&lt;b&gt;İstenen analizler için nihai değerlendirme (manuel)&lt;/b&gt;
+      &lt;div style=&quot;display:flex;flex-wrap:wrap;gap:5px;margin-top:5px&quot;&gt;${[[&#x27;UYGUN&#x27;,&#x27;UYGUN&#x27;],[&#x27;UYGUN_DEGIL&#x27;,&#x27;UYGUN DEĞİL&#x27;],[&#x27;TEKRAR&#x27;,&#x27;TEKRAR&#x27;],[&#x27;BEKLIYOR&#x27;,&#x27;Bekliyor&#x27;]].map(([key,label])=&gt;`&lt;button type=&quot;button&quot; class=&quot;btn-sm&quot; style=&quot;padding:6px 9px;${(sm.specialDecision||&#x27;BEKLIYOR&#x27;)===key?&#x27;outline:2px solid #2563eb;background:#dbeafe;&#x27;:&#x27;&#x27;}&quot; onclick=&quot;setSpecialDecision(${idx},&#x27;${key}&#x27;)&quot;&gt;${label}&lt;/button&gt;`).join(&#x27;&#x27;)}&lt;/div&gt;
+      &lt;small&gt;Bu karar yalnızca talep edilen analiz kapsamı içindir; seçilmeyen analizler İSTENMEDİ olarak kalır.&lt;/small&gt;&lt;/div&gt;&lt;/div&gt;`;
+  }
   function renderSamples() {
     persistWorkflow();
     const listEl = document.getElementById(&#x27;sample-list&#x27;);
@@ -918,14 +1055,25 @@ body.drag #t input, #view-plate.drag #t input{
       return;
     }
 
+    const expandedSamples = new Set(Array.from(listEl.querySelectorAll(&#x27;details.sample-collapsible[open]&#x27;)).map(el =&gt; el.dataset.sampleNo));
     listEl.innerHTML = samples.map((s, idx) =&gt; {
-      const codeStr = `${s.codes.S} &amp;nbsp; ${s.codes.P} &amp;nbsp; ${s.codes.M} &amp;nbsp; ${s.codes.K}`;
+      const codeStr = s.specialRequest ? &#x27;ÖZEL İSTEK&#x27; : `${s.codes.S} &amp;nbsp; ${s.codes.P} &amp;nbsp; ${s.codes.M} &amp;nbsp; ${s.codes.K}`;
       const taksonChoices = [&#x27;S&#x27;, &#x27;P&#x27;, &#x27;M&#x27;, &#x27;K&#x27;];
+      // Kapalı numune satırında mevcut iş akışı aşamasını göster.
+      const stageLabels = {
+        TARAMA: &#x27;Tarama&#x27;, TAKSON: &#x27;Takson&#x27;, EVENT_VAR_YOK: &#x27;Event&#x27;,
+        MIKTAR: &#x27;Miktar&#x27;, UYGUN: &#x27;Uygun&#x27;, UYGUN_DEGIL: &#x27;Uygun değil&#x27;,
+        OZEL_ISTEK: &#x27;Özel istek&#x27;
+      };
+      const stageLabel = stageLabels[s.stage] || &#x27;Bekliyor&#x27;;
+
 
       // Aşamalara Göre Alt Kontrol Panelleri
       let subPanelHtml = &quot;&quot;;
 
-      if (s.stage === &#x27;TARAMA&#x27;) {
+      if (s.stage === &#x27;OZEL_ISTEK&#x27;) {
+        subPanelHtml=specialResultPanel(s,idx);
+      } else if (s.stage === &#x27;TARAMA&#x27;) {
         subPanelHtml = `
           &lt;div class=&quot;action-row&quot;&gt;
             &lt;button class=&quot;btn-sm btn-pos&quot; onclick=&quot;onTarama(${idx}, &#x27;POS&#x27;)&quot;&gt;Tarama (+)&lt;/button&gt;
@@ -982,36 +1130,36 @@ body.drag #t input, #view-plate.drag #t input{
       }
 
       return `
-        &lt;div class=&quot;sample-card&quot;&gt;
-          &lt;div class=&quot;sample-header&quot;&gt;
-            &lt;div&gt;
-              &lt;label style=&quot;display:inline-flex;align-items:center;margin-right:6px&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;plate-select&quot; data-no=&quot;${s.no}&quot; checked style=&quot;width:19px;height:19px&quot; title=&quot;Plate kurulumuna dahil et&quot;&gt;&lt;/label&gt;&lt;span class=&quot;sample-no&quot;&gt;${s.no}&lt;/span&gt;
-              &lt;span style=&quot;font-size:0.76rem; font-weight:bold; background:#e2e8f0; padding:2px 6px; border-radius:4px; margin-left:4px;&quot;&gt;${s.matrix}&lt;/span&gt;
-              
+        &lt;details class=&quot;sample-card sample-collapsible&quot; data-sample-no=&quot;${s.no}&quot;&gt;
+          &lt;summary class=&quot;sample-compact-summary&quot;&gt;
+            &lt;label class=&quot;sample-plate-checkbox&quot; onclick=&quot;event.stopPropagation()&quot; title=&quot;Plate kurulumuna dahil et&quot;&gt;&lt;input type=&quot;checkbox&quot; class=&quot;plate-select&quot; data-no=&quot;${s.no}&quot; checked onclick=&quot;event.stopPropagation()&quot; style=&quot;width:19px;height:19px&quot;&gt;&lt;/label&gt;
+            &lt;span class=&quot;sample-compact-number&quot;&gt;${s.no}&lt;/span&gt;
+            &lt;span class=&quot;sample-compact-desc&quot;&gt;${s.desc || s.matrix || &#x27;Numune&#x27;}&lt;/span&gt;
+            &lt;span class=&quot;sample-compact-codes&quot;&gt;${s.specialRequest ? &#x27;ÖZEL&#x27; : taksonChoices.filter(p =&gt; s.labelDeclared?.[p] || (s.codes?.[p] &amp;&amp; s.codes[p] !== &#x27;-&#x27; &amp;&amp; s.codes[p] !== &#x27;—&#x27;)).join(&#x27;&#x27;) || &#x27;—&#x27;}&lt;/span&gt;
+            &lt;span class=&quot;sample-compact-stage&quot; title=&quot;Güncel analiz aşaması&quot;&gt;Aşama: ${stageLabel}&lt;/span&gt;
+            &lt;span class=&quot;sample-chevron&quot; aria-hidden=&quot;true&quot;&gt;⌄&lt;/span&gt;
+          &lt;/summary&gt;
+          &lt;div class=&quot;sample-expanded&quot;&gt;
+            &lt;div class=&quot;sample-header&quot;&gt;
+              &lt;div&gt;&lt;span class=&quot;sample-no&quot;&gt;${s.no}&lt;/span&gt; &lt;span style=&quot;font-size:0.76rem;font-weight:bold;background:#e2e8f0;padding:2px 6px;border-radius:4px&quot;&gt;${s.matrix}&lt;/span&gt;&lt;/div&gt;
+              &lt;div class=&quot;sample-codes&quot;&gt;${codeStr}&lt;/div&gt;
             &lt;/div&gt;
-            &lt;div class=&quot;sample-codes&quot;&gt;${codeStr}&lt;/div&gt;
-          &lt;/div&gt;
-
-          &lt;div style=&quot;font-size: 0.85rem; color: #475569;&quot;&gt;
-            ${s.desc ? `📦 Ürün: &lt;b&gt;${s.desc}&lt;/b&gt;` : &#x27;&lt;i&gt;Açıklama girilmedi&lt;/i&gt;&#x27;}
-          &lt;/div&gt;
-
-          &lt;div&gt;
-            &lt;span class=&quot;status-badge ${s.statusClass}&quot;&gt;${s.statusText}&lt;/span&gt;
-          &lt;/div&gt;
-
-          &lt;div class=&quot;sub-panel&quot; style=&quot;margin-top:8px&quot;&gt;
-            &lt;b&gt;DNA ölçümü (numune kaydından sonra)&lt;/b&gt;
-            &lt;div class=&quot;action-row&quot;&gt;
-              &lt;button class=&quot;btn-sm ${!s.dnaLow?&#x27;btn-neg&#x27;:&#x27;&#x27;}&quot; style=&quot;${!s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},false)&quot;&gt;≥ 10 ng/µL&lt;/button&gt;
-              &lt;button class=&quot;btn-sm ${s.dnaLow?&#x27;btn-pos&#x27;:&#x27;&#x27;}&quot; style=&quot;${s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},true)&quot;&gt;&amp;lt; 10 ng/µL — Plant&lt;/button&gt;
+            &lt;div style=&quot;font-size:0.85rem;color:#475569&quot;&gt;${s.desc ? `📦 Ürün: &lt;b&gt;${s.desc}&lt;/b&gt;` : &#x27;&lt;i&gt;Açıklama girilmedi&lt;/i&gt;&#x27;}&lt;/div&gt;
+            &lt;div&gt;&lt;span class=&quot;status-badge ${s.statusClass}&quot;&gt;${s.statusText}&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;sub-panel&quot; style=&quot;margin-top:8px&quot;&gt;
+              &lt;b&gt;DNA ölçümü (numune kaydından sonra)&lt;/b&gt;
+              &lt;div class=&quot;action-row&quot;&gt;
+                &lt;button class=&quot;btn-sm ${!s.dnaLow?&#x27;btn-neg&#x27;:&#x27;&#x27;}&quot; style=&quot;${!s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},false)&quot;&gt;≥ 10 ng/µL&lt;/button&gt;
+                &lt;button class=&quot;btn-sm ${s.dnaLow?&#x27;btn-pos&#x27;:&#x27;&#x27;}&quot; style=&quot;${s.dnaLow?&#x27;&#x27;:&#x27;background:#e2e8f0&#x27;}&quot; onclick=&quot;setSampleDna(${idx},true)&quot;&gt;&amp;lt; 10 ng/µL — Plant&lt;/button&gt;
+              &lt;/div&gt;
             &lt;/div&gt;
+            ${subPanelHtml}
+            &lt;div style=&quot;display:flex;justify-content:flex-end;margin-top:8px&quot;&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;editSample(${idx})&quot;&gt;✏️ Düzenle&lt;/button&gt; &lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;deleteSample(${idx})&quot;&gt;🗑️ Numuneyi Sil&lt;/button&gt;&lt;/div&gt;
           &lt;/div&gt;
-          ${subPanelHtml}
-          &lt;div style=&quot;display:flex;justify-content:flex-end;margin-top:8px&quot;&gt;&lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;editSample(${idx})&quot;&gt;✏️ Düzenle&lt;/button&gt; &lt;button class=&quot;btn-sm btn-del&quot; style=&quot;flex:0 0 auto;padding:7px 12px&quot; onclick=&quot;deleteSample(${idx})&quot;&gt;🗑️ Numuneyi Sil&lt;/button&gt;&lt;/div&gt;
-        &lt;/div&gt;
+        &lt;/details&gt;
       `;
     }).join(&#x27;&#x27;);
+    listEl.querySelectorAll(&#x27;details.sample-collapsible&#x27;).forEach(el =&gt; { if (expandedSamples.has(el.dataset.sampleNo)) el.open = true; });
   }
 
   // PCR paralel sonuçlarının rapor değerlendirmesi.
@@ -1161,7 +1309,7 @@ body.drag #t input, #view-plate.drag #t input{
           &lt;/tbody&gt;
         &lt;/table&gt;
         &lt;div class=&quot;footer-row&quot;&gt;
-          &lt;span&gt;KGKLAB&lt;/span&gt;
+          &lt;span&gt;KGKLAB · made by bilqinm&lt;/span&gt;
           &lt;span&gt;MBA-FR-007 07.10.2019 Rev:01/23.01.2026&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
@@ -1271,7 +1419,7 @@ body.drag #t input, #view-plate.drag #t input{
           &lt;/tbody&gt;
         &lt;/table&gt;
         &lt;div class=&quot;footer-row&quot;&gt;
-          &lt;span&gt;KGKLAB&lt;/span&gt;
+          &lt;span&gt;KGKLAB · made by bilqinm&lt;/span&gt;
           &lt;span&gt;MBA-FR-007 07.10.2019 Rev:01/23.01.2026&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
@@ -1361,7 +1509,7 @@ body.drag #t input, #view-plate.drag #t input{
     const picked = samples.filter(s=&gt;selected.has(s.no));
     if(!picked.length){ alert(&#x27;Önce en az bir numune seçin.&#x27;); return; }
     const plant = document.getElementById(&#x27;event-plant&#x27;).value;
-    window.parent.postMessage({type:&#x27;GDO_BUILD_PLATES&#x27;,stage,plant,eventMode:document.getElementById(&#x27;event-mode&#x27;).value,targets:document.getElementById(&#x27;screen-targets&#x27;).value,samples:picked.map(s=&gt;({no:s.no,matrix:s.matrix,desc:s.desc,dnaLow:s.dnaLow,labelDeclared:s.labelDeclared,taksonPositive:s.taksonPositive,stage:s.stage}))},&#x27;*&#x27;);
+    window.parent.postMessage({type:&#x27;GDO_BUILD_PLATES&#x27;,stage,plant,withEvent:stage===&#x27;TAKSON&#x27;&amp;&amp;document.getElementById(&#x27;takson-with-event&#x27;).checked,eventMode:document.getElementById(&#x27;event-mode&#x27;).value,targets:document.getElementById(&#x27;screen-targets&#x27;).value,samples:picked.map(s=&gt;({no:s.no,matrix:s.matrix,desc:s.desc,dnaLow:s.dnaLow,labelDeclared:s.labelDeclared,taksonPositive:s.taksonPositive,stage:s.stage,specialRequest:!!s.specialRequest,specialAnalyses:s.specialAnalyses||[]}))},&#x27;*&#x27;);
     document.getElementById(&#x27;plate-action-status&#x27;).textContent=&#x27;Plate kurulumu isteği gönderildi.&#x27;;
   }
 
@@ -1813,6 +1961,32 @@ function getStyle(v){
 }
 
 let sel=-1, hl=null, hlNote=null, msA=-1, msAct=false, msel=new Set();
+let rdHighlightMode="sample", rdEventKey=null;
+function eventKeyAt(p,i){
+  if(!p.cells[i])return null;
+  const note=String((p.notes||[])[i]||"").trim();
+  if(/^[SPMK]\s*[-–]\s*[\w.-]+/i.test(note))return note.toLocaleUpperCase("tr-TR").replace(/\s+/g,"");
+  const row=String((p.rows||[])[Math.floor(i/12)]||"").trim();
+  const plantMatch=row.match(/^(Soya|Pamuk|Mısır|Misir|Kanola)\s*[—–-]/i);
+  if(plantMatch){
+    const names={soya:'S',pamuk:'P',mısır:'M',misir:'M',kanola:'K'};
+    const plant=names[plantMatch[1].toLocaleLowerCase('tr-TR')];
+    // Takson: aynı bitkinin bütün satırlarını tek seçimde göster.
+    if(plant)return 'TAKSON-'+plant;
+  }
+  const col=String((p.cols||[])[i%12]||"").trim();
+  if(/^([SPMK])\s*[—–-]\s*.+/i.test(col)){
+    const m=col.match(/^([SPMK])\s*[—–-]\s*(.+)$/i);
+    return m[1].toUpperCase()+"-"+m[2].replace(/^(?:MON|DP|DAS)\s*[- ]*/i,"").trim().replace(/\s+/g,"").toLocaleUpperCase("tr-TR");
+  }
+  return null;
+}
+function rdWellDim(p,i){
+  if(rdHighlightMode==="event")return !!rdEventKey && eventKeyAt(p,i)!==rdEventKey;
+  if(!hl)return false;
+  const v=p.cells[i], note=String((p.notes||[])[i]||"").trim().toLocaleUpperCase("tr-TR");
+  return FIX[hl]&&hlNote ? (v!==hl||note!==hlNote) : v!==hl;
+}
 let hist=[];
 const save=()=>{try{localStorage.setItem("pcr_plate_v2",JSON.stringify(S))}catch(e){}};
 const push=()=>{
@@ -1890,7 +2064,22 @@ function refreshMetaInputs(){
  });
 }
 
+let deliveryWellSnapshot=null;
+function reconcileDeliveryAssignments(){
+ const current=S.plates.map(p=>p.cells.slice());
+ if(deliveryWellSnapshot){
+   const changed=new Set();
+   current.forEach((cells,pi)=>cells.forEach((v,i)=>{
+     const prev=(deliveryWellSnapshot[pi]||[])[i];
+     if(v && v!==prev && !FIX[v])changed.add(String(v));
+   }));
+   changed.forEach(v=>{if(deliveredSamples[v])delete deliveredSamples[v];});
+   if(changed.size){try{localStorage.setItem(deliveredKey,JSON.stringify(deliveredSamples));}catch(e){}}
+ }
+ deliveryWellSnapshot=current;
+}
 function refresh(){
+ reconcileDeliveryAssignments();
  recalcActiveMaps();
  refreshTabs();
  const p = curP();
@@ -1908,16 +2097,7 @@ function refresh(){
   if(st.sym) td.setAttribute("data-sym", st.sym);
   else td.removeAttribute("data-sym");
   
-  let isDim = false;
-  if(hl){
-    const isCtrl = !!FIX[hl];
-    if(isCtrl && hlNote){
-      const thisNote = (p.notes[i]||"").trim().toLocaleUpperCase('tr-TR');
-      isDim = (v !== hl || thisNote !== hlNote);
-    }else{
-      isDim = (v !== hl);
-    }
-  }
+  const isDim=rdWellDim(p,i);
   td.classList.toggle("dim", isDim);
   td.classList.toggle("sel", i===sel);
   td.classList.toggle("msel", msel.has(i));
@@ -1926,6 +2106,7 @@ function refresh(){
  rls.forEach(el=>{
   const val = p.rows[el.dataset.r]||"";
   el.value = val;
+  el.title = val;
   applyGlow(el, val, true);
  });
 
@@ -1966,6 +2147,8 @@ nts.forEach((el,i)=>{
 });
 
 rls.forEach(el=>{
+ el.addEventListener('click',()=>{const full=curP().rows[el.dataset.r]||'';if(full.length>11)alert('Satır '+String.fromCharCode(65+Number(el.dataset.r))+'\n'+full);});
+ el.addEventListener('focus',()=>{try{el.setSelectionRange(0,el.value.length);}catch(_){}});
  el.addEventListener("input",()=>{
   el.value = el.value.toLocaleUpperCase('tr-TR');
   curP().rows[el.dataset.r]=el.value;
@@ -2084,6 +2267,15 @@ function deliveryButton(){
 }
 function renderDistBanner(){
   const distEl = document.getElementById("rdDist");
+  if(rdHighlightMode==="event"){
+    if(!rdEventKey){distEl.hidden=true;return;}
+    let h=`<span style="color:#60a5fa;margin-right:4px">${rdEventKey.startsWith("TAKSON-")?"TAKSON "+({S:"Soya",P:"Pamuk",M:"Mısır",K:"Kanola"}[rdEventKey.slice(-1)]||rdEventKey):"EVENT "+esc(rdEventKey)} ➔</span>`;
+    S.plates.forEach((p,idx)=>{
+      const wells=[];p.cells.forEach((v,i)=>{if(v&&eventKeyAt(p,i)===rdEventKey)wells.push(R[Math.floor(i/C)]+(i%C+1));});
+      h+=`<button class="rd-pbtn ${wells.length?"has":""} ${idx===S.curP?"cur":""}" data-gop="${idx}">P${idx+1}: ${wells.length?wells.join(", "):"YOK"}</button>`;
+    });
+    distEl.innerHTML=`<div class="plate-jump-row">${h}</div>`;distEl.hidden=false;return;
+  }
   if(!hl){ distEl.hidden = true; return; }
   const isCtrl = !!FIX[hl];
   
@@ -2134,18 +2326,18 @@ function rdDraw(){
  const p = curP();
  const isCtrl = !!FIX[hl];
 
- let h="<div class='rd-tools'><button data-a='x'>✕</button><button data-a='r'>↻</button>"+"</div>";
+ let h="<div class='rd-tools'><button data-a='x'>✕</button><button data-a='r'>↻</button></div>";
  for(let c=1;c<=C;c++){
   const cVal = p.cols ? (p.cols[c-1] || "") : "";
   const cGlow = getGlow(cVal);
   const cStyle = cGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${cGlow},0 0 12px ${cGlow};color:#000;font-weight:800'` : '';
-  h += "<div class='hd'>" + c + (cVal ? "<small " + cStyle + ">" + esc(cVal) + "</small>" : "") + "</div>";
+  h += "<div class='hd'>" + c + (cVal ? "<small " + cStyle + ">" + esc(cVal) + "</small>" : "") + (c===2?"<button type='button' class='rd-mode-mini' data-a='mode' title='Numune / Event ve Takson vurgulaması' style='position:absolute;left:0;top:0;z-index:8;width:100%;height:100%;border:0;border-radius:0;background:rgba(15,23,42,.75);color:#fff;font-size:9px;font-weight:800;cursor:pointer'>"+(rdHighlightMode==='event'?"🧬 Event":"🔢 Num.")+"</button>":"") + "</div>";
  }
  for(let r=0;r<8;r++){
   const rVal = p.rows[r]||"";
   const rGlow = getGlow(rVal);
   const rStyle = rGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${rGlow},0 0 12px ${rGlow};color:#000;font-weight:800'` : '';
-  h+="<div class='hd'>"+R[r]+(rVal?"<small "+rStyle+">"+esc(rVal)+"</small>":"")+"</div>";
+  h+="<div class='hd'>"+R[r]+(rVal?"<small "+rStyle+">"+esc(rVal.split(" / ")[0])+"</small>":"")+"</div>";
   for(let c=0;c<C;c++){
    const i=r*C+c,v=p.cells[i];
    const st=getStyle(v);
@@ -2154,8 +2346,7 @@ function rdDraw(){
    const nGlow = getGlow(nVal);
    const nStyle = nGlow ? `style='text-shadow:0 0 2px #fff,0 0 6px ${nGlow},0 0 12px ${nGlow};color:#000;font-weight:800'` : '';
 
-   let isDim = false;
-   if(hl){ isDim = (isCtrl && hlNote) ? (v !== hl || nClean !== hlNote) : (v !== hl); }
+   const isDim=rdWellDim(p,i);
 
    h+="<div class='rc"+(isDim?" dim":"")+"' data-i='"+i+"' style='background:"+(v&&deliveredSamples[String(v)]&&!FIX[v]?"#a1a1aa":v?st.bg:"var(--card)" )+"'>";
    h+=esc(v);
@@ -2172,9 +2363,9 @@ function rdDraw(){
  ri.style.fontSize=fs+"px";
  ri.querySelectorAll(".hd").forEach(e=>e.style.fontSize=Math.min(fs*.8,hh*.5)+"px");
  ri.querySelectorAll("small").forEach(e=>{e.style.fontSize=Math.max(9,fs*.58)+"px";e.style.textTransform="uppercase"});
- ri.querySelectorAll("button").forEach(b=>{b.style.fontSize="20px";b.style.padding="6px 10px";b.style.margin="2px"});
+ ri.querySelectorAll("button:not(.rd-mode-mini)").forEach(b=>{b.style.fontSize="20px";b.style.padding="6px 10px";b.style.margin="2px"});
  const deliveryEl=document.getElementById('rdDelivery');
- if(hl&&!isCtrl){
+ if(rdHighlightMode==="sample"&&hl&&!isCtrl){
    deliveryEl.hidden=false;
    deliveryEl.innerHTML=`<button type="button" data-delivery="1">${deliveredSamples[String(hl)]?'↩ Geri Al':'✓ Verildi'}</button>`;
  }else{deliveryEl.hidden=true;deliveryEl.innerHTML='';}
@@ -2202,6 +2393,7 @@ rd.addEventListener("click",e=>{
  const a=e.target.closest("[data-a]");
  if(a){
    if(a.dataset.a==="x") rdClose(true);
+   else if(a.dataset.a==="mode"){rdHighlightMode=rdHighlightMode==="event"?"sample":"event";hl=null;hlNote=null;rdEventKey=null;rdDraw();refresh();}
    else{ const rw=document.getElementById("rw"); rot=!(rot===null?rw.clientHeight>rw.clientWidth:rot); rdDraw(); }
    return;
  }
@@ -2214,10 +2406,15 @@ rd.addEventListener("click",e=>{
    const idx = +c.dataset.i;
    const v = curP().cells[idx];
    const note = (curP().notes[idx] || "").trim().toLocaleUpperCase('tr-TR');
+   if(rdHighlightMode==="event"){
+     const key=eventKeyAt(curP(),idx);
+     rdEventKey=(key&&rdEventKey!==key)?key:null;
+     rdDraw();refresh();return;
+   }
    if(v){
      if(hl === v && hlNote === note){ hl = null; hlNote = null; }
      else { hl = v; hlNote = note; }
-     rdDraw();
+     rdDraw();refresh();
    }
  }
 });
@@ -3188,7 +3385,14 @@ function rdVoiceHandle(alts){
  const uniq=xs=>[...new Set(xs)];
  function base(title,samples){const p=blank();p.meta.analiz=title;p.meta.numune=uniq(samples.map(s=>s.no)).join(', ');p.meta.aciklama='GDO İş Takip otomatik kurulum; cihaz protokolünü doğrulayın.';return p;}
  function put(p,r,c,v,note){if(r<0||r>7||c<0||c>11)throw Error('Kuyu sınırı aşıldı');const i=r*12+c;if(p.cells[i])throw Error('Dolu kuyunun üzerine yazma engellendi');p.cells[i]=String(v);if(note)p.notes[i]=note;}
- function screen(samples,targets){
+ function screen(samples,targets,plantSamples){
+   // Hard boundary: screening and plant are independent selections despite sharing a PCR protocol.
+   const requested=(sm,code)=>!!sm.specialRequest||Array.isArray(sm.specialAnalyses)&&sm.specialAnalyses.length>0
+     ? Array.isArray(sm.specialAnalyses)&&sm.specialAnalyses.includes(code) : null;
+   plantSamples=plantSamples===undefined?samples.filter(x=>x.dnaLow):plantSamples;
+   // DNA < 10 ng/µL is a mandatory Plant trigger, even for special requests without A:PLANT.
+   plantSamples=plantSamples.filter(sm=>!!sm.dnaLow || requested(sm,'A:PLANT')!==false);
+   samples=samples.filter(sm=>requested(sm,'A:TARAMA')!==false);
    const out=[];const genes=(targets||'GDO Tarama').split(',').map(x=>x.trim()).filter(Boolean);
    for(const gene of genes){
      let offset=0;
@@ -3202,7 +3406,7 @@ function rdVoiceHandle(alts){
        out.push(p);offset+=part.length;
      }
    }
-   const low=samples.filter(x=>x.dnaLow);let pos=0;
+   const low=plantSamples;let pos=0;
    // Plant alt satırlarda; iki paralel kuyu / numune ve ardından N, P.
    for(const p of out){
      while(pos<low.length){
@@ -3225,7 +3429,7 @@ function rdVoiceHandle(alts){
    const match={S:/^lec$/i,P:/^acp1$/i,M:/^hmg$/i,K:/^fata/i};
    const tasks=[];
    for(const k of ['S','P','M','K']){
-     const eligible=samples.filter(sm=>!sm.labelDeclared?.[k]&&!sm.taksonPositive?.includes(k));
+     const eligible=samples.filter(sm=>sm.specialRequest?(sm.specialAnalyses||[]).includes('T:'+k):(!sm.labelDeclared?.[k]&&!sm.taksonPositive?.includes(k)));
      if(!eligible.length)continue;
      const gene=genes.find(g=>match[k].test(g));
      if(!gene)throw Error(plantNames[k]+' için takson favorisi yok.');
@@ -3249,21 +3453,23 @@ function rdVoiceHandle(alts){
    const out=[];
    const deviceGroups=[];
    for(const k of ['S','P','M','K']){
-     const relevant=samples.filter(sm=>choice==='AUTO'?(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k)):(choice===k&&(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k))));
+     const relevant=samples.filter(sm=>sm.specialRequest?(sm.specialAnalyses||[]).includes('E:'+k)&&(choice==='AUTO'||choice===k):(choice==='AUTO'?(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k)):(choice===k&&(sm.labelDeclared?.[k]||sm.taksonPositive?.includes(k)))));
      if(!relevant.length)continue;
      const genes=uniq(favGenes(plantNames[k]));
      if(!genes.length)throw Error(plantNames[k]+' event favorisi yok. Primer hesaplayıcıya genler.json yükleyin ve favorileri kontrol edin.');
      if(mode==='MANUAL'){
-       // Elle kurulum: genler yatay; her numune iki bitişik kuyuda, ardından N ve P.
-       for(let gs=0;gs<genes.length;gs+=6){
-         for(let ss=0;ss<relevant.length;ss+=4){
-           const part=relevant.slice(ss,ss+4),group=genes.slice(gs,gs+6),p=base('EVENT — '+plantNames[k]+' (ELLE)',part);
-           group.forEach((g,r)=>{
-             p.rows[r]=k+' — '+g;
-             part.forEach((sm,i)=>{put(p,r,i*2,sm.no);put(p,r,i*2+1,sm.no);});
-             put(p,r,part.length*2,'N');put(p,r,part.length*2+1,'P');
-           });
-           p.meta.aciklama='Elle event kurulumu: yatay, numunelerden hemen sonra N/P.';
+       // Gen bazında satır görevleri oluştur; dört numunelik blokları yeni plate'e zorlamadan paketle.
+       // Kontroller N/P her gen/numune grubu için ayrı korunur.
+       for(const g of genes){
+         for(let ss=0;ss<relevant.length;ss+=5){
+           const part=relevant.slice(ss,ss+5);
+           const p=base('EVENT — '+plantNames[k]+' (ELLE)',part);
+           const shortGene=String(g).replace(/^(?:MON|DP|DAS)[\s-]*/i,'').trim();
+           const tag=k+'-'+shortGene;
+           p.rows[0]=tag;
+           part.forEach((sm,i)=>{put(p,0,i*2,sm.no,tag);put(p,0,i*2+1,sm.no,tag);});
+           put(p,0,part.length*2,'N',tag);put(p,0,part.length*2+1,'P',tag);
+           p.meta.aciklama='Elle event: numuneler ikili paralel, ardından N/P; boş alanlar tekrar kullanılır.';
            out.push(p);
          }
        }
@@ -3313,43 +3519,101 @@ function rdVoiceHandle(alts){
      }
      out.push(...packed.map(x=>x.p));
    }
+   if(mode==='MANUAL') return out; // Ham event bloklarını koru: taksonla birleştirmeden önce paketleme yapma.
    return out;
  }
  function mergeEventIntoTaxon(taxonPlates,eventPlates){
-   // Event gruplarını satır düzeyinde ele al, kalan 1..12 sütun aralıklarını da kullan.
-   // Her genin tüm numuneleri ve N/P kontrolleri birlikte, iki paralel bozulmadan yerleşir.
-   const remaining=[];
+   // Takson kuyularını değiştirmeden, her eventin paralel çiftlerini ve N/P'yi
+   // mevcut plate'lerin farklı satırlarındaki ikili boşluklara dağıt.
    const all=taxonPlates.slice();
-   function freeRun(p,len){
-     for(let r=0;r<8;r++)for(let c=0;c<=12-len;c++){
-       if(p.cells.slice(r*12+c,r*12+c+len).every(x=>!x))return {r,c};
-     }
-     return null;
-   }
+   const groups=[];
    for(const ep of eventPlates){
-     if(!ep.meta.analiz.includes('(ELLE)')){remaining.push(ep);continue;}
-     for(let er=0;er<8;er++){
-       if(!ep.rows[er])continue;
-       const values=ep.cells.slice(er*12,er*12+12);
-       const occupied=values.map((v,i)=>v?i:-1).filter(i=>i>=0);
-       if(!occupied.length)continue;
-       const length=Math.max(...occupied)+1;
-       let dest=null,spot=null;
-       for(const tp of all){spot=freeRun(tp,length);if(spot){dest=tp;break;}}
-       if(!dest){
-         dest=base('EVENT — ELLE',[]);remaining.push(dest);all.push(dest);
-         spot=freeRun(dest,length);
-       }
-       const label=ep.rows[er];
-       for(let j=0;j<length;j++)if(values[j])put(dest,spot.r,spot.c+j,values[j],label);
-       if(!dest.rows[spot.r])dest.rows[spot.r]=label;
-       else if(!dest.rows[spot.r].includes('EVENT'))dest.rows[spot.r]+=' + EVENT';
-       dest.meta.analiz+=' + EVENT';
-       dest.meta.numune=uniq(dest.meta.numune.split(', ').filter(Boolean).concat(ep.meta.numune.split(', ').filter(Boolean))).join(', ');
-       dest.meta.aciklama+=' Event '+label+' '+String.fromCharCode(65+spot.r)+(spot.c+1)+'-'+(spot.c+length)+' kuyularına yerleştirildi.';
+     if(!ep.meta.analiz.includes('(ELLE)')){all.push(ep);continue;}
+     for(let r=0;r<8;r++){
+       if(!ep.rows[r])continue;
+       const vals=ep.cells.slice(r*12,r*12+12);
+       const len=vals.findLastIndex(Boolean)+1;
+       if(!len)continue;
+       const pairs=[];
+       for(let c=0;c<len;c+=2)pairs.push({values:vals.slice(c,c+2),notes:ep.notes.slice(r*12+c,r*12+c+2)});
+       groups.push({label:ep.rows[r],pairs,meta:ep.meta});
      }
    }
-   return remaining;
+   // 1. Normal yerleşim: eventin tüm ikili kuyuları tek satırda, yan yana.
+   // 2. Kalan eventler için boşluk taraması: 2+2 gibi farklı satırlardaki
+   //    boş ikilileri birleştir. Ancak bunlar da aynı plate'te kalır.
+   const freePairs=p=>{
+     const spots=[];
+     for(let r=0;r<8;r++)for(let c=0;c<12;c+=2){
+       if(!p.cells[r*12+c]&&!p.cells[r*12+c+1])spots.push({r,c});
+     }
+     return spots;
+   };
+   const contiguous=p=>{
+     const result=[];
+     for(let r=0;r<8;r++){
+       let run=[];
+       for(let c=0;c<12;c+=2){
+         if(!p.cells[r*12+c]&&!p.cells[r*12+c+1])run.push({r,c});
+         else {if(run.length)result.push(run);run=[];}
+       }
+       if(run.length)result.push(run);
+     }
+     return result;
+   };
+   const place=(g,dest,spots)=>{
+     spots.forEach((spot,i)=>{
+       const pair=g.pairs[i];
+       pair.values.forEach((v,j)=>{if(v)put(dest,spot.r,spot.c+j,v,pair.notes[j]||g.label);});
+       const old=dest.rows[spot.r]||'';
+       if(!old)dest.rows[spot.r]=g.label;
+       // Satır başlığında yalnızca ilk event görünür; diğerleri kuyu notlarında.
+     });
+     if(!dest.meta.analiz.includes('EVENT'))dest.meta.analiz+=' + EVENT';
+     dest.meta.numune=uniq(dest.meta.numune.split(', ').filter(Boolean).concat(g.meta.numune.split(', ').filter(Boolean))).join(', ');
+     dest.meta.aciklama+=' '+g.label+': '+spots.map(x=>String.fromCharCode(65+x.r)+(x.c+1)+'-'+(x.c+2)).join(', ')+';';
+   };
+   // Her event için tüm plate'lerde sırasıyla: boş satır, kesintisiz satır,
+   // parçalı boşluk. Yeni plate açıldığında AYNI kural sonraki evente de uygulanır.
+   // Önceki sürümde yeni plate yalnızca son aşamada oluşturulduğundan,
+   // ikinci plate'teki yeni eventler de A satırının devamına sıkıştırılıyordu.
+   for(const g of groups){
+     let chosen=null;
+     // 1: Tamamen boş satır, bütün event tek sırada.
+     for(const p of all){
+       for(let r=0;r<8;r++){
+         if(g.pairs.length<=6 && p.cells.slice(r*12,r*12+12).every(x=>!x)){
+           chosen={p,spots:Array.from({length:g.pairs.length},(_,i)=>({r,c:i*2}))};
+           break;
+         }
+       }
+       if(chosen)break;
+     }
+     // 2: Kısmen dolu satırda tek parça sığarsa onu kullan.
+     if(!chosen){
+       for(const p of all){
+         const run=contiguous(p).find(run=>run.length>=g.pairs.length);
+         if(run){chosen={p,spots:run.slice(0,g.pairs.length)};break;}
+       }
+     }
+     // 3: Bir plate'teki ayrı satırlarda kalan çift kuyuları değerlendir.
+     if(!chosen){
+       for(const p of all){
+         const runs=contiguous(p);
+         const spots=runs.flat().slice(0,g.pairs.length);
+         if(spots.length===g.pairs.length){chosen={p,spots};break;}
+       }
+     }
+     // 4: Hiçbir plate'e sığmıyorsa yeni plate aç; sonraki event için
+     // yeniden boş satır araması yapılacak (2., 3. plate dahil).
+     if(!chosen){
+       const p=base('EVENT — ELLE',[]);
+       all.push(p);
+       chosen={p,spots:Array.from({length:g.pairs.length},(_,i)=>({r:Math.floor(i/6),c:(i%6)*2}))};
+     }
+     place(g,chosen.p,chosen.spots);
+   }
+   return all;
  }
  function install(made){
    const planned=[];const used=new Set();const rejected=new Set();let overwrites=0;
@@ -3376,15 +3640,54 @@ function rdVoiceHandle(alts){
    try{
      const samples=d.samples||[];if(!samples.length)throw Error('Numune seçilmedi.');
      let made;
-     if(d.stage==='TARAMA')made=screen(samples,d.targets);
-     else if(d.stage==='TAKSON'){
-       const tp=taxon(samples);
-       // Takson sonucu pozitif olanların eventleri uygun boş sütunlara sığarsa birleştirilir.
-       const includeEvent=confirm('Takson dağıtımına EVENT analizleri de eklensin mi?\n\nTamam: Takson + Event\nİptal: Yalnızca Takson');
-       if(includeEvent){const ep=event(samples,'AUTO',d.eventMode);made=tp.concat(mergeEventIntoTaxon(tp,ep));}
-       else made=tp;
-     }else {const ep=event(samples,d.plant||'AUTO',d.eventMode);made=ep;}
-     if(!made.length)throw Error('Bu analiz için uygun numune veya favori gen yok.');
+           // Kurulum düğmesi kesin sınırdır: TARAMA => Tarama/Plant,
+      // TAKSON => yalnız Takson, EVENT => yalnız Event.
+      // Özel istek numuneleri her aşamada sadece açıkça seçilmiş analizlere girer.
+      const has=(sm,code)=>Array.isArray(sm.specialAnalyses)&&sm.specialAnalyses.includes(code);
+      // Kaydedilmiş özel analiz seçimleri varsa, eski kayıtlarda specialRequest
+      // bayrağı eksik olsa bile numuneyi normal taramaya sokma.
+      const isSpecial=sm=>!!sm.specialRequest||(Array.isArray(sm.specialAnalyses)&&sm.specialAnalyses.length>0);
+      const uniqueByNo=arr=>[...new Map(arr.map(sm=>[String(sm.no).trim(),sm])).values()];
+      const normal=uniqueByNo(samples.filter(sm=>!isSpecial(sm)));
+      const special=uniqueByNo(samples.filter(isSpecial));
+      if(d.stage==='TARAMA'){
+        const screenSamples=uniqueByNo(normal.concat(special.filter(sm=>has(sm,'A:TARAMA'))));
+        // Low DNA overrides the special-request analysis list for Plant only.
+        const plantSamples=uniqueByNo(normal.filter(sm=>sm.dnaLow).concat(special.filter(sm=>sm.dnaLow||has(sm,'A:PLANT'))));
+        made=screen(screenSamples,d.targets,plantSamples);
+        // İstenmeyen tarama hedefi asla oluşturulamaz: her üretilen tarama
+        // kuyusu yalnızca screenSamples listesinden gelmelidir.
+        const allowed=new Set(screenSamples.map(sm=>String(sm.no)));
+        const plantAllowed=new Set(plantSamples.map(sm=>String(sm.no)));
+        for(const p of made){
+          for(let r=0;r<8;r++){
+            const rowType=String(p.rows[r]||'');
+            for(let c=0;c<12;c++){
+              const value=String(p.cells[r*12+c]||'');
+              if(!value||['N','P','EC','ÇK'].includes(value))continue;
+              if(rowType==='PLANT'&&!plantAllowed.has(value))throw Error('Plant filtresi hatası: '+value);
+              if(rowType!=='PLANT'&&!allowed.has(value))throw Error('Tarama filtresi hatası: '+value);
+            }
+          }
+        }
+      }else if(d.stage==='TAKSON'){
+        const selected=normal.concat(special.filter(sm=>['S','P','M','K'].some(k=>has(sm,'T:'+k))));
+        made=selected.length?taxon(selected):[];
+        if(d.withEvent){
+          const eventSelected=normal.concat(special.filter(sm=>['S','P','M','K'].some(k=>has(sm,'E:'+k))));
+          if(eventSelected.length){
+            const eventPlates=event(eventSelected,d.plant||'AUTO','MANUAL');
+            made=mergeEventIntoTaxon(made,eventPlates);
+          }
+        }
+      }else if(d.stage==='EVENT'){
+        const selected=normal.concat(special.filter(sm=>['S','P','M','K'].some(k=>has(sm,'E:'+k))));
+        const ep=selected.length?event(selected,d.plant||'AUTO',d.eventMode):[];
+        made=d.eventMode==='MANUAL'?mergeEventIntoTaxon([],ep):ep;
+      }else{
+        throw Error('Bilinmeyen kurulum türü: '+d.stage);
+      }
+if(!made.length)throw Error('Bu analiz için uygun numune veya favori gen yok.');
      install(made);
    }catch(err){alert('Plate kurulamadı: '+err.message);}
  });
@@ -3407,7 +3710,7 @@ function rdVoiceHandle(alts){
 
   var DEFAULT_GENES = [{"name":"TC-1507","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"TC-1507 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 59122","note":"","mm":12.5,"f":0.625,"r":0.625,"p":0.5,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MHMG","note":"DAS 59122 ile","mm":12.5,"f":1,"r":1,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GA21","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"GA21, MON863, NK603 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Bt 11","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh","note":"Bt 11, 3272, MIR604 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 810","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"MON 810, MON 87460, MON 87427 ile Mısır","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},{"name":"MON863","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON88017","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON88017, MON89034 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.8,"w":5.2,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MIR 162","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh1","note":"MIR 162, MZHGOJG ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"3272","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"NK603","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MIR604","note":"","mm":12.5,"f":1.5,"r":0.75,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T25","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"T25 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON89034","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 87460","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON 87427","note":"","mm":12.5,"f":1.125,"r":1.125,"p":1,"w":4.25,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"DAS 40278","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.375,"w":5.375,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DAS 40278 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87403","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON 87403, MON 87411 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"DP4114","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.35,"w":4.15,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"DP4114, DP915635 ile","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87411","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"MZHGOJG","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"5307","note":"","mm":12.5,"f":0.875,"r":0.875,"p":0.313,"w":5.437,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"ZmAdh","note":"5307 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MZIR098","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.25,"w":5.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh1","note":"MZIR098 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON87429","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"HMG","note":"MON87429 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON95379","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MHMG","note":"MON95379 ile","mm":12.5,"f":0.938,"r":0.938,"p":0.5,"w":5.124,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP23211","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DP23211 ile","mm":10,"f":0.75,"r":0.75,"p":0.45,"w":8.05,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP915635","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.24,"w":4.86,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MON87419","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"MON87419 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.4,"w":5.6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP202216","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"DP202216, DP051291 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.3,"w":5.7,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DP051291","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.3,"w":4.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"DAS1131","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"MHMG","note":"DAS1131 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 95275","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"HMG","note":"MON 95275, MON 94804 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.5,"w":5.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"MON 94804","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":4},{"name":"DP910521","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.375,"w":5.625,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Mısır"],"dna0":5},{"name":"HMG","note":"DP910521 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"40-3-2","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"Lec","note":"40-3-2, MON89788, MON 87708 ile Soya","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},{"name":"A 2704-12","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"A 2704-12 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON89788","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"DP356043","note":"","mm":12.5,"f":1.875,"r":1.875,"p":0.5,"w":3.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1-2","note":"DP356043 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.75,"w":3.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON87701","note":"","mm":12.5,"f":0.75,"r":0.75,"p":1.25,"w":4.75,"fu":20,"ru":20,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"Le1","note":"MON87701, MON 87705, MON 87769 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"A5547-127","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1 VIC","note":"A5547-127 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"BPS-CV-127","note":"","mm":12.5,"f":1,"r":1,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Lec","note":"BPS-CV-127 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"DP 305423","note":"","mm":12.5,"f":2,"r":1.25,"p":0.55,"w":3.7,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1-2","note":"DP 305423 ile","mm":12.5,"f":1.375,"r":1.375,"p":0.25,"w":4.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 87705","note":"","mm":12.5,"f":0.563,"r":0.563,"p":1.25,"w":5.124,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 87708","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.75,"w":5.25,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"MON 87769","note":"","mm":12.5,"f":1.5,"r":1.5,"p":1,"w":3.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":4},{"name":"DAS 68416","note":"","mm":12.5,"f":1.375,"r":1.375,"p":0.375,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1","note":"DAS 68416, DAS 81419, SYTTOH2 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 81419","note":"","mm":12.5,"f":1,"r":1,"p":0.3,"w":5.2,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":5},{"name":"FG 72","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"FG 72 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"DAS 44406","note":"","mm":12.5,"f":0.75,"r":0.75,"p":0.45,"w":5.55,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Soya"],"dna0":5},{"name":"Le1","note":"DAS 44406 ile","mm":12.5,"f":1.625,"r":1.625,"p":0.45,"w":3.8,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"MON87751","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.75,"w":4.25,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Soya"],"dna0":4},{"name":"Lec","note":"MON87751 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.125,"w":6.625,"fu":10,"ru":10,"pu":4,"fav":false,"tags":[],"dna0":4},{"name":"SYTTOH2","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GMB151","note":"","mm":10,"f":1,"r":1,"p":0.5,"w":7.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Le1","note":"GMB151 ile","mm":10,"f":0.5,"r":0.5,"p":0.5,"w":8.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Rt73","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"OSR CruA","note":"Rt73 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":4},{"name":"Ms1","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"CruA","note":"Ms1, T45, Topas 19/2 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Ms8","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"OSR CruA","note":"Ms8, Rf3 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Rf3","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T45","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Topas 19/2","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 88302","note":"","mm":12.5,"f":1.125,"r":1.125,"p":0.5,"w":4.75,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"CCF","note":"MON 88302 ile","mm":12.5,"f":0.75,"r":0.75,"p":0.625,"w":5.375,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"073496","note":"","mm":12.5,"f":1.2,"r":1.2,"p":0.5,"w":4.6,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Kanola"],"dna0":5},{"name":"FatA(A)","note":"073496, MON94100 ile Kanola","mm":12.5,"f":0.6,"r":1.8,"p":0.3,"w":4.8,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":5},{"name":"MON94100","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.625,"w":4.375,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Kanola"],"dna0":5},{"name":"15985","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"Acp1","note":"15985, MON 1445 ile Pamuk","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":true,"tags":["Takson"],"dna0":4},{"name":"MON 1445","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":4},{"name":"MON 531","note":"","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"Acp","note":"MON 531, MON 88913 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"281-24-236","note":"","mm":12.5,"f":0.875,"r":1.125,"p":0.438,"w":5.062,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"Sah7","note":"281-24-236, 3006-210-23 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"3006-210-23","note":"","mm":12.5,"f":1,"r":1,"p":0.375,"w":5.125,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"LLCotton25","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"AdhC","note":"LLCotton25, GHB 614 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"T304-40","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Adh C (HEX)","note":"T304-40 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"MON 88913","note":"","mm":12.5,"f":1.25,"r":1.25,"p":0.5,"w":4.5,"fu":10,"ru":10,"pu":5,"fav":false,"tags":[],"dna0":5},{"name":"GHB 614","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"GHB119","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"AdhC","note":"GHB119 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"GHB811","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":true,"tags":["Pamuk"],"dna0":5},{"name":"AdhC","note":"GHB811 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"COT102","note":"","mm":12.5,"f":1.5,"r":1.5,"p":0.5,"w":4,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Sah7","note":"COT102 ile","mm":12.5,"f":0.875,"r":0.625,"p":0.438,"w":5.562,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"RUR H 7-1","note":"","mm":12.5,"f":1,"r":1,"p":0.25,"w":5.25,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},{"name":"Glu","note":"RUR H 7-1 ile","mm":12.5,"f":0.375,"r":0.375,"p":0.25,"w":6.5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":3},{"name":"LLRice62","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"PLD","note":"LLRice62 ile","mm":12.5,"f":0.5,"r":0.5,"p":0.5,"w":6,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"BEZELYE","note":"","mm":10,"f":0.34,"r":0.34,"p":0.3,"w":9.02,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":5},{"name":"PATATES","note":"","mm":12.5,"f":1,"r":1,"p":0.5,"w":5,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"KANOLA - FAT (A)A","note":"Kanola Takson","mm":12.5,"f":0.75,"r":2.25,"p":0.375,"w":4.125,"fu":10,"ru":10,"pu":10,"fav":false,"tags":[],"dna0":5},{"name":"Tarama","note":"Tarama","mm":12.5,"f":1,"r":0,"p":4,"w":3.5,"fu":null,"ru":null,"pu":null,"fav":false,"tags":[],"dna0":null}];
 
-  var APP_VERSION = "2026.11.11-5";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
+  var APP_VERSION = "2026.11.14-13";   // uygulama sürümü: her yeni dosya sürümünde güncellenir
     var curStamp = EMBED_STAMP;
   var dirty = false;
   var fileHandle = null;
