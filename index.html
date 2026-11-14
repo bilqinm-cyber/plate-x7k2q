@@ -3224,28 +3224,25 @@ function rdVoiceHandle(alts){
    const genes=favGenes('Takson');if(!genes.length)throw Error('Favori takson genleri bulunamadı.');
    const match={S:/^lec$/i,P:/^acp1$/i,M:/^hmg$/i,K:/^fata/i};
    const tasks=[];
-   // Her takson için yalnızca gerekli numuneleri al; event beyanlı bitkinin taksonunu atla.
    for(const k of ['S','P','M','K']){
      const eligible=samples.filter(sm=>!sm.labelDeclared?.[k]&&!sm.taksonPositive?.includes(k));
      if(!eligible.length)continue;
      const gene=genes.find(g=>match[k].test(g));
      if(!gene)throw Error(plantNames[k]+' için takson favorisi yok.');
-     // Bir satırda 4 numune (8 kuyu) + N,P,ÇK,EC (4 kuyu).
      for(let i=0;i<eligible.length;i+=4)tasks.push({k,gene,part:eligible.slice(i,i+4)});
    }
    const out=[];
-   for(let i=0;i<tasks.length;i+=8){
-     const block=tasks.slice(i,i+8);
-     const used=uniq(block.flatMap(t=>t.part));
-     const p=base('TAKSON — Soya / Pamuk / Mısır / Kanola',used);
-     block.forEach((t,r)=>{
-       p.rows[r]=plantNames[t.k]+' — '+t.gene;
-       t.part.forEach((sm,j)=>{put(p,r,j*2,sm.no);put(p,r,j*2+1,sm.no);});
-       ['N','P','ÇK','EC'].forEach((v,j)=>put(p,r,8+j,v));
-     });
-     p.meta.aciklama='Takson yatay: aynı plate A–H satırları sırayla doldurulur; her numune 2 paralel, kontroller sağda. Event beyanlı bitkinin taksonu atlanır.';
-     out.push(p);
-   }
+   tasks.forEach((t,i)=>{
+     const pi=Math.floor(i/8),r=i%8;
+     if(!out[pi])out[pi]=base('TAKSON — Soya / Pamuk / Mısır / Kanola',[]);
+     const p=out[pi];p.rows[r]=plantNames[t.k]+' — '+t.gene;
+     t.part.forEach((sm,j)=>{put(p,r,j*2,sm.no,t.gene);put(p,r,j*2+1,sm.no,t.gene);});
+     // Kontrolleri numunelerin hemen arkasına yerleştir: boş kalan kuyular event için kullanılabilir.
+     const c=t.part.length*2;
+     ['N','P','ÇK','EC'].forEach((v,j)=>put(p,r,c+j,v,t.gene));
+     p.meta.numune=uniq(p.meta.numune.split(', ').filter(Boolean).concat(t.part.map(sm=>String(sm.no)))).join(', ');
+   });
+   out.forEach(p=>p.meta.aciklama='Takson önce: tüm numuneler ikili paralel; kontroller numunelerin ardından. Boş kuyular event için değerlendirilir.');
    return out;
  }
  function event(samples,choice,mode){
@@ -3319,33 +3316,37 @@ function rdVoiceHandle(alts){
    return out;
  }
  function mergeEventIntoTaxon(taxonPlates,eventPlates){
+   // Event gruplarını satır düzeyinde ele al, kalan 1..12 sütun aralıklarını da kullan.
+   // Her genin tüm numuneleri ve N/P kontrolleri birlikte, iki paralel bozulmadan yerleşir.
    const remaining=[];
+   const all=taxonPlates.slice();
+   function freeRun(p,len){
+     for(let r=0;r<8;r++)for(let c=0;c<=12-len;c++){
+       if(p.cells.slice(r*12+c,r*12+c+len).every(x=>!x))return {r,c};
+     }
+     return null;
+   }
    for(const ep of eventPlates){
      if(!ep.meta.analiz.includes('(ELLE)')){remaining.push(ep);continue;}
-     const pending=ep.rows.map((name,r)=>({name,r})).filter(x=>x.name);
-     for(const tp of taxonPlates){
-       for(let i=0;i<pending.length;){
-         const er=pending[i].r;
-         const tr=Array.from({length:8},(_,j)=>j).find(r=>!tp.rows[r]&&tp.cells.slice(r*12,r*12+12).every(x=>!x));
-         if(tr===undefined)break;
-         const values=ep.cells.slice(er*12,er*12+12);
-         if(values.some((v,c)=>v&&tp.cells[tr*12+c]))break;
-         tp.rows[tr]=pending[i].name;
-         values.forEach((v,c)=>{if(v)put(tp,tr,c,v,ep.notes[er*12+c]||'');});
-         tp.meta.analiz+=' + EVENT';
-         tp.meta.aciklama+=' Boş satıra '+pending[i].name+' eklendi.';
-         pending.splice(i,1);
+     for(let er=0;er<8;er++){
+       if(!ep.rows[er])continue;
+       const values=ep.cells.slice(er*12,er*12+12);
+       const occupied=values.map((v,i)=>v?i:-1).filter(i=>i>=0);
+       if(!occupied.length)continue;
+       const length=Math.max(...occupied)+1;
+       let dest=null,spot=null;
+       for(const tp of all){spot=freeRun(tp,length);if(spot){dest=tp;break;}}
+       if(!dest){
+         dest=base('EVENT — ELLE',[]);remaining.push(dest);all.push(dest);
+         spot=freeRun(dest,length);
        }
-     }
-     if(pending.length){
-       // Yerleşmeyen genleri yeni bir plate'e taşı.
-       const p=base(ep.meta.analiz,[]);
-       pending.forEach((x,r)=>{
-         p.rows[r]=x.name;
-         ep.cells.slice(x.r*12,x.r*12+12).forEach((v,c)=>{if(v)put(p,r,c,v);});
-       });
-       p.meta.numune=ep.meta.numune;p.meta.aciklama=ep.meta.aciklama;
-       remaining.push(p);
+       const label=ep.rows[er];
+       for(let j=0;j<length;j++)if(values[j])put(dest,spot.r,spot.c+j,values[j],label);
+       if(!dest.rows[spot.r])dest.rows[spot.r]=label;
+       else if(!dest.rows[spot.r].includes('EVENT'))dest.rows[spot.r]+=' + EVENT';
+       dest.meta.analiz+=' + EVENT';
+       dest.meta.numune=uniq(dest.meta.numune.split(', ').filter(Boolean).concat(ep.meta.numune.split(', ').filter(Boolean))).join(', ');
+       dest.meta.aciklama+=' Event '+label+' '+String.fromCharCode(65+spot.r)+(spot.c+1)+'-'+(spot.c+length)+' kuyularına yerleştirildi.';
      }
    }
    return remaining;
