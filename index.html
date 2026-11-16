@@ -1225,7 +1225,7 @@ body.drag #t input, #view-plate.drag #t input{
         const codeText = `${s.no} &amp;nbsp;&amp;nbsp;&amp;nbsp; ${s.codes.S} &amp;nbsp;&amp;nbsp; ${s.codes.P} &amp;nbsp;&amp;nbsp; ${s.codes.M} &amp;nbsp;&amp;nbsp; ${s.codes.K}`;
         // Yalnızca beyan edilmeyen ve analizde pozitif çıkan taksonlar.
         const extraTaxons = (s.taksonPositive || []).filter(k =&gt; !s.labelDeclared?.[k]);
-        const extraTaxonText = extraTaxons.length ? ` (${extraTaxons.map(k =&gt; ({S:&#x27;Soya&#x27;,P:&#x27;Pamuk&#x27;,M:&#x27;Mısır&#x27;,K:&#x27;Kanola&#x27;}[k] || k)).join(&#x27;, &#x27;)})` : &#x27;&#x27;;
+        const extraTaxonText = extraTaxons.length ? ` (${extraTaxons.map(k =&gt; ({S:&#x27;SE&#x27;,P:&#x27;PE&#x27;,M:&#x27;ME&#x27;,K:&#x27;KE&#x27;}[k] || k)).join(&#x27;, &#x27;)})` : &#x27;&#x27;;
         return `
           &lt;tr style=&quot;height: 25px;&quot;&gt;
             &lt;td style=&quot;border: none; padding: 2px 4px; font-weight: bold; font-size: 11pt; width: 45%;&quot;&gt;
