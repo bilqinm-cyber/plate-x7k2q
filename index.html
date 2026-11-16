@@ -3375,11 +3375,33 @@ function rdVoiceHandle(alts){
  const plantNames={S:'Soya',P:'Pamuk',M:'Mısır',K:'Kanola'};
  const norm=x=>String(x||'').toLocaleLowerCase('tr-TR').trim();
  const isEmpty=p=>!p.cells.some(Boolean)&&!p.rows.some(Boolean)&&!p.cols.some(Boolean);
+ // Event hedeflerinin kullanıcı tarafından belirlenen plate sırası.
+ // Plate üzerindeki GERÇEK yerleştirme sırası; kısaltmalar tam hedefe eşlenir.
+ const eventPriority={
+   'Mısır':['40278','915635','23211','87419','94804','202216','910521','051291','1131'],
+   'Kanola':['73496','94100'],
+   'Soya':['87701','87708','87769','305423','CV127','44406','68416','81419','87751']
+ };
+ const eventAliases={
+   'Mısır':{'915':'915635','232':'23211','948':'94804','202':'202216','910':'910521','051':'051291'},
+   'Soya':{'701':'87701','708':'87708','769':'87769','305':'305423','127':'CV127','406':'44406','416':'68416','419':'81419','751':'87751'}
+ };
+ const eventRank=(gene,tag)=>{
+   const order=eventPriority[tag];if(!order)return 999;
+   const compact=String(gene).toUpperCase().replace(/[^A-Z0-9]/g,'');
+   const digits=compact.replace(/[^0-9]/g,'');
+   const idx=order.findIndex(code=>compact.endsWith(code)||digits.endsWith(code));
+   if(idx>=0)return idx;
+   const aliases=eventAliases[tag]||{};
+   const alias=Object.keys(aliases).find(code=>compact.endsWith(code)||digits.endsWith(code));
+   return alias?order.indexOf(aliases[alias]):999;
+ };
  const favGenes=tag=>{
    const live=(window.getGdoFavoriteGenes?window.getGdoFavoriteGenes():[]).filter(g=>g.tags.some(t=>norm(t)===norm(tag))).map(g=>g.name);
-   // Mısır için kullanıcı tarafından verilen dokuz hedefin tamamını kur.
-   if(norm(tag)===norm('Mısır'))return uniq([...live,...['DAS 40278','DP23211','DP915635','MON87419','DP202216','DP051291','DAS1131','MON 94804','DP910521']]);
-   return live;
+   // Mısırın dokuz hedefi favori listesinde eksik olsa bile korunur.
+   const genes=norm(tag)===norm('Mısır')?uniq([...live,...['DAS 40278','DP23211','DP915635','MON87419','DP202216','DP051291','DAS1131','MON 94804','DP910521']]):uniq(live);
+   const key=Object.keys(eventPriority).find(x=>norm(x)===norm(tag));
+   return key?genes.map((name,index)=>({name,index})).sort((a,b)=>eventRank(a.name,key)-eventRank(b.name,key)||a.index-b.index).map(x=>x.name):genes;
  };
  const blank=()=>createBlankPlate();
  const uniq=xs=>[...new Set(xs)];
