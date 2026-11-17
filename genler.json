@@ -1,6 +1,6 @@
 {
  "version": 1,
- "stamp": 1794554034990,
+ "stamp": 1794916489553,
  "genes": [
   {
    "name": "TC-1507",
@@ -1955,6 +1955,21 @@
    "f": 0,
    "r": 0,
    "p": 7.5,
+   "w": 0,
+   "fu": null,
+   "ru": null,
+   "pu": null,
+   "fav": false,
+   "tags": [],
+   "dna0": null
+  },
+  {
+   "name": "Kabak cekirdegi",
+   "note": "DNA 10 dagitilir",
+   "mm": 15,
+   "f": 0,
+   "r": 0,
+   "p": 0.1,
    "w": 0,
    "fu": null,
    "ru": null,
