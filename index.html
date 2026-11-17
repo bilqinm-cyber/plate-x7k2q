@@ -534,6 +534,23 @@ body.drag #t input, #view-plate.drag #t input{
     &lt;div class=&quot;grid-2&quot; style=&quot;margin-bottom:12px&quot;&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-S&quot;&gt; Soya&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-P&quot;&gt; Pamuk&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-M&quot;&gt; Mısır&lt;/label&gt;&lt;label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;edit-K&quot;&gt; Kanola&lt;/label&gt;&lt;/div&gt;
     &lt;div class=&quot;action-row&quot;&gt;&lt;button class=&quot;btn-sm btn-neg&quot; onclick=&quot;saveSampleEdit()&quot;&gt;Kaydet&lt;/button&gt;&lt;button class=&quot;btn-sm btn-del&quot; onclick=&quot;cancelSampleEdit()&quot;&gt;İptal&lt;/button&gt;&lt;/div&gt;
   &lt;/div&gt;
+  &lt;details class=&quot;card collapsible-section&quot; id=&quot;form-photo-ocr&quot;&gt;
+    &lt;summary class=&quot;collapsible-heading&quot;&gt;📷 İş Takip Formundan Numune Aktar (Fotoğraf / Galeri) &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
+    &lt;p style=&quot;font-size:.84rem;color:#475569&quot;&gt;El yazılı iş takip formundaki numune numarası, S/P/M/K beyanı ve açıklamaları okur. Kaydetmeden önce sonuçları kontrol edip düzeltebilirsiniz. Fotoğraf OCR için internet ve Plate modülünde tanımlı Gemini API anahtarı gerekir.&lt;/p&gt;
+    &lt;div class=&quot;action-row&quot;&gt;
+      &lt;button type=&quot;button&quot; class=&quot;btn-sm&quot; style=&quot;background:#0369a1;color:white&quot; onclick=&quot;document.getElementById(&#x27;form-ocr-camera&#x27;).click()&quot;&gt;📸 Fotoğraf Çek&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;btn-sm&quot; style=&quot;background:#7c3aed;color:white&quot; onclick=&quot;document.getElementById(&#x27;form-ocr-gallery&#x27;).click()&quot;&gt;🖼️ Galeriden Seç&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;input id=&quot;form-ocr-camera&quot; type=&quot;file&quot; accept=&quot;image/*&quot; capture=&quot;environment&quot; hidden onchange=&quot;workflowOCRFile(this)&quot;&gt;
+    &lt;input id=&quot;form-ocr-gallery&quot; type=&quot;file&quot; accept=&quot;image/*&quot; hidden onchange=&quot;workflowOCRFile(this)&quot;&gt;
+    &lt;p id=&quot;form-ocr-status&quot; style=&quot;font-size:.84rem;color:#1e40af&quot; aria-live=&quot;polite&quot;&gt;&lt;/p&gt;
+    &lt;div id=&quot;form-ocr-review&quot; hidden&gt;
+      &lt;p style=&quot;font-size:.82rem;color:#9a3412;font-weight:700&quot;&gt;⚠️ El yazısı hatalı okunabilir. Özellikle S/SE, P/PE, M/ME, K/KE ve numune numaralarını kontrol edin.&lt;/p&gt;
+      &lt;div id=&quot;form-ocr-rows&quot;&gt;&lt;/div&gt;
+      &lt;button type=&quot;button&quot; class=&quot;btn-add&quot; onclick=&quot;workflowOCRImport()&quot;&gt;✅ Kontrol Edilen Numuneleri Kaydet&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/details&gt;
+
   &lt;!-- Numune Analiz Takip &amp; Karar Paneli --&gt;
   &lt;details class=&quot;card collapsible-section&quot; id=&quot;sample-tracking-section&quot;&gt;
     &lt;summary class=&quot;collapsible-heading&quot;&gt;📊 Numune Analiz Takibi (&lt;span id=&quot;sample-count&quot;&gt;0&lt;/span&gt;) &lt;span class=&quot;section-arrow&quot;&gt;⌄&lt;/span&gt;&lt;/summary&gt;
@@ -1498,6 +1515,67 @@ body.drag #t input, #view-plate.drag #t input{
     window.parent.postMessage({type:&#x27;GDO_BUILD_PLATES&#x27;,stage,plant,withEvent:stage===&#x27;TAKSON&#x27;&amp;&amp;document.getElementById(&#x27;takson-with-event&#x27;).checked,eventMode:document.getElementById(&#x27;event-mode&#x27;).value,targets:document.getElementById(&#x27;screen-targets&#x27;).value,samples:picked.map(s=&gt;({no:s.no,matrix:s.matrix,desc:s.desc,dnaLow:s.dnaLow,labelDeclared:s.labelDeclared,taksonPositive:s.taksonPositive,stage:s.stage,specialRequest:!!s.specialRequest,specialAnalyses:s.specialAnalyses||[]}))},&#x27;*&#x27;);
     document.getElementById(&#x27;plate-action-status&#x27;).textContent=&#x27;Plate kurulumu isteği gönderildi.&#x27;;
   }
+
+
+  // Form fotoğrafı OCR: sonuçlar kayda geçmeden önce düzenlenebilir.
+  let workflowOCRDraft=[];
+  async function workflowOCRFile(input){
+    const file=input.files&amp;&amp;input.files[0];input.value=&#x27;&#x27;;if(!file)return;
+    const status=document.getElementById(&#x27;form-ocr-status&#x27;);
+    document.getElementById(&#x27;form-ocr-review&#x27;).hidden=true;
+    if(!file.type.startsWith(&#x27;image/&#x27;)){status.textContent=&#x27;Lütfen bir fotoğraf seçin.&#x27;;return;}
+    if(file.size&gt;12*1024*1024){status.textContent=&#x27;Fotoğraf 12 MB sınırını aşıyor; daha küçük bir görüntü seçin.&#x27;;return;}
+    status.textContent=&#x27;Fotoğraf okunuyor; lütfen bekleyin…&#x27;;
+    try{
+      const data=await new Promise((resolve,reject)=&gt;{const r=new FileReader();r.onload=()=&gt;resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});
+      window.parent.postMessage({type:&#x27;PCR_FORM_OCR_REQUEST&#x27;,dataUrl:data},&#x27;*&#x27;);
+    }catch(e){status.textContent=&#x27;Fotoğraf açılamadı: &#x27;+e.message;}
+  }
+  function workflowOCRInput(value,cls,placeholder){
+    const el=document.createElement(&#x27;input&#x27;);el.type=&#x27;text&#x27;;el.className=cls;el.value=value||&#x27;&#x27;;el.placeholder=placeholder||&#x27;&#x27;;el.style.cssText=&#x27;width:100%;padding:7px;border:1px solid #cbd5e1;border-radius:6px;box-sizing:border-box&#x27;;return el;
+  }
+  function workflowOCRReview(rows){
+    workflowOCRDraft=Array.isArray(rows)?rows:[];
+    const box=document.getElementById(&#x27;form-ocr-rows&#x27;);box.replaceChildren();
+    for(const [i,r] of workflowOCRDraft.entries()){
+      const card=document.createElement(&#x27;div&#x27;);card.style.cssText=&#x27;border:1px solid #cbd5e1;border-radius:9px;padding:10px;margin:8px 0;background:#fff&#x27;;
+      const title=document.createElement(&#x27;div&#x27;);title.textContent=&#x27;Satır &#x27;+(i+1);title.style.fontWeight=&#x27;700&#x27;;card.append(title);
+      const grid=document.createElement(&#x27;div&#x27;);grid.style.cssText=&#x27;display:grid;grid-template-columns:1fr 1fr;gap:7px&#x27;;
+      const fields=[[&#x27;Numune No&#x27;,&#x27;no&#x27;,r.no],[&#x27;Açıklama&#x27;,&#x27;desc&#x27;,r.desc],[&#x27;Soya&#x27;,&#x27;S&#x27;,r.S],[&#x27;Pamuk&#x27;,&#x27;P&#x27;,r.P],[&#x27;Mısır&#x27;,&#x27;M&#x27;,r.M],[&#x27;Kanola&#x27;,&#x27;K&#x27;,r.K]];
+      for(const [label,key,val] of fields){const wrap=document.createElement(&#x27;label&#x27;);wrap.style.fontSize=&#x27;12px&#x27;;wrap.textContent=label;const el=workflowOCRInput(val,&#x27;form-ocr-&#x27;+key,&#x27;S / SE veya boş&#x27;);el.dataset.row=i;wrap.append(el);grid.append(wrap);}
+      card.append(grid);
+      const skip=document.createElement(&#x27;label&#x27;);skip.style.cssText=&#x27;display:flex;align-items:center;gap:6px;margin-top:7px&#x27;;const check=document.createElement(&#x27;input&#x27;);check.type=&#x27;checkbox&#x27;;check.className=&#x27;form-ocr-skip&#x27;;check.dataset.row=i;skip.append(check,document.createTextNode(&#x27;Bu satırı aktarma&#x27;));card.append(skip);box.append(card);
+    }
+    document.getElementById(&#x27;form-ocr-review&#x27;).hidden=!workflowOCRDraft.length;
+    document.getElementById(&#x27;form-ocr-status&#x27;).textContent=workflowOCRDraft.length+&#x27; satır bulundu. Kaydetmeden önce her satırı kontrol edin.&#x27;;
+  }
+  function workflowOCRImport(){
+    const cards=[...document.querySelectorAll(&#x27;#form-ocr-rows &gt; div&#x27;)];
+    const seen=new Set(samples.map(s=&gt;normalizeSampleNo(s.no)));let added=0,skipped=[];
+    const valid={S:[&#x27;S&#x27;,&#x27;SE&#x27;],P:[&#x27;P&#x27;,&#x27;PE&#x27;],M:[&#x27;M&#x27;,&#x27;ME&#x27;],K:[&#x27;K&#x27;,&#x27;KE&#x27;]};
+    const prepared=[];
+    for(const [i,card] of cards.entries()){
+      if(card.querySelector(&#x27;.form-ocr-skip&#x27;).checked)continue;
+      const get=k=&gt;card.querySelector(&#x27;.form-ocr-&#x27;+k).value.trim();const no=get(&#x27;no&#x27;),desc=get(&#x27;desc&#x27;);
+      if(!no){skipped.push(&#x27;Satır &#x27;+(i+1)+&#x27;: numara boş&#x27;);continue;}
+      if(seen.has(normalizeSampleNo(no))){skipped.push(no+&#x27;: numara zaten kayıtlı&#x27;);continue;}
+      const codes={},declared={};let bad=false;
+      for(const k of [&#x27;S&#x27;,&#x27;P&#x27;,&#x27;M&#x27;,&#x27;K&#x27;]){const raw=get(k).toUpperCase().replace(/\s/g,&#x27;&#x27;);if(raw&amp;&amp;!valid[k].includes(raw)){bad=true;skipped.push(no+&#x27;: &#x27;+k+&#x27; için geçersiz değer &#x27;+raw);break;}codes[k]=raw||k;declared[k]=raw===k+&#x27;E&#x27;;}
+      if(bad)continue;
+      seen.add(normalizeSampleNo(no));prepared.push({no,desc,codes,declared});
+    }
+    for(const r of prepared){
+      samples.push({id:Date.now()+added,no:r.no,desc:r.desc,matrix:&#x27;Gıda&#x27;,dnaLow:false,codes:r.codes,labelDeclared:r.declared,specialRequest:false,specialAnalyses:[],stage:&#x27;TARAMA&#x27;,statusText:&#x27;🟡 Tarama Aşamasında&#x27;,statusClass:&#x27;badge-tarama&#x27;,taksonPositive:[]});added++;
+    }
+    if(added){updateRange();renderSamples();if(typeof saveWorkflow===&#x27;function&#x27;)saveWorkflow();}
+    document.getElementById(&#x27;form-ocr-status&#x27;).textContent=added+&#x27; numune kaydedildi.&#x27;+(skipped.length?&#x27; Atlanan: &#x27;+skipped.join(&#x27;; &#x27;):&#x27;&#x27;);
+    if(added)document.getElementById(&#x27;form-ocr-review&#x27;).hidden=true;
+  }
+  window.addEventListener(&#x27;message&#x27;,e=&gt;{
+    if(e.source!==window.parent||!e.data||e.data.type!==&#x27;PCR_FORM_OCR_RESPONSE&#x27;)return;
+    if(e.data.error){document.getElementById(&#x27;form-ocr-status&#x27;).textContent=&#x27;OCR: &#x27;+e.data.error;return;}
+    workflowOCRReview(e.data.rows||[]);
+  });
 
 &lt;/script&gt;
 &lt;/body&gt;
@@ -4374,5 +4452,33 @@ function ghInit(){ ghSync(); }
 </script>
 
 
+
+<script>
+// OCR bridge: mevcut Plate modülünün Gemini anahtarını kullanır; görüntü kaydedilmez.
+window.addEventListener('message',async function(e){
+  const frame=document.getElementById('workflow-frame');
+  if(!frame||e.source!==frame.contentWindow||!e.data||e.data.type!=='PCR_FORM_OCR_REQUEST')return;
+  const reply=(data)=>frame.contentWindow.postMessage({type:'PCR_FORM_OCR_RESPONSE',...data},'*');
+  try{
+    if(typeof S==='undefined'||!S.apiKey){reply({error:'Gemini API anahtarı yok. Önce PCR Plate Düzeni modülündeki API Anahtarı bölümünden anahtarınızı girin.'});return;}
+    const match=/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/.exec(e.data.dataUrl||'');
+    if(!match){reply({error:'Desteklenmeyen fotoğraf biçimi. JPG, PNG veya WEBP kullanın.'});return;}
+    const instruction=`Bu fotoğraf Türkçe bir MOLEKÜLER BİYOLOJİ LABORATUVARI ANALİZ İŞ TAKİP FORMU. Yalnızca 1-İçerik veya etiket kontrolü altındaki EL YAZISI numune satırlarını çıkar. Her satırda numune no, numunenin açıklaması ve S/P/M/K sütunlarının yazılışları var. S, P, M, K normal; SE, PE, ME, KE beyan işaretidir. ME yazılmışsa M='ME', SE yazılmışsa S='SE'. Formdaki numaraları ve açıklamaları aynen aktar; emin olmadığın hücreyi boş bırak. İşlem tarihi, imza, başlık, satır numaraları ve kontrolleri numune sayma. Çıktı yalnızca JSON nesnesi: {"rows":[{"no":"8146","desc":"Sos","S":"S","P":"P","M":"ME","K":"K"}]}. Her numuneyi yalnız bir kez döndür. Görseldeki değerleri tahmin ederek doldurma.`;
+    let lastError='';
+    for(const model of ['gemini-2.5-flash','gemini-2.5-flash-lite']){
+      try{
+        const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(S.apiKey),{
+          method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:instruction},{inline_data:{mime_type:match[1],data:match[2]}}]}],generationConfig:{responseMimeType:'application/json',temperature:0}})
+        });
+        if(!response.ok){lastError='API HTTP '+response.status;continue;}
+        const result=await response.json();const raw=(result.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+        const parsed=JSON.parse(raw);if(!Array.isArray(parsed.rows))throw Error('Numune satırları okunamadı');
+        reply({rows:parsed.rows.slice(0,150)});return;
+      }catch(err){lastError=err.message||String(err);}
+    }
+    reply({error:'Fotoğraf okunamadı. '+lastError+' API anahtarını ve internet bağlantısını kontrol edin.'});
+  }catch(err){reply({error:err.message||'Bilinmeyen hata'});}
+});
+</script>
 </body>
 </html>
