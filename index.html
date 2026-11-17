@@ -4465,18 +4465,46 @@ window.addEventListener('message',async function(e){
     if(!match){reply({error:'Desteklenmeyen fotoğraf biçimi. JPG, PNG veya WEBP kullanın.'});return;}
     const instruction=`Bu fotoğraf Türkçe bir MOLEKÜLER BİYOLOJİ LABORATUVARI ANALİZ İŞ TAKİP FORMU. Yalnızca 1-İçerik veya etiket kontrolü altındaki EL YAZISI numune satırlarını çıkar. Her satırda numune no, numunenin açıklaması ve S/P/M/K sütunlarının yazılışları var. S, P, M, K normal; SE, PE, ME, KE beyan işaretidir. ME yazılmışsa M='ME', SE yazılmışsa S='SE'. Formdaki numaraları ve açıklamaları aynen aktar; emin olmadığın hücreyi boş bırak. İşlem tarihi, imza, başlık, satır numaraları ve kontrolleri numune sayma. Çıktı yalnızca JSON nesnesi: {"rows":[{"no":"8146","desc":"Sos","S":"S","P":"P","M":"ME","K":"K"}]}. Her numuneyi yalnız bir kez döndür. Görseldeki değerleri tahmin ederek doldurma.`;
     let lastError='';
-    for(const model of ['gemini-2.5-flash','gemini-2.5-flash-lite']){
+    // Sabit model isimleri 404 verebilir: anahtarın erişebildiği modelleri API'den öğren.
+    const modelsUrl='https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key='+encodeURIComponent(S.apiKey);
+    let available=[];
+    try{
+      const listing=await fetch(modelsUrl);
+      const listingJson=await listing.json().catch(()=>({}));
+      if(!listing.ok){
+        const detail=listingJson.error?.message||'Model listesi alınamadı';
+        reply({error:'Gemini API HTTP '+listing.status+': '+detail});return;
+      }
+      available=(listingJson.models||[])
+        .filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent') &&
+          /^models\/gemini-/.test(m.name) && /flash|pro/.test(m.name) &&
+          !/(tts|image|embed|live|audio|robotics|computer-use|exp)/.test(m.name))
+        .map(m=>m.name);
+      available.sort((a,b)=>{
+        const score=n=>(/flash/.test(n)?100:0)+(/lite/.test(n)?-10:0)+(/preview/.test(n)?-20:0)+
+          (parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]||0)*10);
+        return score(b)-score(a);
+      });
+    }catch(err){reply({error:'Gemini model listesi alınamadı: '+(err.message||err)});return;}
+    if(!available.length){reply({error:'API anahtarının erişebildiği görsel okuyabilen Gemini modeli bulunamadı.'});return;}
+    for(const model of available){
       try{
-        const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(S.apiKey),{
+        const response=await fetch('https://generativelanguage.googleapis.com/v1beta/'+model+':generateContent?key='+encodeURIComponent(S.apiKey),{
           method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:instruction},{inline_data:{mime_type:match[1],data:match[2]}}]}],generationConfig:{responseMimeType:'application/json',temperature:0}})
         });
-        if(!response.ok){lastError='API HTTP '+response.status;continue;}
+        if(!response.ok){
+          const body=await response.json().catch(()=>({}));
+          lastError=model+': HTTP '+response.status+' '+(body.error?.message||'');
+          if([400,401,403,413,429].includes(response.status)){reply({error:lastError});return;}
+          continue;
+        }
         const result=await response.json();const raw=(result.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
-        const parsed=JSON.parse(raw);if(!Array.isArray(parsed.rows))throw Error('Numune satırları okunamadı');
+        const parsed=JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g,'').trim());
+        if(!Array.isArray(parsed.rows))throw Error('Numune satırları okunamadı');
         reply({rows:parsed.rows.slice(0,150)});return;
-      }catch(err){lastError=err.message||String(err);}
+      }catch(err){lastError=model+': '+(err.message||String(err));}
     }
-    reply({error:'Fotoğraf okunamadı. '+lastError+' API anahtarını ve internet bağlantısını kontrol edin.'});
+    reply({error:'Fotoğraf okunamadı. '+lastError});
   }catch(err){reply({error:err.message||'Bilinmeyen hata'});}
 });
 </script>
