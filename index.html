@@ -3513,26 +3513,40 @@ function rdVoiceHandle(alts){
  function taxon(samples){
    const genes=favGenes('Takson');if(!genes.length)throw Error('Favori takson genleri bulunamadı.');
    const match={S:/^lec$/i,P:/^acp1$/i,M:/^hmg$/i,K:/^fata/i};
-   const tasks=[];
+   const out=[];
+   let plate=null,row=8;
+   const nextRow=()=>{
+     if(!plate||row>=8){plate=base('TAKSON — Soya / Pamuk / Mısır / Kanola',[]);out.push(plate);row=0;}
+     return row++;
+   };
    for(const k of ['S','P','M','K']){
      const eligible=samples.filter(sm=>sm.specialRequest?(sm.specialAnalyses||[]).includes('T:'+k):(!sm.labelDeclared?.[k]&&!sm.taksonPositive?.includes(k)));
      if(!eligible.length)continue;
      const gene=genes.find(g=>match[k].test(g));
      if(!gene)throw Error(plantNames[k]+' için takson favorisi yok.');
-     for(let i=0;i<eligible.length;i+=4)tasks.push({k,gene,part:eligible.slice(i,i+4)});
+     // Her taksonun N/P/ÇK/EC kontrolünü, o taksonun bulunduğu plate'te yalnızca bir kez oluştur.
+     // Numuneler iki paralel; 12 kuyu dolduğunda aynı takson bir sonraki satırda sürer.
+     // Plate değişirse yeni plate için ayrı kontrol grubu gerekir.
+     let pending=eligible.slice();
+     while(pending.length){
+       if(!plate||row>=8){plate=base('TAKSON — Soya / Pamuk / Mısır / Kanola',[]);out.push(plate);row=0;}
+       const availableRows=8-row;
+       const capacity=Math.floor((availableRows*12-4)/2);
+       if(capacity<1){row=8;continue;}
+       const batch=pending.splice(0,capacity);
+       const values=[];
+       for(const sm of batch)values.push({value:sm.no,note:gene},{value:sm.no,note:gene});
+       for(const ctrl of ['N','P','ÇK','EC'])values.push({value:ctrl,note:gene});
+       for(let i=0;i<values.length;i++){
+         const rr=row+Math.floor(i/12),cc=i%12;
+         if(!plate.rows[rr])plate.rows[rr]=plantNames[k]+' — '+gene;
+         put(plate,rr,cc,values[i].value,values[i].note);
+       }
+       row+=Math.ceil(values.length/12);
+       plate.meta.numune=uniq(plate.meta.numune.split(', ').filter(Boolean).concat(batch.map(sm=>String(sm.no)))).join(', ');
+     }
    }
-   const out=[];
-   tasks.forEach((t,i)=>{
-     const pi=Math.floor(i/8),r=i%8;
-     if(!out[pi])out[pi]=base('TAKSON — Soya / Pamuk / Mısır / Kanola',[]);
-     const p=out[pi];p.rows[r]=plantNames[t.k]+' — '+t.gene;
-     t.part.forEach((sm,j)=>{put(p,r,j*2,sm.no,t.gene);put(p,r,j*2+1,sm.no,t.gene);});
-     // Kontrolleri numunelerin hemen arkasına yerleştir: boş kalan kuyular event için kullanılabilir.
-     const c=t.part.length*2;
-     ['N','P','ÇK','EC'].forEach((v,j)=>put(p,r,c+j,v,t.gene));
-     p.meta.numune=uniq(p.meta.numune.split(', ').filter(Boolean).concat(t.part.map(sm=>String(sm.no)))).join(', ');
-   });
-   out.forEach(p=>p.meta.aciklama='Takson önce: tüm numuneler ikili paralel; kontroller numunelerin ardından. Boş kuyular event için değerlendirilir.');
+   out.forEach(p=>p.meta.aciklama='Takson: her takson için plate başına bir N/P/ÇK/EC seti; numuneler ikili paralel. Boş kuyular event için değerlendirilir.');
    return out;
  }
  function event(samples,choice,mode){
